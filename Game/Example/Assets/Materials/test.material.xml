@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Material shader="/Shaders/test.shader.xml">
+    <MainTexture>/Textures/test.texture.xml</MainTexture>
+</Material>

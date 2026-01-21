@@ -1,0 +1,19 @@
+#version 330 core
+
+layout (location = 0) in vec3 VERTEX_POSITION;
+layout (location = 1) in vec3 VERTEX_NORMAL;
+layout (location = 2) in vec2 VERTEX_TEXTURE_COORDS;
+
+out vec3 FRAGMENT_VERTEX_POSITION;
+out vec3 FRAGMENT_NORMAL;
+out vec2 FRAGMENT_TEXTURE_COORDS;
+
+uniform mat4 MATRIX_PVM;
+
+void main() {
+    FRAGMENT_VERTEX_POSITION = VERTEX_POSITION;
+    FRAGMENT_NORMAL = VERTEX_NORMAL;
+    FRAGMENT_TEXTURE_COORDS = VERTEX_TEXTURE_COORDS;
+
+    gl_Position = MATRIX_PVM * vec4(VERTEX_POSITION, 1.0);
+}

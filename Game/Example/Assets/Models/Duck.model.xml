@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Model>
+    <Source>/Models/Duck.glb</Source>
+    <Materials>
+        <Material src="/Materials/Duck.material.xml"/>
+    </Materials>
+</Model>
