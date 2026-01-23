@@ -63,13 +63,13 @@ namespace fow {
         GLuint m_uVao, m_uVbo, m_uEbo;
         GLsizei m_iIndexCount;
         bool m_bInitialized;
-        Material m_Material;
+        MaterialPtr m_pMaterial;
         MeshPrimitive m_ePrimitive;
 
-        Mesh(const GLuint vao, const GLuint vbo, const GLuint ebo, const GLsizei index_count, const Material& material, const MeshPrimitive primitive = MeshPrimitive::Triangles) :
+        Mesh(const GLuint vao, const GLuint vbo, const GLuint ebo, const GLsizei index_count, const MaterialPtr& material, const MeshPrimitive primitive = MeshPrimitive::Triangles) :
             m_uVao( vao), m_uVbo(vbo), m_uEbo(ebo),
             m_iIndexCount(index_count),
-            m_bInitialized(true), m_Material(material),
+            m_bInitialized(true), m_pMaterial(material),
             m_ePrimitive(primitive) { }
 
     public:
@@ -78,13 +78,13 @@ namespace fow {
         Mesh(Mesh&& mesh) noexcept :
             m_uVao(mesh.m_uVao), m_uVbo(mesh.m_uVbo), m_uEbo(mesh.m_uEbo),
             m_iIndexCount(mesh.m_iIndexCount),
-            m_bInitialized(mesh.m_bInitialized), m_Material(std::move(mesh.m_Material)), m_ePrimitive(mesh.m_ePrimitive) {
+            m_bInitialized(mesh.m_bInitialized), m_pMaterial(std::move(mesh.m_pMaterial)), m_ePrimitive(mesh.m_ePrimitive) {
             mesh.m_uVao = 0;
             mesh.m_uVbo = 0;
             mesh.m_uEbo = 0;
             mesh.m_iIndexCount = 0;
             mesh.m_bInitialized = false;
-            mesh.m_Material = Material::Null;
+            mesh.m_pMaterial = std::make_shared<Material>();
         }
         ~Mesh();
 
@@ -107,7 +107,7 @@ namespace fow {
             m_uEbo = mesh.m_uEbo;
             m_iIndexCount = mesh.m_iIndexCount;
             m_bInitialized = mesh.m_bInitialized;
-            m_Material = mesh.m_Material;
+            m_pMaterial = mesh.m_pMaterial;
             m_ePrimitive = mesh.m_ePrimitive;
 
             mesh.m_uVao = 0;
@@ -115,7 +115,7 @@ namespace fow {
             mesh.m_uEbo = 0;
             mesh.m_iIndexCount = 0;
             mesh.m_bInitialized = false;
-            mesh.m_Material = Material::Null;
+            mesh.m_pMaterial = std::make_shared<Material>();
 
             return *this;
         }
@@ -125,16 +125,16 @@ namespace fow {
         [[nodiscard]] constexpr GLuint ebo() const { return m_uEbo; }
         [[nodiscard]] constexpr GLsizei index_count() const { return m_iIndexCount; }
         [[nodiscard]] constexpr bool is_valid() const { return m_uVao != 0 && m_uVbo != 0 && m_uEbo != 0; }
-        [[nodiscard]] constexpr Material& material() { return m_Material; }
-        [[nodiscard]] constexpr const Material& material() const { return m_Material; }
+        [[nodiscard]] constexpr MaterialPtr& material() { return m_pMaterial; }
+        [[nodiscard]] constexpr const MaterialPtr& material() const { return m_pMaterial; }
         [[nodiscard]] constexpr MeshPrimitive primitive_type() const { return m_ePrimitive; }
 
-        static Result<MeshPtr> Create(const Material& material, const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, MeshPrimitive primitive = MeshPrimitive::Triangles, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
-        static Result<MeshPtr> CreateQuad(const Material& material, const glm::vec2& scale = glm::vec2(1.0f), MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
-        static Result<MeshPtr> CreateCube(const Material& material, const glm::vec3& mins, const glm::vec3& maxs, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
-        static Result<MeshPtr> CreateCylinder(const Material& material, float radius, float height, float subdivision, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
-        static Result<MeshPtr> CreateCapsule(const Material& material, float radius, float height, float subdivision, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
-        static Result<MeshPtr> CreateSphere(const Material& material, float radius, float subdivision, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> Create(const MaterialPtr& material, const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, MeshPrimitive primitive = MeshPrimitive::Triangles, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> CreateQuad(const MaterialPtr& material, const glm::vec2& scale = glm::vec2(1.0f), MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> CreateCube(const MaterialPtr& material, const glm::vec3& mins, const glm::vec3& maxs, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> CreateCylinder(const MaterialPtr& material, float radius, float height, float subdivision, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> CreateCapsule(const MaterialPtr& material, float radius, float height, float subdivision, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> CreateSphere(const MaterialPtr& material, float radius, float subdivision, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
 
         static const Mesh Null;
 
@@ -146,11 +146,11 @@ namespace fow {
         Vector<Vertex> m_vertices;
         Vector<GLuint> m_indices;
         MeshPrimitive m_ePrimitive;
-        Material m_material;
+        MaterialPtr m_pMaterial;
     public:
-        MeshBuilder(const MeshPrimitive primitive, const Material& material) : m_ePrimitive(primitive), m_material(material)         { }
-        MeshBuilder(const MeshPrimitive primitive, Material&& material)      : m_ePrimitive(primitive), m_material(std::move(material)) { }
-        explicit MeshBuilder(const MeshPrimitive primitive)                  : m_ePrimitive(primitive), m_material(Material::Null)   { }
+        MeshBuilder(const MeshPrimitive primitive, const MaterialPtr& material) : m_ePrimitive(primitive), m_pMaterial(material)         { }
+        MeshBuilder(const MeshPrimitive primitive, MaterialPtr&& material)      : m_ePrimitive(primitive), m_pMaterial(std::move(material)) { }
+        explicit MeshBuilder(const MeshPrimitive primitive)                  : m_ePrimitive(primitive), m_pMaterial(std::make_shared<Material>())   { }
 
         void append(const Vertex& vertex);
         inline void append(const glm::vec3& position, const glm::vec2& uv) {

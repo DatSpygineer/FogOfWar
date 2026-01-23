@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Model>
+    <Source>/Models/LightGizmo.glb</Source>
+    <Materials>
+        <Material shader="/Shaders/test.shader.xml">
+            <MainTexture>$DEFAULT_WHITE</MainTexture>
+        </Material>
+    </Materials>
+</Model>

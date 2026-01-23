@@ -26,6 +26,8 @@ namespace fow {
         void draw() const;
         void draw(const Transform& transform) const;
 
+        Vector<MaterialPtr> materials() const;
+
         static Result<ModelPtr> Load(const String& source_path, const Vector<uint8_t>& data, const Vector<MaterialPtr>& materials);
         static Result<ModelPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
 

@@ -61,7 +61,7 @@ namespace fow {
     class Material;
     using MaterialPtr = SharedPtr<Material>;
 
-    class FOW_RENDER_API Material final {
+    class FOW_RENDER_API Material final : std::enable_shared_from_this<Material> {
         ShaderPtr m_pShader;
         HashMap<String, MaterialParameterValue> m_mParams;
     public:
@@ -70,17 +70,13 @@ namespace fow {
             m_pShader(shader), m_mParams(params) { }
         explicit Material(ShaderPtr&& shader, const HashMap<String, MaterialParameterValue>& params = { }) :
             m_pShader(std::move(shader)), m_mParams(params) { }
-        Material(const Material& material) : m_pShader(material.m_pShader), m_mParams(material.m_mParams) { }
+        Material(const Material& material) = delete;
         Material(Material&& material) noexcept : m_pShader(std::move(material.m_pShader)), m_mParams(std::move(material.m_mParams)) {
             material.m_pShader = nullptr;
             material.m_mParams = { };
         }
 
-        Material& operator=(const Material& material) {
-            m_pShader = material.m_pShader;
-            m_mParams = material.m_mParams;
-            return *this;
-        }
+        Material& operator=(const Material& material) = delete;
         Material& operator=(Material&& material) noexcept {
             m_pShader = material.m_pShader;
             m_mParams = material.m_mParams;

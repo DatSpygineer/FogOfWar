@@ -16,6 +16,14 @@ namespace fow {
         }
     }
 
+    Vector<MaterialPtr> Model::materials() const {
+        Vector<MaterialPtr> materials;
+        for (const auto& mesh : m_meshes) {
+            materials.push_back(mesh->material());
+        }
+        return materials;
+    }
+
     static Result<> ProcessModelNodes(const String& source_path, const aiScene* scene, const aiNode* node, Vector<MeshPtr>& meshes, const Vector<MaterialPtr>& materials) {
         if (!scene->HasMeshes()) {
             return Failure("No mesh data found!");
@@ -23,7 +31,7 @@ namespace fow {
         for (size_t mesh_i = 0; mesh_i < node->mNumMeshes; ++mesh_i) {
             const auto* mesh = scene->mMeshes[node->mMeshes[mesh_i]];
 
-            Material material = Material::Null;
+            MaterialPtr material = nullptr;
             Vector<Vertex> vertices;
             Vector<GLuint> indices;
             for (size_t face_i = 0; face_i < mesh->mNumFaces; ++face_i) {
@@ -42,7 +50,7 @@ namespace fow {
                     vertices.emplace_back(glm::vec3 { pos.x, pos.y, pos.z }, glm::vec3 { norm.x, norm.y, norm.z }, glm::vec2 { uv.x, 1.0f - uv.y });
                 }
                 if (mesh->mMaterialIndex < materials.size()) {
-                    material = *materials.at(mesh->mMaterialIndex);
+                    material = materials.at(mesh->mMaterialIndex);
                 } else {
                     Debug::LogError(std::format("Failed to set material {} for model \"{}\": Material at index is not defined!", mesh->mMaterialIndex, source_path));
                 }
