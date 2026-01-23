@@ -108,13 +108,13 @@ namespace fow {
                         if (const auto mat = Assets::Load<Material>(attrib.value(), flags); mat.has_value()) {
                             materials.push_back(mat.value().ptr());
                         } else {
-                            Debug::LogError(std::format("Failed to load material \"{}\" for model \"{}\": {}", attrib.value(), path, mat.error().message));
+                            Debug::LogError(std::format("Failed to load material \"{}\" for model \"{}\":\n{}", attrib.value(), path, mat.error().message));
                         }
                     } else {
-                        if (const auto mat = Material::ParseXml(std::format("{}:{}", path, i), material_node.child_value(), flags); mat.has_value()) {
+                        if (const auto mat = Material::ParseXml(std::format("{}:{}", path, i), material_node, flags); mat.has_value()) {
                             materials.push_back(mat.value());
                         } else {
-                            Debug::LogError(std::format("Failed to load material {} for model \"{}\": {}", i, path, mat.error().message));
+                            Debug::LogError(std::format("Failed to load material {} for model \"{}\":\n{}", i, path, mat.error().message));
                         }
                     }
                     ++i;
