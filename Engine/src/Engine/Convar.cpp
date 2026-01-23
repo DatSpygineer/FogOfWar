@@ -216,7 +216,7 @@ namespace fow {
                     }
                     ImGui::EndChild();
                 }
-                if (ImGui::BeginTable("InputTable", 2)) {
+                if (ImGui::BeginTable("##InputTable", 2)) {
                     ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 64);
                     ImGui::TableNextRow();
@@ -231,11 +231,6 @@ namespace fow {
                         ImGui::CloseCurrentPopup();
                     }
 
-                    const auto pos = ImGui::GetItemRectMin();
-                    const auto size = ImGui::GetItemRectSize();
-                    ImGui::SetNextWindowPos(ImVec2(pos.x, pos.y + size.y));
-                    ImGui::SetNextWindowSize(ImVec2(size.x, 0));
-
                     Vector<String> searches = { };
                     for (const auto& cvar : CVar::GetAvailableNames()) {
                         if (strlen(s_console_input) == 0 || cvar.starts_with(s_console_input, StringCompareType::CaseInsensitive)) {
@@ -244,6 +239,10 @@ namespace fow {
                     }
                     std::sort(searches.begin(), searches.end(), [](const auto& a, const auto& b) { return a < b; });
 
+                    const auto pos = ImGui::GetItemRectMin();
+                    const auto size = ImGui::GetItemRectSize();
+                    ImGui::SetNextWindowPos(ImVec2(pos.x, pos.y + size.y));
+                    ImGui::SetNextWindowSize(ImVec2(size.x, 0));
                     if (ImGui::BeginPopup("##CommandHelpPopup", ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus)) {
                         for (const auto cvar : searches) {
                             if (ImGui::Selectable(cvar.as_cstr())) {

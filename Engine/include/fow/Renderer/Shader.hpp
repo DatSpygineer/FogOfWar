@@ -121,6 +121,25 @@ namespace fow {
         bool set_uniform(const String& name, const glm::dvec4& value)  const; // NOLINT: Return type is not always used.
         bool set_uniform(const String& name, const glm::mat4& value)   const; // NOLINT: Return type is not always used.
 
+        bool set_uniform(const String& name, const Vector<bool>& values)       const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<GLint>& values)      const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<GLuint>& values)     const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<GLfloat>& values)    const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<GLdouble>& values)   const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::ivec2>& values) const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::ivec3>& values) const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::ivec4>& values) const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::uvec2>& values) const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::uvec3>& values) const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::uvec4>& values) const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::vec2>& values)  const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::vec3>& values)  const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::vec4>& values)  const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::dvec2>& values) const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::dvec3>& values) const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::dvec4>& values) const; // NOLINT: Return type is not always used.
+        bool set_uniform(const String& name, const Vector<glm::mat4>& values)  const; // NOLINT: Return type is not always used.
+
         void set_uniform(GLint location, bool value)              const;
         void set_uniform(GLint location, GLint value)             const;
         void set_uniform(GLint location, GLuint value)            const;
@@ -142,6 +161,25 @@ namespace fow {
         void set_uniform(GLint location, const glm::dvec3& value) const;
         void set_uniform(GLint location, const glm::dvec4& value) const;
         void set_uniform(GLint location, const glm::mat4& value)  const;
+
+        void set_uniform(GLint location, const Vector<bool>& values)       const;
+        void set_uniform(GLint location, const Vector<GLint>& values)      const;
+        void set_uniform(GLint location, const Vector<GLuint>& values)     const;
+        void set_uniform(GLint location, const Vector<GLfloat>& values)    const;
+        void set_uniform(GLint location, const Vector<GLdouble>& values)   const;
+        void set_uniform(GLint location, const Vector<glm::ivec2>& values) const;
+        void set_uniform(GLint location, const Vector<glm::ivec3>& values) const;
+        void set_uniform(GLint location, const Vector<glm::ivec4>& values) const;
+        void set_uniform(GLint location, const Vector<glm::uvec2>& values) const;
+        void set_uniform(GLint location, const Vector<glm::uvec3>& values) const;
+        void set_uniform(GLint location, const Vector<glm::uvec4>& values) const;
+        void set_uniform(GLint location, const Vector<glm::vec2>& values)  const;
+        void set_uniform(GLint location, const Vector<glm::vec3>& values)  const;
+        void set_uniform(GLint location, const Vector<glm::vec4>& values)  const;
+        void set_uniform(GLint location, const Vector<glm::dvec2>& values) const;
+        void set_uniform(GLint location, const Vector<glm::dvec3>& values) const;
+        void set_uniform(GLint location, const Vector<glm::dvec4>& values) const;
+        void set_uniform(GLint location, const Vector<glm::mat4>& values)  const;
 
         bool get_uniform(const String& name, bool& value)           const;
         bool get_uniform(const String& name, GLint& value)          const;

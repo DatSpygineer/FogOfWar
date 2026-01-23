@@ -81,6 +81,9 @@ namespace fow {
     }
 
     static TexturePtr s_placeholder_texture = nullptr;
+    static TexturePtr s_white_texture = nullptr;
+    static TexturePtr s_black_texture = nullptr;
+    static TexturePtr s_normal_texture = nullptr;
 
     TexturePtr Texture::PlaceHolder() {
         if (s_placeholder_texture != nullptr) {
@@ -106,18 +109,105 @@ namespace fow {
 
         glBindTexture(GL_TEXTURE_2D, id);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FOW_TEXTURE_PLACEHOLDER_SIZE, FOW_TEXTURE_PLACEHOLDER_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
-        glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glBindTexture(GL_TEXTURE_2D, 0);
         s_placeholder_texture = std::make_shared<Texture2D>(std::move(Texture2D { id }));
         return s_placeholder_texture;
     }
+    TexturePtr Texture::DefaultWhite() {
+        if (s_white_texture != nullptr) {
+            return s_white_texture;
+        }
+        Vector<uint32_t> data;
+        data.reserve(FOW_TEXTURE_PLACEHOLDER_SIZE * FOW_TEXTURE_PLACEHOLDER_SIZE);
+        for (int i = 0; i < FOW_TEXTURE_PLACEHOLDER_SIZE * FOW_TEXTURE_PLACEHOLDER_SIZE; ++i) {
+            data.emplace_back(0xFFFFFFFF);
+        }
+
+        GLuint id;
+        glGenTextures(1, &id);
+        if (id == 0) {
+            throw std::runtime_error(std::format("Failed to generate default white texture: GL error {}", glGetError()));
+        }
+
+        glBindTexture(GL_TEXTURE_2D, id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FOW_TEXTURE_PLACEHOLDER_SIZE, FOW_TEXTURE_PLACEHOLDER_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+        glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        s_white_texture = std::make_shared<Texture2D>(std::move(Texture2D { id }));
+        return s_white_texture;
+    }
+    TexturePtr Texture::DefaultBlack() {
+        if (s_black_texture != nullptr) {
+            return s_black_texture;
+        }
+        Vector<uint32_t> data;
+        data.reserve(FOW_TEXTURE_PLACEHOLDER_SIZE * FOW_TEXTURE_PLACEHOLDER_SIZE);
+        for (int i = 0; i < FOW_TEXTURE_PLACEHOLDER_SIZE * FOW_TEXTURE_PLACEHOLDER_SIZE; ++i) {
+            data.emplace_back(0xFF000000);
+        }
+
+        GLuint id;
+        glGenTextures(1, &id);
+        if (id == 0) {
+            throw std::runtime_error(std::format("Failed to generate default black texture: GL error {}", glGetError()));
+        }
+
+        glBindTexture(GL_TEXTURE_2D, id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FOW_TEXTURE_PLACEHOLDER_SIZE, FOW_TEXTURE_PLACEHOLDER_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+        glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        s_black_texture = std::make_shared<Texture2D>(std::move(Texture2D { id }));
+        return s_black_texture;
+    }
+    TexturePtr Texture::DefaultNormal() {
+        if (s_normal_texture != nullptr) {
+            return s_normal_texture;
+        }
+        Vector<uint32_t> data;
+        data.reserve(FOW_TEXTURE_PLACEHOLDER_SIZE * FOW_TEXTURE_PLACEHOLDER_SIZE);
+        for (int i = 0; i < FOW_TEXTURE_PLACEHOLDER_SIZE * FOW_TEXTURE_PLACEHOLDER_SIZE; ++i) {
+            data.emplace_back(0xFFFF7F7F);
+        }
+
+        GLuint id;
+        glGenTextures(1, &id);
+        if (id == 0) {
+            throw std::runtime_error(std::format("Failed to generate default normal texture: GL error {}", glGetError()));
+        }
+
+        glBindTexture(GL_TEXTURE_2D, id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FOW_TEXTURE_PLACEHOLDER_SIZE, FOW_TEXTURE_PLACEHOLDER_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+        glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        s_normal_texture = std::make_shared<Texture2D>(std::move(Texture2D { id }));
+        return s_normal_texture;
+    }
 
     void Texture::UnloadPlaceHolder() {
         if (s_placeholder_texture != nullptr) {
             s_placeholder_texture = nullptr;
+        }
+        if (s_white_texture != nullptr) {
+            s_white_texture = nullptr;
+        }
+        if (s_black_texture != nullptr) {
+            s_black_texture = nullptr;
+        }
+        if (s_normal_texture != nullptr) {
+            s_normal_texture = nullptr;
         }
     }
 

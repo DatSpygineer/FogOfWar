@@ -1097,7 +1097,7 @@ namespace fow {
                         texture = Texture2D::PlaceHolder();
                     }
                     texture->bind(texture_unit);
-                    shader->set_uniform(name, static_cast<GLuint>(texture_unit + GL_TEXTURE0));
+                    Debug::Assert(shader->set_uniform(name, static_cast<GLint>(texture_unit)), "Failed to set texture!");
                     ++texture_unit;
                 } break;
             }
@@ -1148,7 +1148,7 @@ namespace fow {
 
         const auto shader_result = Assets::Load<Shader>(shader_attrib.value());
         if (!shader_result.has_value()) {
-            return Failure<MaterialPtr>(std::format("Failed to load material \"{}\": Failed to load shader \"{}\": {}", source, shader_attrib.value(), shader_result.error().message));
+            return Failure<MaterialPtr>(std::format("Failed to load material \"{}\": Failed to load shader \"{}\":\n{}", source, shader_attrib.value(), shader_result.error().message));
         }
 
         auto shader = std::move(shader_result.value());
@@ -1312,7 +1312,16 @@ namespace fow {
                         }
                     } break;
                     case ShaderUniformType::Sampler2D: {
-                        if (const auto texture_result = Assets::Load<Texture2D>(child.child_value(), flags); texture_result.has_value()) {
+                        const char* texture_path = child.child_value();
+                        if (strcmp(texture_path, "$DEFAULT_WHITE") == 0) {
+                            params.emplace(child.name(), Texture::DefaultWhite());
+                        } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
+                            params.emplace(child.name(), Texture::DefaultBlack());
+                        } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
+                            params.emplace(child.name(), Texture::DefaultNormal());
+                        } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
+                            params.emplace(child.name(), Texture::PlaceHolder());
+                        } else if (const auto texture_result = Assets::Load<Texture2D>(texture_path, flags); texture_result.has_value()) {
                             params.emplace(child.name(), texture_result.value().ptr());
                         } else {
                             params.emplace(child.name(), Texture::PlaceHolder());
@@ -1320,7 +1329,16 @@ namespace fow {
                         }
                     } break;
                     case ShaderUniformType::Sampler2DArray: {
-                        if (const auto texture_result = Assets::Load<Texture2DArray>(child.child_value(), flags); texture_result.has_value()) {
+                        const char* texture_path = child.child_value();
+                        if (strcmp(texture_path, "$DEFAULT_WHITE") == 0) {
+                            params.emplace(child.name(), Texture::DefaultWhite());
+                        } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
+                            params.emplace(child.name(), Texture::DefaultBlack());
+                        } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
+                            params.emplace(child.name(), Texture::DefaultNormal());
+                        } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
+                            params.emplace(child.name(), Texture::PlaceHolder());
+                        } else if (const auto texture_result = Assets::Load<Texture2DArray>(texture_path, flags); texture_result.has_value()) {
                             params.emplace(child.name(), texture_result.value().ptr());
                         } else {
                             params.emplace(child.name(), Texture::PlaceHolder());
@@ -1328,7 +1346,16 @@ namespace fow {
                         }
                     } break;
                     case ShaderUniformType::SamplerCube: {
-                        if (const auto texture_result = Assets::Load<TextureCubeMap>(child.child_value(), flags); texture_result.has_value()) {
+                        const char* texture_path = child.child_value();
+                        if (strcmp(texture_path, "$DEFAULT_WHITE") == 0) {
+                            params.emplace(child.name(), Texture::DefaultWhite());
+                        } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
+                            params.emplace(child.name(), Texture::DefaultBlack());
+                        } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
+                            params.emplace(child.name(), Texture::DefaultNormal());
+                        } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
+                            params.emplace(child.name(), Texture::PlaceHolder());
+                        } else if (const auto texture_result = Assets::Load<TextureCubeMap>(texture_path, flags); texture_result.has_value()) {
                             params.emplace(child.name(), texture_result.value().ptr());
                         } else {
                             params.emplace(child.name(), Texture::PlaceHolder());

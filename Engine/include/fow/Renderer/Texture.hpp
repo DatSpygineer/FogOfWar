@@ -158,6 +158,9 @@ namespace fow {
         }
 
         static TexturePtr PlaceHolder();
+        static TexturePtr DefaultWhite();
+        static TexturePtr DefaultBlack();
+        static TexturePtr DefaultNormal();
         static void UnloadPlaceHolder();
     };
 

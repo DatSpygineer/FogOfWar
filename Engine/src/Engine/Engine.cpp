@@ -19,14 +19,14 @@ namespace fow {
     static void UpdateMonitorIndex(const CVarPtr& self);
     static void UpdateVSync(const CVarPtr& self);
     static void UpdateLanguage(const CVarPtr& self);
-    static Result<> ExitCommand(const Vector<String>& args);
+    static Result<> QuitCommand(const Vector<String>& args);
 
     const auto vid_resolution  = CVar::Create("vid_resolution",  glm::vec2(1280, 720), CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
     const auto vid_window_mode = CVar::Create("vid_window_mode", "Windowed",           CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateWindowMode);
     const auto vid_monitor_idx = CVar::Create("vid_monitor_idx", 0,                    CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMonitorIndex);
     const auto vid_vsync       = CVar::Create("vid_vsync",       false,                CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateVSync);
     const auto cl_lang         = CVar::Create("cl_lang",         "en_us",              CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateLanguage);
-    const auto cvar_exit       = CVar::Create("exit",                 ExitCommand,           CVarFlags::Default);
+    const auto quit            = CVar::Create("quit",                 QuitCommand,           CVarFlags::Default);
 
     namespace Engine {
         static bool s_initialized = false;
@@ -382,7 +382,7 @@ namespace fow {
             Debug::Assert(SetLanguage(value.value()));
         }
     }
-    static Result<> ExitCommand(const Vector<String>& args) {
+    static Result<> QuitCommand(const Vector<String>& args) {
         DISCARD(args);
         if (Engine::s_window == nullptr) {
             exit(GetGameExitCode());
