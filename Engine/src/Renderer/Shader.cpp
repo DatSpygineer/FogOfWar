@@ -15,8 +15,8 @@ namespace fow {
 
         while (std::getline(input, line)) {
             if (auto s_line = String(line); s_line.clone_trimmed().starts_with("#include")) {
-                auto asset_path = s_line.clone_trimmed();
-                asset_path.trim("\"").trim_begin("<").trim_end(">");
+                auto asset_path = s_line.clone_trimmed().remove_prefix("#include");
+                asset_path.trim().trim("\"").trim_begin("<").trim_end(">");
                 result << "#line 1 \"" << asset_path.as_std_str() << "\"" << std::endl;
                 String include_source;
                 if (s_built_in_shader_headers.contains(asset_path)) {
@@ -29,7 +29,9 @@ namespace fow {
                     include_source = include_source_result.value();
                 }
                 line_i++;
-                result << include_source.as_std_str() << std::endl << "#line " << line_i << " \"" << name << "\"" << std::endl;
+                result << include_source.as_std_str() << std::endl;
+                result << std::endl;
+                result << "#line " << line_i << " \"" << name << "\"" << std::endl;
             } else {
                 result << line << std::endl;
                 line_i++;
@@ -679,13 +681,6 @@ namespace fow {
         return true;
     }
 
-    void Shader::set_opaque(const bool value) {
-        m_bOpaque = value;
-    }
-    void Shader::set_backface_culling(const bool value) {
-        m_bBackfaceCulling = value;
-    }
-
     GLint Shader::uniform_location(const String& name) const {
         return glGetUniformLocation(m_uProgram, name.as_cstr());
     }
@@ -734,7 +729,7 @@ namespace fow {
         }
         const char* vertex_cstr = processed_vertex.value().as_cstr();
         glShaderSource(vid, 1, &vertex_cstr, nullptr);
-        glCompileShader(vid);
+        glCompileShaderIncludeARB(vid, 0, nullptr, nullptr);
         glGetShaderiv(vid, GL_COMPILE_STATUS, &status);
         if (!status) {
             String info_log(2048);
@@ -751,13 +746,13 @@ namespace fow {
         }
 
         const auto processed_fragment = ResolveShaderIncludes(std::format("{}:fragment", name), fragment);
-        if (!processed_vertex.has_value()) {
+        if (!processed_fragment.has_value()) {
             glDeleteShader(vid);
             return Failure<ShaderPtr>(std::format("Failed to compile fragment shader, error while preprocessing: {}", processed_fragment.error().message));
         }
         const char* fragment_cstr = processed_fragment.value().as_cstr();
         glShaderSource(fid, 1, &fragment_cstr, nullptr);
-        glCompileShader(fid);
+        glCompileShaderIncludeARB(fid, 0, nullptr, nullptr);
         glGetShaderiv(fid, GL_COMPILE_STATUS, &status);
         if (!status) {
             String info_log(2048);
@@ -999,23 +994,6 @@ namespace fow {
                 }
                 if (!result.has_value()) {
                     return result;
-                }
-
-                for (const auto& node : shader_node.children()) {
-                    if (String(node.name()).equals("BackfaceCulling")) {
-                        const auto value_result = StringToBool(node.child_value());
-                        if (!value_result.has_value()) {
-                            return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Parameter 'BackfaceCulling' must contain a boolean value!", path));
-                        }
-                        result.value()->set_backface_culling(value_result.value());
-                    }
-                    if (String(node.name()).equals("Opaque")) {
-                        const auto value_result = StringToBool(node.child_value());
-                        if (!value_result.has_value()) {
-                            return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Parameter 'Opaque' must contain a boolean value!", path));
-                        }
-                        result.value()->set_opaque(value_result.value());
-                    }
                 }
 
                 return std::move(result);

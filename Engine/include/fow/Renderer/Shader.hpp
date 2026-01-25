@@ -61,8 +61,6 @@ namespace fow {
     class FOW_RENDER_API Shader final {
         GLuint m_uProgram;
         bool   m_bInitialized;
-        bool   m_bBackfaceCulling = true;
-        bool   m_bOpaque          = true;
 
         explicit Shader(const GLuint id) : m_uProgram(id), m_bInitialized(true) { }
     public:
@@ -202,11 +200,6 @@ namespace fow {
         bool get_uniform(const String& name, glm::dvec3& value)     const;
         bool get_uniform(const String& name, glm::dvec4& value)     const;
         bool get_uniform(const String& name, glm::mat4& value)      const;
-
-        void set_opaque(bool value);
-        constexpr bool get_opaque() const { return m_bOpaque; }
-        void set_backface_culling(bool value);
-        constexpr bool get_backface_culling() const { return m_bBackfaceCulling; }
 
         [[nodiscard]] GLint uniform_location(const String& name) const;
         [[nodiscard]] inline bool has_uniform(const String& name) const { return uniform_location(name) >= 0; }

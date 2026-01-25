@@ -61,17 +61,24 @@ namespace fow {
     class Material;
     using MaterialPtr = SharedPtr<Material>;
 
+    struct MaterialOptions {
+        bool backface_culling = true;
+        bool opaque = true;
+        bool depth_test = true;
+    };
+
     class FOW_RENDER_API Material final : std::enable_shared_from_this<Material> {
         ShaderPtr m_pShader;
         HashMap<String, MaterialParameterValue> m_mParams;
+        MaterialOptions m_options;
     public:
         Material() : m_pShader(nullptr) { }
-        explicit Material(const ShaderPtr& shader, const HashMap<String, MaterialParameterValue>& params = { }) :
-            m_pShader(shader), m_mParams(params) { }
-        explicit Material(ShaderPtr&& shader, const HashMap<String, MaterialParameterValue>& params = { }) :
-            m_pShader(std::move(shader)), m_mParams(params) { }
+        explicit Material(const ShaderPtr& shader, const HashMap<String, MaterialParameterValue>& params = { }, const MaterialOptions options = { }) :
+            m_pShader(shader), m_mParams(params), m_options(options) { }
+        explicit Material(ShaderPtr&& shader, const HashMap<String, MaterialParameterValue>& params = { }, const MaterialOptions options = { }) :
+            m_pShader(std::move(shader)), m_mParams(params), m_options(options) { }
         Material(const Material& material) = delete;
-        Material(Material&& material) noexcept : m_pShader(std::move(material.m_pShader)), m_mParams(std::move(material.m_mParams)) {
+        Material(Material&& material) noexcept : m_pShader(std::move(material.m_pShader)), m_mParams(std::move(material.m_mParams)), m_options(std::move(material.m_options)) {
             material.m_pShader = nullptr;
             material.m_mParams = { };
         }
@@ -86,6 +93,13 @@ namespace fow {
         }
 
         [[nodiscard]] constexpr const ShaderPtr& shader() const { return m_pShader; }
+
+        void set_opaque(bool value);
+        constexpr bool get_opaque() const { return m_options.opaque; }
+        void set_backface_culling(bool value);
+        constexpr bool get_backface_culling() const { return m_options.backface_culling; }
+        void set_depth_test(bool value);
+        constexpr bool get_depth_test() const { return m_options.depth_test; }
 
         Result<> set_parameter(const String& name, const MaterialParameterValue& value);
         Result<> get_parameter(const String& name, MaterialParameterValue& value) const;
