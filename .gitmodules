@@ -10,3 +10,6 @@
 [submodule "ThirdParty/imgui"]
 	path = ThirdParty/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "ThirdParty/SOIL2"]
+	path = ThirdParty/SOIL2
+	url = https://github.com/DatSpygineer/SOIL2.git
