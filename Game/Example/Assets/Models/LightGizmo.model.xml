@@ -3,7 +3,9 @@
     <Source>/Models/LightGizmo.glb</Source>
     <Materials>
         <Material shader="/Shaders/test.shader.xml">
-            <MainTexture>$DEFAULT_WHITE</MainTexture>
+            <Parameters>
+                <MainTexture>$DEFAULT_WHITE</MainTexture>
+            </Parameters>
         </Material>
     </Materials>
 </Model>

@@ -2,6 +2,6 @@
 <Model>
     <Source>/Models/Cube.glb</Source>
     <Materials>
-        <Material src="/Materials/test.material.xml"/>
+        <Material src="/Materials/Cube.material.xml"/>
     </Materials>
 </Model>

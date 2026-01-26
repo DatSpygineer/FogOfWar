@@ -16,7 +16,7 @@ add_library(FogOfWar::Shared ALIAS FogOfWarShared)
 
 add_library(FogOfWarRenderer SHARED ${FOW_RENDERER_SOURCES})
 target_include_directories(FogOfWarRenderer PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${ASSIMP_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
-target_link_libraries(FogOfWarRenderer PUBLIC FogOfWar::Shared ${ASSIMP_LIBRARIES} ${FREETYPE_LIBRARIES})
+target_link_libraries(FogOfWarRenderer PUBLIC FogOfWar::Shared soil2 ${ASSIMP_LIBRARIES} ${FREETYPE_LIBRARIES})
 add_library(FogOfWar::Renderer ALIAS FogOfWarRenderer)
 
 add_library(FogOfWarEngine SHARED

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shader>
+    <Sources vertex="/Shaders/Source/Generic3D.vsh" fragment="/Shaders/Source/Phong3D.fsh"/>
+</Shader>

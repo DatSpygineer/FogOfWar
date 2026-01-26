@@ -5,45 +5,47 @@
 
 using namespace fow;
 
+struct LightInfo {
+    glm::vec3 position;
+    glm::vec3 color;
+
+    float constant;
+    float linear;
+    float quadratic;
+};
+
 class ExampleGame : public Game {
-    Asset<Texture2D> test_texture;
-    Asset<Texture2D> test_texture_s;
-    Asset<Shader> test_shader;
-    Asset<Material> test_material;
     Asset<Model> test_model;
     Asset<Model> light_model;
     Transform test_transform;
     float m_fAngle = 0.0f;
     glm::vec3 m_cameraPos = glm::vec3 { 0.0f, 5.0f, 5.0f };
 
-    float m_fPhongStrength = 1.0f;
-    float m_fPhongExponent = 1.0f;
-    glm::vec3 m_lightPos    = glm::vec3 { 4.0f, 0.0f, 0.0f };
-    glm::vec3 m_lightColor  = glm::vec3 { 1.0f, 0.0f, 0.0f };
-    glm::vec3 m_lightPos2   = glm::vec3 { -4.0f, 0.0f, 0.0f };
-    glm::vec3 m_lightColor2 = glm::vec3 { 0.0f, 1.0f, 0.0f };
+    float m_fPhongStrength  = 0.5f;
+    float m_fPhongExponent  = 0.5f;
+    float m_fEnvMapStrength = 0.5f;
+
+    LightInfo m_light1 = {
+        .position  = glm::vec3 { 2.0f, 0.0f, 0.0f },
+        .color     = glm::vec3 { 1.0f, 0.0f, 0.0f },
+        .constant  = 1.0f,
+        .linear    = 0.0f,
+        .quadratic = 0.0f
+    };
+    LightInfo m_light2 = {
+        .position  = glm::vec3 { -2.0f, 0.0f, 0.0f },
+        .color     = glm::vec3 { 0.0f, 1.0f, 0.0f },
+        .constant  = 1.0f,
+        .linear    = 0.0f,
+        .quadratic = 0.0f
+    };
+
+    float m_ambientLightStrength = 0.125f;
+    glm::vec3 m_ambientLightColor = glm::vec3 { 1.0f, 1.0f, 1.0f };
 public:
     ExampleGame() : Game() { }
 
     void on_init() override {
-        auto texture = Assets::Load<Texture2D>("/Textures/test.texture.xml");
-        Debug::AssertFatal(texture);
-        if (texture.has_value()) {
-            test_texture = std::move(texture.value());
-        }
-
-        auto shader = Assets::Load<Shader>("/Shaders/test.shader.xml");
-        Debug::AssertFatal(shader);
-        if (shader.has_value()) {
-            test_shader = std::move(shader.value());
-        }
-
-        auto material = Assets::Load<Material>("/Materials/test.material.xml");
-        Debug::AssertFatal(material);
-        if (material.has_value()) {
-            test_material = std::move(material.value());
-        }
-
         auto model = Assets::Load<Model>("/Models/Cube.model.xml");
         Debug::AssertFatal(model);
         if (model.has_value()) {
@@ -67,22 +69,31 @@ public:
             Debug::Assert(mat->set_parameter("ViewPos", m_cameraPos));
             Debug::Assert(mat->set_parameter("PhongStrength", m_fPhongStrength));
             Debug::Assert(mat->set_parameter("PhongExponent", m_fPhongExponent));
-            Debug::Assert(mat->set_parameter("Lights[0].Position", m_lightPos));
-            Debug::Assert(mat->set_parameter("Lights[0].Color", m_lightColor));
-            Debug::Assert(mat->set_parameter("Lights[1].Position", m_lightPos2));
-            Debug::Assert(mat->set_parameter("Lights[1].Color", m_lightColor2));
+            Debug::Assert(mat->set_parameter("Environment.AmbientColor", m_ambientLightColor));
+            Debug::Assert(mat->set_parameter("Environment.AmbientStrength", m_ambientLightStrength));
+            Debug::Assert(mat->set_parameter("Lights[0].Position", m_light1.position));
+            Debug::Assert(mat->set_parameter("Lights[0].Color", m_light1.color));
+            Debug::Assert(mat->set_parameter("Lights[0].Constant", m_light1.constant));
+            Debug::Assert(mat->set_parameter("Lights[0].Linear", m_light1.linear));
+            Debug::Assert(mat->set_parameter("Lights[0].Quadratic", m_light1.quadratic));
+            Debug::Assert(mat->set_parameter("Lights[1].Position", m_light2.position));
+            Debug::Assert(mat->set_parameter("Lights[1].Color", m_light2.color));
+            Debug::Assert(mat->set_parameter("Lights[1].Constant", m_light2.constant));
+            Debug::Assert(mat->set_parameter("Lights[1].Linear", m_light2.linear));
+            Debug::Assert(mat->set_parameter("Lights[1].Quadratic", m_light2.quadratic));
             Debug::Assert(mat->set_parameter("LightCount", 2));
+            Debug::Assert(mat->set_parameter("EnvMapStrength", m_fEnvMapStrength));
         }
         test_model->draw(test_transform);
 
         for (auto& mat : light_model->materials()) {
-            mat->set_parameter("TextureColor", glm::vec4(m_lightColor, 1.0f));
+            mat->set_parameter("TextureColor", glm::vec4(m_light1.color, 1.0f));
         }
-        light_model->draw(Transform { m_lightPos, glm::vec3 { 1.0f }, glm::quat() });
+        light_model->draw(Transform { m_light1.position, glm::vec3 { 1.0f }, glm::quat() });
         for (auto& mat : light_model->materials()) {
-            mat->set_parameter("TextureColor", glm::vec4(m_lightColor2, 1.0f));
+            mat->set_parameter("TextureColor", glm::vec4(m_light2.color, 1.0f));
         }
-        light_model->draw(Transform { m_lightPos2, glm::vec3 { 1.0f }, glm::quat() });
+        light_model->draw(Transform { m_light2.position, glm::vec3 { 1.0f }, glm::quat() });
     }
     void on_close() override {
     }
@@ -103,14 +114,25 @@ public:
     }
     void on_update_imgui(double dt) override {
         ImGui::Begin("Shader test");
+        ImGui::SeparatorText("Environment Parameters");
+            ImGui::SliderFloat("Ambient Strength", &m_ambientLightStrength, 0.0f, 1.0f);
+            ImGui::ColorEdit3("Ambient Color", glm::value_ptr(m_ambientLightColor));
+        ImGui::SeparatorText("Phong Parameters");
             ImGui::SliderFloat("Phong Strength", &m_fPhongStrength, 0.0f, 1.0f);
-            ImGui::SliderFloat("Phong Exponent", &m_fPhongExponent, 0.0f, 255.0f);
-        ImGui::Separator();
-            ImGui::InputFloat3("Light 1 position", glm::value_ptr(m_lightPos));
-            ImGui::ColorEdit3("Light 1 color", glm::value_ptr(m_lightColor), ImGuiColorEditFlags_Float);
-        ImGui::Separator();
-            ImGui::InputFloat3("Light 2 position", glm::value_ptr(m_lightPos2));
-            ImGui::ColorEdit3("Light 2 color", glm::value_ptr(m_lightColor2), ImGuiColorEditFlags_Float);
+            ImGui::SliderFloat("Phong Exponent", &m_fPhongExponent, 0.0f, 1.0f);
+            ImGui::SliderFloat("Envmap Strength", &m_fEnvMapStrength, 0.0f, 1.0f);
+        ImGui::SeparatorText("Light 1 Parameters");
+            ImGui::InputFloat3("L1 Position", glm::value_ptr(m_light1.position));
+            ImGui::ColorEdit3("L1 Color", glm::value_ptr(m_light1.color), ImGuiColorEditFlags_Float);
+            ImGui::InputFloat("L1 Linear", &m_light1.linear);
+            ImGui::InputFloat("L1 Constant", &m_light1.constant);
+            ImGui::InputFloat("L1 Quadratic", &m_light1.quadratic);
+        ImGui::SeparatorText("Light 2 Parameters");
+            ImGui::InputFloat3("L2 Position", glm::value_ptr(m_light2.position));
+            ImGui::ColorEdit3("L2 Color", glm::value_ptr(m_light2.color), ImGuiColorEditFlags_Float);
+            ImGui::InputFloat("L2 Linear", &m_light2.linear);
+            ImGui::InputFloat("L2 Constant", &m_light2.constant);
+            ImGui::InputFloat("L2 Quadratic", &m_light2.quadratic);
         ImGui::End();
     }
 };

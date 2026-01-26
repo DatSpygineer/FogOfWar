@@ -239,7 +239,7 @@ namespace fow {
                     }
                     std::sort(searches.begin(), searches.end(), [](const auto& a, const auto& b) { return a < b; });
 
-                    const auto pos = ImGui::GetItemRectMin();
+                    const auto pos  = ImGui::GetItemRectMin();
                     const auto size = ImGui::GetItemRectSize();
                     ImGui::SetNextWindowPos(ImVec2(pos.x, pos.y + size.y));
                     ImGui::SetNextWindowSize(ImVec2(size.x, 0));

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Material shader="/Shaders/Phong3D.shader.xml">
+    <Parameters>
+        <MainTexture>$DEFAULT_WHITE</MainTexture>
+        <SpecularMap>$DEFAULT_WHITE</SpecularMap>
+        <NormalMap>$DEFAULT_NORMAL</NormalMap>
+        <EnvMap>/Textures/cubemap_test.texture.xml</EnvMap>
+    </Parameters>
+</Material>
