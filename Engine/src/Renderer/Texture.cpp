@@ -1,9 +1,175 @@
 #include "fow/Renderer/Texture.hpp"
+#include "fow/StringConvertion.hpp"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "fow/Renderer/ThirdParty/stb_image.h"
+#include "SOIL2.h"
 
 namespace fow {
+    template<>
+    Result<TextureTarget> StringToEnum(const String& value) {
+        if (value.equals("Texture1D", StringCompareType::CaseInsensitive)) {
+            return TextureTarget::Texture1D;
+        }
+        if (value.equals("Texture1DArray", StringCompareType::CaseInsensitive)) {
+            return TextureTarget::Texture1DArray;
+        }
+        if (value.equals("Texture2D", StringCompareType::CaseInsensitive)) {
+            return TextureTarget::Texture2D;
+        }
+        if (value.equals("Texture2DArray", StringCompareType::CaseInsensitive)) {
+            return TextureTarget::Texture2DArray;
+        }
+        if (value.equals("Texture3D", StringCompareType::CaseInsensitive)) {
+            return TextureTarget::Texture3D;
+        }
+        if (value.equals("TextureCubeMap", StringCompareType::CaseInsensitive)) {
+            return TextureTarget::TextureCubeMap;
+        }
+        if (value.equals("TextureCubeMapArray", StringCompareType::CaseInsensitive)) {
+            return TextureTarget::TextureCubeMapArray;
+        }
+
+        if (const auto result = rfl::string_to_enum<TextureTarget>(value.as_std_str()); result.has_value()) {
+            return result.value();
+        } else {
+            return Failure<TextureTarget>(result.error().what());
+        }
+    }
+    template<>
+    Result<TextureWrapMode> StringToEnum(const String& value) {
+        if (value.equals("Repeat", StringCompareType::CaseInsensitive)) {
+            return TextureWrapMode::Repeat;
+        }
+        if (value.equals("MirroredRepeat", StringCompareType::CaseInsensitive)) {
+            return TextureWrapMode::MirroredRepeat;
+        }
+        if (value.equals("ClampToEdge", StringCompareType::CaseInsensitive)) {
+            return TextureWrapMode::ClampToEdge;
+        }
+        if (value.equals("ClampToBorder", StringCompareType::CaseInsensitive)) {
+            return TextureWrapMode::ClampToBorder;
+        }
+        if (value.equals("MirroredClampToEdge", StringCompareType::CaseInsensitive)) {
+            return TextureWrapMode::MirroredClampToEdge;
+        }
+        if (value.equals("MirroredClampToBorder", StringCompareType::CaseInsensitive)) {
+            return TextureWrapMode::MirroredClampToBorder;
+        }
+        if (const auto result = rfl::string_to_enum<TextureWrapMode>(value.as_std_str()); result.has_value()) {
+            return result.value();
+        } else {
+            return Failure<TextureWrapMode>(result.error().what());
+        }
+    }
+    template<>
+    Result<TextureMagFilterMode> StringToEnum(const String& value) {
+        if (value.equals("Nearest", StringCompareType::CaseInsensitive)) {
+            return TextureMagFilterMode::Nearest;
+        }
+        if (value.equals("Linear", StringCompareType::CaseInsensitive)) {
+            return TextureMagFilterMode::Linear;
+        }
+        if (const auto result = rfl::string_to_enum<TextureMagFilterMode>(value.as_std_str()); result.has_value()) {
+            return result.value();
+        } else {
+            return Failure<TextureMagFilterMode>(result.error().what());
+        }
+    }
+    template<>
+    Result<TextureMinFilterMode> StringToEnum(const String& value) {
+        if (value.equals("Nearest", StringCompareType::CaseInsensitive)) {
+            return TextureMinFilterMode::Nearest;
+        }
+        if (value.equals("Linear", StringCompareType::CaseInsensitive)) {
+            return TextureMinFilterMode::Linear;
+        }
+        if (value.equals("NearestMipmapNearest", StringCompareType::CaseInsensitive)) {
+            return TextureMinFilterMode::NearestMipmapNearest;
+        }
+        if (value.equals("NearestMipmapLinear", StringCompareType::CaseInsensitive)) {
+            return TextureMinFilterMode::NearestMipmapLinear;
+        }
+        if (value.equals("LinearMipmapNearest", StringCompareType::CaseInsensitive)) {
+            return TextureMinFilterMode::LinearMipmapNearest;
+        }
+        if (value.equals("LinearMipmapLinear", StringCompareType::CaseInsensitive)) {
+            return TextureMinFilterMode::LinearMipmapLinear;
+        }
+        if (const auto result = rfl::string_to_enum<TextureMinFilterMode>(value.as_std_str()); result.has_value()) {
+            return result.value();
+        } else {
+            return Failure<TextureMinFilterMode>(result.error().what());
+        }
+    }
+
+    static Result<TextureInfo> ParseTextureInfo(const String& src) {
+        pugi::xml_document doc;
+        if (const auto result = doc.load_string(src.as_cstr()); result.status != pugi::status_ok) {
+            return Failure<TextureInfo>(result.description());
+        }
+
+        const auto root = doc.child("Texture");
+        if (!root) {
+            return Failure<TextureInfo>("Expected root node \"Texture\"");
+        }
+
+        const auto src_attrib = root.attribute("src");
+        if (!src_attrib) {
+            return Failure<TextureInfo>("Expected attribute \"src\" on root node");
+        }
+
+        TextureInfo info;
+        info.Source = src_attrib.value();
+
+        for (const auto& node : root.children()) {
+            if (String(node.name()) == "Target") {
+                if (const auto result = StringToEnum<TextureTarget>(node.child_value()); result.has_value()) {
+                    info.Target = result.value();
+                } else {
+                    return Failure<TextureInfo>(std::format("Failed to parse node \"Target\" with value \"{}\": {}", node.child_value(), result.error().message));
+                }
+            } else if (String(node.name()) == "MagFilter") {
+                if (const auto result = StringToEnum<TextureMagFilterMode>(node.child_value()); result.has_value()) {
+                    info.MagFilter = result.value();
+                } else {
+                    return Failure<TextureInfo>(std::format("Failed to parse node \"MagFilter\" with value \"{}\": {}", node.child_value(), result.error().message));
+                }
+            } else if (String(node.name()) == "MinFilter") {
+                if (const auto result = StringToEnum<TextureMinFilterMode>(node.child_value()); result.has_value()) {
+                    info.MinFilter = result.value();
+                } else {
+                    return Failure<TextureInfo>(std::format("Failed to parse node \"MinFilter\" with value \"{}\": {}", node.child_value(), result.error().message));
+                }
+            } else if (String(node.name()) == "WrapS") {
+                if (const auto result = StringToEnum<TextureWrapMode>(node.child_value()); result.has_value()) {
+                    info.WrapS = result.value();
+                } else {
+                    return Failure<TextureInfo>(std::format("Failed to parse node \"WrapS\" with value \"{}\": {}", node.child_value(), result.error().message));
+                }
+            } else if (String(node.name()) == "WrapT") {
+                if (const auto result = StringToEnum<TextureWrapMode>(node.child_value()); result.has_value()) {
+                    info.WrapT = result.value();
+                } else {
+                    return Failure<TextureInfo>(std::format("Failed to parse node \"WrapT\" with value \"{}\": {}", node.child_value(), result.error().message));
+                }
+            } else if (String(node.name()) == "FrameCount") {
+                try {
+                    info.FrameCount = std::stoi(node.child_value());
+                } catch (const std::exception& e) {
+                    return Failure<TextureInfo>("Expected integer value for node \"FrameCount\"");
+                }
+            } else if (String(node.name()) == "GenerateMipMaps") {
+                if (const auto result = StringToBool(node.child_value()); result.has_value()) {
+                    info.GenerateMipMaps = result.value();
+                } else {
+                    return Failure<TextureInfo>(std::format("Expected boolean value for \"GenerateMipMaps\""));
+                }
+            } else {
+                Debug::LogError(std::format("Unknown parameter \"{}\"", node.name()));
+            }
+        }
+        return info;
+    }
+
     Texture::~Texture() {
         if (m_uId != 0 && m_bInitialized) {
             glDeleteTextures(1, &m_uId);
@@ -224,13 +390,6 @@ namespace fow {
         const auto frame_count = info.FrameCount.value_or(1);
         const auto target = info.Target.value_or(TextureTarget::Texture2D);
         const auto gl_target = static_cast<GLenum>(target);
-        int w, h, c;
-
-        const auto image_data = stbi_load_from_memory(data.data(), static_cast<int>(data.size()), &w, &h, &c, 0);
-        if (image_data == nullptr) {
-            result = Failure<GLuint>(std::format("Failed to read image data from asset \"{}\"", info.Source));
-            goto LOAD_GL_TEXTURE_END;
-        }
 
         glCreateTextures(gl_target, 1, &id);
 
@@ -239,49 +398,18 @@ namespace fow {
             goto LOAD_GL_TEXTURE_END;
         }
 
-        switch (c) {
-            case 1: format = GL_RED; iformat = GL_LUMINANCE8_EXT; break;
-            case 2: format = GL_RG;  iformat = GL_LUMINANCE8_ALPHA8_EXT; break;
-            case 3: format = iformat = GL_RGB; break;
-            default: format = iformat = GL_RGBA; break;
+        if (target == TextureTarget::TextureCubeMap) {
+            id = SOIL_load_OGL_single_cubemap_from_memory(data.data(), data.size(), SOIL_DDS_CUBEMAP_FACE_ORDER, SOIL_LOAD_AUTO, id, 0);
+        } else if (target == TextureTarget::Texture2D) {
+            id = SOIL_load_OGL_texture_from_memory(data.data(), data.size(), SOIL_LOAD_AUTO, id, 0);
+        } else if (target == TextureTarget::Texture2DArray) {
+            id = SOIL_load_OGL_texture_array_from_atlas_grid_from_memory(data.data(), data.size(), frame_count, 1, SOIL_LOAD_AUTO, id, 0);
+        } else {
+            result = Failure<GLuint>("Failed to load OpenGL texture data: Unsupported texture target");
+            goto LOAD_GL_TEXTURE_END;
         }
 
         glBindTexture(gl_target, id);
-        switch (target) {
-            case TextureTarget::Texture1D: {
-                glTexImage1D(gl_target, 0, iformat, w * h, 0, format, GL_UNSIGNED_BYTE, image_data);
-            } break;
-            case TextureTarget::Texture1DArray: {
-                glTexImage2D(gl_target, 0, iformat, w, frame_count, 0, format, GL_UNSIGNED_BYTE, image_data);
-            } break;
-            case TextureTarget::Texture2D: {
-                glTexImage2D(gl_target, 0, iformat, w, h, 0, format, GL_UNSIGNED_BYTE, image_data);
-            } break;
-            case TextureTarget::Texture2DArray: {
-                glTexImage3D(gl_target, 0, iformat, w, h, frame_count, 0, format, GL_UNSIGNED_BYTE, image_data);
-            } break;
-            case TextureTarget::Texture3D: {
-                result = Failure<GLuint>(std::format("Target \"Texture3D\" is not supported!"));
-                goto LOAD_GL_TEXTURE_END;
-            }
-            case TextureTarget::TextureCubeMap: {
-                if (h != w * 6) {
-                    result = Failure<GLuint>(std::format("Invalid cubemap size: {}x{}, expected: {}x{}", w, h, w, w * 6));
-                    goto LOAD_GL_TEXTURE_END;
-                }
-
-                size_t offset = 0;
-                for (int i = 0; i < 6; ++i) {
-                    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, iformat, w / 6, h, 0, format, GL_UNSIGNED_BYTE, image_data + offset);
-                    offset += c * w * w;
-                }
-            } break;
-            case TextureTarget::TextureCubeMapArray: {
-                result = Failure<GLuint>(std::format("Target \"TextureCubeMapArray\" is not supported!"));
-                goto LOAD_GL_TEXTURE_END;
-            }
-        }
-
         glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(mag_filter));
         glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(min_filter));
         glTextureParameteri(id, GL_TEXTURE_WRAP_S,     static_cast<GLint>(wrap_s)    );
@@ -297,9 +425,6 @@ namespace fow {
     LOAD_GL_TEXTURE_END:
         if (!result.has_value() && id != 0) {
             glDeleteTextures(1, &id);
-        }
-        if (image_data != nullptr) {
-            stbi_image_free(image_data);
         }
         return result;
     }
@@ -327,9 +452,9 @@ namespace fow {
         if (!xml_str.has_value()) {
             return Failure<Texture2DPtr>(std::format("Failed to load texture \"{}\": {}", path, xml_str.error().message));
         }
-        const auto info_value = rfl::xml::read<TextureInfo>(xml_str.value().as_std_str());
+        const auto info_value = ParseTextureInfo(xml_str.value().as_std_str());
         if (!info_value.has_value()) {
-            return Failure<Texture2DPtr>(std::format("Failed to load texture \"{}\": {}", path, info_value.error().what()));
+            return Failure<Texture2DPtr>(std::format("Failed to load texture \"{}\": {}", path, info_value.error().message));
         }
         if (info_value->Target.value_or(TextureTarget::Texture2D) != TextureTarget::Texture2D) {
             return Failure<Texture2DPtr>(std::format("Failed to load texture \"{}\": Expected target 'Texture2D'", path));
@@ -363,9 +488,9 @@ namespace fow {
         if (!xml_str.has_value()) {
             return Failure<Texture2DArrayPtr>(std::format("Failed to load texture \"{}\": {}", path, xml_str.error().message));
         }
-        const auto info_value = rfl::xml::read<TextureInfo>(xml_str.value().as_std_str());
+        const auto info_value = ParseTextureInfo(xml_str.value().as_std_str());
         if (!info_value.has_value()) {
-            return Failure<Texture2DArrayPtr>(std::format("Failed to load texture \"{}\": {}", path, info_value.error().what()));
+            return Failure<Texture2DArrayPtr>(std::format("Failed to load texture \"{}\": {}", path, info_value.error().message));
         }
         if (info_value->Target.value_or(TextureTarget::Texture2DArray) != TextureTarget::Texture2DArray) {
             return Failure<Texture2DArrayPtr>(std::format("Failed to load texture \"{}\": Expected target 'Texture2DArray'", path));
@@ -399,9 +524,9 @@ namespace fow {
         if (!xml_str.has_value()) {
             return Failure<TextureCubeMapPtr>(std::format("Failed to load texture \"{}\": {}", path, xml_str.error().message));
         }
-        const auto info_value = rfl::xml::read<TextureInfo>(xml_str.value().as_std_str());
+        const auto info_value = ParseTextureInfo(xml_str.value().as_std_str());
         if (!info_value.has_value()) {
-            return Failure<TextureCubeMapPtr>(std::format("Failed to load texture \"{}\": {}", path, info_value.error().what()));
+            return Failure<TextureCubeMapPtr>(std::format("Failed to load texture \"{}\": {}", path, info_value.error().message));
         }
         if (info_value->Target.value_or(TextureTarget::TextureCubeMap) != TextureTarget::TextureCubeMap) {
             return Failure<TextureCubeMapPtr>(std::format("Failed to load texture \"{}\": Expected target 'TextureCubeMap'", path));

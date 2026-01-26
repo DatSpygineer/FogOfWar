@@ -5,6 +5,11 @@
 #include "fow/String.hpp"
 #include "fow/Result.hpp"
 
+#include <rfl.hpp>
+
+template<typename T>
+concept EnumType = std::is_enum_v<T>;
+
 namespace fow {
     template<IntegerType T>
     FOW_SHARED_API Result<T> StringToInt(const String& str, int radix = 0);
@@ -62,13 +67,20 @@ namespace fow {
             return Failure<T>(std::format("Failed to parse string \"{}\" to integer: {}", str, String { ex.what() }));
         }
     }
-
     template<FloatType T>
     Result<T> StringToFloat(const String& str) {
         try {
             return Success<T>(static_cast<T>(std::stod(str.as_std_str())));
         } catch (const std::exception& ex) {
             return Failure<T>(std::format("Failed to parse string \"{}\" to float: {}", str, String { ex.what() }));
+        }
+    }
+    template<EnumType T>
+    Result<T> StringToEnum(const String& str) {
+        if (const auto result = rfl::string_to_enum<T>(str); result.has_value()) {
+            return result;
+        } else {
+            return Failure<T>(result.error().what());
         }
     }
 }
