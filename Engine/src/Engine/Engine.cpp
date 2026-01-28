@@ -7,7 +7,7 @@
 #include "fow/Convar.hpp"
 #include "fow/GameState.hpp"
 
-#include "fow/Renderer/ThirdParty/stb_image.h"
+#include "SOIL2.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -20,13 +20,14 @@ namespace fow {
     static void UpdateVSync(const CVarPtr& self);
     static void UpdateLanguage(const CVarPtr& self);
     static Result<> QuitCommand(const Vector<String>& args);
+    static String s_window_title = "FogOfWar";
 
     const auto vid_resolution  = CVar::Create("vid_resolution",  glm::vec2(1280, 720), CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
     const auto vid_window_mode = CVar::Create("vid_window_mode", "Windowed",           CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateWindowMode);
     const auto vid_monitor_idx = CVar::Create("vid_monitor_idx", 0,                    CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMonitorIndex);
     const auto vid_vsync       = CVar::Create("vid_vsync",       false,                CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateVSync);
     const auto cl_lang         = CVar::Create("cl_lang",         "en_us",              CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateLanguage);
-    const auto quit            = CVar::Create("quit",                 QuitCommand,           CVarFlags::Default);
+    const auto quit            = CVar::Create("quit",            QuitCommand,          CVarFlags::Default);
 
     namespace Engine {
         static bool s_initialized = false;
@@ -180,6 +181,8 @@ namespace fow {
                 glfwTerminate();
                 return Failure(std::format("Failed to create window: \"{}\" (code {})", message, code));
             }
+
+            s_window_title = title;
             glfwMakeContextCurrent(s_window);
 
             if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
@@ -215,16 +218,16 @@ namespace fow {
 
             if ((GetResourcesPath() / "icon.png").exists()) {
                 int w, h;
-                const auto icon_data = stbi_load((GetResourcesPath() / "icon.png").as_cstr(), &w, &h, nullptr, 4);
+                const auto icon_data = SOIL_load_image((GetResourcesPath() / "icon.png").as_cstr(), &w, &h, nullptr, SOIL_LOAD_RGBA);
                 GLFWimage icon_image = {
                     w, h, icon_data
                 };
                 glfwSetWindowIcon(s_window, 1, &icon_image);
-                stbi_image_free(icon_data);
+                SOIL_free_image_data(icon_data);
             }
 
 #ifndef NDEBUG
-            const auto debug_title = std::format("{} | FogOfWar Engine - {}", glfwGetWindowTitle(s_window), GetVersion().to_string());
+            const auto debug_title = std::format("{} | FogOfWar Engine - {}", s_window_title, GetVersion().to_string());
             glfwSetWindowTitle(s_window, debug_title.c_str());
 #endif
 
@@ -323,7 +326,13 @@ namespace fow {
         }
 
         void SetWindowTitle(const String& title) {
+            s_window_title = title;
+#ifndef NDEBUG
+            const auto debug_title = std::format("{} | FogOfWar Engine - {}", s_window_title, GetVersion().to_string());
+            glfwSetWindowTitle(s_window, debug_title.c_str());
+#else
             glfwSetWindowTitle(s_window, title.as_cstr());
+#endif
         }
         void SetWindowPosition(const glm::ivec2& value) {
             glfwSetWindowPos(s_window, value.x, value.y);
@@ -332,7 +341,7 @@ namespace fow {
             glfwSetWindowSize(s_window, value.x, value.y);
         }
         String GetWindowTitle() {
-            return glfwGetWindowTitle(s_window);
+            return s_window_title;
         }
         glm::ivec2 GetWindowPosition() {
             glm::ivec2 result;
