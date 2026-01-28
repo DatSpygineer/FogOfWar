@@ -2,9 +2,6 @@
 #define FOW_RENDERER_MATERIAL_HPP
 
 #include "fow/Shared.hpp"
-#include "fow/String.hpp"
-#include "fow/StringConvertion.hpp"
-#include "fow/Assets.hpp"
 #include "fow/Renderer/Shader.hpp"
 
 namespace fow {

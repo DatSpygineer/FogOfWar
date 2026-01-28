@@ -1,4 +1,4 @@
-#include "fow/GameState.hpp"
+#include "fow/Shared/GameState.hpp"
 
 namespace fow {
     static int s_exit_code = 0;

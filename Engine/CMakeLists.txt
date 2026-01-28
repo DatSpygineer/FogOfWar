@@ -3,7 +3,6 @@ file(GLOB FOW_RENDERER_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Renderer/*.cpp ${CM
 file(GLOB FOW_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Engine/*.cpp)
 
 find_package(libzip CONFIG REQUIRED)
-find_package(glm REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(assimp REQUIRED)
@@ -11,6 +10,7 @@ find_package(Freetype REQUIRED)
 
 add_library(FogOfWarShared SHARED ${FOW_SHARED_SOURCES})
 target_include_directories(FogOfWarShared PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+target_compile_definitions(FogOfWarShared PUBLIC -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_CXX20)
 target_link_libraries(FogOfWarShared PUBLIC pugixml::pugixml reflectcpp::reflectcpp glm::glm libzip::zip nlohmann_json::nlohmann_json)
 add_library(FogOfWar::Shared ALIAS FogOfWarShared)
 

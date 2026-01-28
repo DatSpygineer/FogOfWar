@@ -1,15 +1,18 @@
 #ifndef FOW_STRING_HPP
 #define FOW_STRING_HPP
 
-#include "fow/Shared.hpp"
+#include "fow/Shared/Api.hpp"
+#include "fow/Shared/Aliases.hpp"
+#include "fow/Shared/MathHelper.hpp"
 
 #include <stdexcept>
+#include <string>
 #include <cstring>
 #include <filesystem>
 #include <format>
 #include <vector>
 
-#include <glm/glm.hpp>
+#include <nlohmann/json.hpp>
 #include <pugixml.hpp>
 
 namespace fow {

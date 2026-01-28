@@ -8,9 +8,6 @@
 #include <pugixml.hpp>
 
 #include "fow/Shared.hpp"
-#include "fow/String.hpp"
-#include "fow/Assets.hpp"
-#include "fow/Debug.hpp"
 #include "fow/Renderer/Texture.hpp"
 
 #define FOW_SHADER_PLACEHOLDER_ASSET_PATH "FOGOFWAR::Shaders/Null"

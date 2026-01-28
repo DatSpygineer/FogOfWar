@@ -11,6 +11,10 @@ This project is made out of 3 subprojects:
 To build this project you'll need CMake 3.25 or newer and a C++ compiler that supports C++ 23.<br>
 If you are using Windows, install [VCPKG](https://github.com/microsoft/vcpkg) as well.
 
+Recommended minimal compiler versions:
+- gcc 14
+- clang 18
+
 ### Dependencies
 Before compile, make sure you have the following libraries installed:
 - libzip

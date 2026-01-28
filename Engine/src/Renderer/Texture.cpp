@@ -1,5 +1,5 @@
 #include "fow/Renderer/Texture.hpp"
-#include "fow/StringConvertion.hpp"
+#include "fow/Shared/StringConvertion.hpp"
 
 #include "SOIL2.h"
 

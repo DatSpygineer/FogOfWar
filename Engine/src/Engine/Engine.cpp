@@ -1,11 +1,8 @@
 #include "fow/Engine.hpp"
+#include "fow/Engine/Convar.hpp"
+
 #include "fow/Renderer.hpp"
-
 #include <GLFW/glfw3.h>
-
-#include "fow/Lang.hpp"
-#include "fow/Convar.hpp"
-#include "fow/GameState.hpp"
 
 #include "SOIL2.h"
 
@@ -20,7 +17,6 @@ namespace fow {
     static void UpdateVSync(const CVarPtr& self);
     static void UpdateLanguage(const CVarPtr& self);
     static Result<> QuitCommand(const Vector<String>& args);
-    static String s_window_title = "FogOfWar";
 
     const auto vid_resolution  = CVar::Create("vid_resolution",  glm::vec2(1280, 720), CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
     const auto vid_window_mode = CVar::Create("vid_window_mode", "Windowed",           CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateWindowMode);
@@ -32,6 +28,8 @@ namespace fow {
     namespace Engine {
         static bool s_initialized = false;
         static GLFWwindow* s_window = nullptr;
+        static String s_window_title = "FogOfWar";
+        
         static Color s_background_color = { 0.25f, 0.25f, 0.25f };
         static SharedPtr<Game> s_game_class = nullptr;
         static Path s_base_path = Path::CurrentDir();

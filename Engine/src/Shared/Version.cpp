@@ -1,4 +1,4 @@
-#include "fow/Version.hpp"
+#include "fow/Shared/Version.hpp"
 
 namespace fow {
     String Version::to_string() const {

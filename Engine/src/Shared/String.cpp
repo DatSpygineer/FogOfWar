@@ -1,5 +1,6 @@
-#include "fow/String.hpp"
-#include "fow/StringConvertion.hpp"
+#include "fow/Shared/String.hpp"
+#include "fow/Shared/StringConvertion.hpp"
+#include "fow/Shared/PointerHelper.hpp"
 
 #include <sstream>
 
@@ -143,7 +144,7 @@ namespace fow {
     String& String::resize(const size_t capacity) {
         if (m_uCapacity < capacity) {
             if (m_pData != nullptr) {
-                m_pData = resize_ptr(m_pData, m_uCapacity, capacity + 1);
+                m_pData = ResizePtr(m_pData, m_uCapacity, capacity + 1);
                 m_pData[m_uSize] = '\0';
             } else {
                 m_pData = new char[capacity + 1];
@@ -156,7 +157,7 @@ namespace fow {
 
     String& String::shrink_to_fit() {
         if (m_pData != nullptr) {
-            m_pData = resize_ptr(m_pData, m_uSize, m_uSize + 1);
+            m_pData = ResizePtr(m_pData, m_uSize, m_uSize + 1);
             m_pData[m_uSize] = '\0';
             m_uCapacity = m_uSize;
         }

@@ -9,32 +9,18 @@ namespace fow {
         static auto s_proj_matrix = glm::mat4 { 1.0f };
         static Path s_base_path = Path::CurrentDir();
         static bool s_initialized = false;
-        static FT_Library s_ft_lib = nullptr;
 
         Result<> Initialize(const Path& app_base_path) {
             if (s_initialized) {
                 return Failure("Failed to initialize renderer: already initialized");
             }
 
-            if (s_ft_lib == nullptr) {
-                if (FT_Init_FreeType(&s_ft_lib) != FT_Err_Ok) {
-                    return Failure(std::format("Could not initialize FreeType library!"));
-                }
-            }
             s_base_path = app_base_path;
             s_initialized = true;
 
             return Success();
         }
         void Terminate() {
-            if (s_ft_lib != nullptr) {
-                FT_Done_FreeType(s_ft_lib);
-                s_ft_lib = nullptr;
-            }
-        }
-
-        FT_Library GetFreetypeLibrary() {
-            return s_ft_lib;
         }
 
         Path GetBasePath() {

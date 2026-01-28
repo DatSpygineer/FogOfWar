@@ -4,10 +4,9 @@
 #include <functional>
 
 #include "fow/Shared.hpp"
-#include "fow/String.hpp"
-#include "fow/Result.hpp"
-#include "fow/Version.hpp"
-#include "fow/KeyCodeWrapper.hpp"
+#include "fow/Shared/GameState.hpp"
+#include "fow/Engine/Convar.hpp"
+#include "fow/Engine/KeyCodeWrapper.hpp"
 
 namespace fow {
     enum class WindowMode {

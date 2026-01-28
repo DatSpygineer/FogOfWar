@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "fow/String.hpp"
+#include "fow/Shared/String.hpp"
 
 using namespace fow;
 namespace fs = std::filesystem;

@@ -1,7 +1,8 @@
 #ifndef FOW_COLLECTIONS_HPP
 #define FOW_COLLECTIONS_HPP
 
-#include "fow/Shared.hpp"
+#include "fow/Shared/Api.hpp"
+#include "fow/Shared/Aliases.hpp"
 
 namespace fow {
     namespace Collections {

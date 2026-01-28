@@ -1,5 +1,5 @@
-#include "fow/Lang.hpp"
-#include "fow/Assets.hpp"
+#include "fow/Shared/Lang.hpp"
+#include "fow/Shared/Assets.hpp"
 
 #include "rfl/json.hpp"
 

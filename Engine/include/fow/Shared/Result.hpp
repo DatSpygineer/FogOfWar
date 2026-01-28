@@ -5,8 +5,8 @@
 #include <source_location>
 #include <variant>
 
-#include "fow/Shared.hpp"
-#include "fow/String.hpp"
+#include "fow/Shared/Api.hpp"
+#include "fow/Shared/String.hpp"
 
 namespace fow {
     struct FOW_SHARED_API Error {

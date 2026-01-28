@@ -5,18 +5,10 @@
 #include <glm/glm.hpp>
 
 #include "fow/Shared.hpp"
-#include "fow/String.hpp"
-#include "fow/Assets.hpp"
-#include "fow/Transform.hpp"
 #include "fow/Renderer/Material.hpp"
 
 namespace fow {
-#ifdef _MSC_VER
-    #pragma pack(push, 1)
     struct FOW_RENDER_API Vertex {
-#else
-    struct FOW_RENDER_API __attribute__((__packed__)) Vertex {
-#endif
         glm::vec3 position;
         glm::vec3 normal;
         glm::vec2 uv;
@@ -30,9 +22,6 @@ namespace fow {
 
         static Vector<Vertex> CreateVertexArrayFromBuffers(const Vector<glm::vec3>& positions, const Vector<glm::vec3>& normals, const Vector<glm::vec2>& uvs);
     };
-#ifdef _MSC_VER
-    #pragma pack(pop)
-#endif
 
     enum class MeshDrawMode : GLenum {
         StaticDraw  = GL_STATIC_DRAW,

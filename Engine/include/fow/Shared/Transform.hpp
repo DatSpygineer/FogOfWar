@@ -1,7 +1,8 @@
 #ifndef FOW_TRANSFORM_HPP
 #define FOW_TRANSFORM_HPP
 
-#include "fow/Shared.hpp"
+#include "fow/Shared/Api.hpp"
+#include "fow/Shared/MathHelper.hpp"
 
 namespace fow {
     class FOW_SHARED_API Transform {

@@ -1,4 +1,4 @@
-#include "fow/Assets.hpp"
+#include "fow/Shared/Assets.hpp"
 
 namespace fow {
     ZipArchive::ZipArchive(const Path& archive_path) {
