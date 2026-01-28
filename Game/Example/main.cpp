@@ -41,6 +41,8 @@ class ExampleGame : public Game {
 
     float m_ambientLightStrength = 0.125f;
     glm::vec3 m_ambientLightColor = glm::vec3 { 1.0f, 1.0f, 1.0f };
+    glm::vec3 m_sunDir   = glm::vec3 { 0.0f, -1.0f, 0.0f };
+    glm::vec3 m_sunColor = glm::vec3 { 1.0 };
 public:
     ExampleGame() : Game() { }
 
@@ -70,6 +72,8 @@ public:
             Debug::Assert(mat->set_parameter("PhongExponent", m_fPhongExponent));
             Debug::Assert(mat->set_parameter("Environment.AmbientColor", m_ambientLightColor));
             Debug::Assert(mat->set_parameter("Environment.AmbientStrength", m_ambientLightStrength));
+            Debug::Assert(mat->set_parameter("Environment.SunDirection", m_sunDir));
+            Debug::Assert(mat->set_parameter("Environment.SunLightColor", m_sunColor));
             Debug::Assert(mat->set_parameter("Lights[0].Position", m_light1.position));
             Debug::Assert(mat->set_parameter("Lights[0].Color", m_light1.color));
             Debug::Assert(mat->set_parameter("Lights[0].Constant", m_light1.constant));
@@ -120,6 +124,8 @@ public:
         ImGui::SeparatorText("Environment Parameters");
             ImGui::SliderFloat("Ambient Strength", &m_ambientLightStrength, 0.0f, 1.0f);
             ImGui::ColorEdit3("Ambient Color", glm::value_ptr(m_ambientLightColor));
+            ImGui::InputFloat3("Sun Direction", glm::value_ptr(m_sunDir));
+            ImGui::ColorEdit3("Sun Color", glm::value_ptr(m_sunColor));
         ImGui::SeparatorText("Phong Parameters");
             ImGui::SliderFloat("Phong Strength", &m_fPhongStrength, 0.0f, 1.0f);
             ImGui::SliderFloat("Phong Exponent", &m_fPhongExponent, 0.0f, 1.0f);
