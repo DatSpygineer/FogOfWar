@@ -10,16 +10,19 @@ namespace fow {
     struct FOW_RENDER_API Vertex {
         glm::vec3 position;
         glm::vec3 normal;
+        glm::vec3 tangent;
+        glm::vec3 bitangent;
         glm::vec2 uv;
 
         Vertex(const Vertex& other) = default;
         Vertex(Vertex&& other) noexcept = default;
-        Vertex(const glm::vec3& position, const glm::vec3& normal, const glm::vec2& uv) : position(position), normal(normal), uv(uv) { }
+        Vertex(const glm::vec3& position, const glm::vec3& normal, const glm::vec3& tangent, const glm::vec3& bitangent, const glm::vec2& uv) :
+            position(position), normal(normal), tangent(tangent), bitangent(bitangent), uv(uv) { }
 
         Vertex& operator= (const Vertex& other) = default;
         Vertex& operator= (Vertex&& other) noexcept = default;
 
-        static Vector<Vertex> CreateVertexArrayFromBuffers(const Vector<glm::vec3>& positions, const Vector<glm::vec3>& normals, const Vector<glm::vec2>& uvs);
+        static Vector<Vertex> CreateVertexArrayFromBuffers(const Vector<glm::vec3>& positions, const Vector<glm::vec3>& normals, const Vector<glm::vec3>& tangents, const Vector<glm::vec3>& bitangents, const Vector<glm::vec2>& uvs);
     };
 
     enum class MeshDrawMode : GLenum {
@@ -142,10 +145,10 @@ namespace fow {
 
         void append(const Vertex& vertex);
         inline void append(const glm::vec3& position, const glm::vec2& uv) {
-            append(position, glm::vec3 { 0.0f, 1.0f, 0.0f }, uv);
+            append(position, glm::vec3 { 0.0f, 1.0f, 0.0f }, glm::vec3 { 0.0f, 1.0f, 0.0f }, glm::vec3 { 0.0f, 1.0f, 0.0f }, uv);
         }
-        inline void append(const glm::vec3& position, const glm::vec3& normal, const glm::vec2& uv) {
-            append(Vertex { position, normal, uv });
+        inline void append(const glm::vec3& position, const glm::vec3& normal, const glm::vec3& tangent, const glm::vec3& bitangent, const glm::vec2& uv) {
+            append(Vertex { position, normal, tangent, bitangent, uv });
         }
 
         Result<MeshPtr> create_mesh(MeshDrawMode draw_mode) const;

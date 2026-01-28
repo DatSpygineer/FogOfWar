@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Material shader="/Shaders/Phong3D.shader.xml">
     <Parameters>
-        <MainTexture>$DEFAULT_WHITE</MainTexture>
-        <SpecularMap>$DEFAULT_WHITE</SpecularMap>
-        <NormalMap>$DEFAULT_NORMAL</NormalMap>
+        <MainTexture>/Textures/test.texture.xml</MainTexture>
+        <SpecularMap>/Textures/test_s.texture.xml</SpecularMap>
+        <NormalMap>/Textures/test_n.texture.xml</NormalMap>
         <EnvMap>/Textures/cubemap_test.texture.xml</EnvMap>
+        <SelfIllumMask>/Textures/test_i.texture.xml</SelfIllumMask>
     </Parameters>
 </Material>
