@@ -1,20 +1,42 @@
 # Fog Of War Engine
-A game engine written in C++23, using OpenGL 4.6 core.
+A game engine written in C++23, using OpenGL 4.6 core profile.
+
+## Project sturcture
+This project is made out of 3 subprojects:
+- Shared (Code shared by the 2 other subproject.)
+- Renderer
+- Engine
 
 ## How to build
-### Windows
-*TODO*
-### Linux
-To build the project, you need CMake 3.30 or newer.<br>
+To build this project you'll need CMake 3.30 or newer and a C++ compiler that supports C++ 23.<br>
+If you are using Windows, install [VCPKG](https://github.com/microsoft/vcpkg) as well.
+
+### Dependencies
 Before compile, make sure you have the following libraries installed:
 - libzip
 - glm
 - glfw
 - assimp
 - freetype2
+- google test
 
-Install dependencies on Ubuntu/Debian:
+#### Install dependencies on Ubuntu/Debian:
 ```shell
-sudo apt install libzip-dev libglm-dev libglfw3-dev libfreetype-dev -y
+sudo apt install libzip-dev libglm-dev libglfw3-dev libfreetype-dev googletest -y
 ```
-Execute the shell script `build.sh`. You can use `--debug` argument to build the debug version.
+#### Install dependencies on Fedora:
+```shell
+sudo dnf install libzip glm-devel glfw assimp freetype gtest
+```
+#### Install dependencies on Arch:
+```shell
+# TODO
+```
+#### Install dependencies via VCPKG:
+```shell
+vcpkg install libzip glm glfw3 assimp freetype gtest
+```
+
+On Linux, execute the shell script `build.sh`, on Windows use `build.bat`. You can use `--debug` argument to build the debug version.
+
+**NOTE**: Windows is not supported at the moment.
