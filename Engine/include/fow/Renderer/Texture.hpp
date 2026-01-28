@@ -7,8 +7,6 @@
 #include <rfl/xml.hpp>
 
 #include "fow/Shared.hpp"
-#include "fow/String.hpp"
-#include "fow/Assets.hpp"
 
 #define FOW_TEXTURE_PLACEHOLDER_ASSET_PATH "FOGOFWAR::Textures/Null"
 #ifndef FOW_TEXTURE_PLACEHOLDER_SIZE

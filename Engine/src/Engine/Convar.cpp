@@ -1,9 +1,7 @@
 #include <fstream>
 
-#include "fow/Convar.hpp"
+#include "fow/Shared.hpp"
 #include "fow/Engine.hpp"
-#include "fow/Collections.hpp"
-#include "fow/Debug.hpp"
 
 #include <imgui.h>
 #include <ranges>

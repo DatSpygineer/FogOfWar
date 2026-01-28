@@ -1,10 +1,9 @@
 #ifndef FOW_ASSETS_HPP
 #define FOW_ASSETS_HPP
 
-#include "fow/Shared.hpp"
-#include "fow/String.hpp"
-#include "fow/Result.hpp"
-#include "fow/Debug.hpp"
+#include "fow/Shared/Api.hpp"
+#include "fow/Shared/String.hpp"
+#include "fow/Shared/Debug.hpp"
 
 #include <fstream>
 #include <any>

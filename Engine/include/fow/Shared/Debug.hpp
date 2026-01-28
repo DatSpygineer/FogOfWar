@@ -1,9 +1,9 @@
 #ifndef FOW_DEBUG_HPP
 #define FOW_DEBUG_HPP
 
-#include <fow/Shared.hpp>
-#include <fow/String.hpp>
-#include <fow/Result.hpp>
+#include "fow/Shared/Api.hpp"
+#include "fow/Shared/String.hpp"
+#include "fow/Shared/Result.hpp"
 
 #include <format>
 #include <functional>

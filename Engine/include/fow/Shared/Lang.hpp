@@ -2,8 +2,6 @@
 #define FOW_LANG_HPP
 
 #include "fow/Shared.hpp"
-#include "fow/String.hpp"
-#include "fow/Result.hpp"
 
 namespace fow {
     Result<> LoadLanguageFiles();

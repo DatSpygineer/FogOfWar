@@ -2,7 +2,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include "fow/StringConvertion.hpp"
+#include "fow/Shared/StringConvertion.hpp"
 
 namespace fow {
     static HashMap<String, String> s_built_in_shader_headers = { };

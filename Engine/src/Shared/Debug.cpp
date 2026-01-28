@@ -1,5 +1,5 @@
-#include "fow/Debug.hpp"
-#include "fow/GameState.hpp"
+#include "fow/Shared/Debug.hpp"
+#include "fow/Shared/GameState.hpp"
 
 #include <fstream>
 

@@ -1,9 +1,9 @@
 #ifndef FOW_STRING_CONVERTION_HPP
 #define FOW_STRING_CONVERTION_HPP
 
-#include "fow/Shared.hpp"
-#include "fow/String.hpp"
-#include "fow/Result.hpp"
+#include "fow/Shared/Api.hpp"
+#include "fow/Shared/String.hpp"
+#include "fow/Shared/Result.hpp"
 
 #include <rfl.hpp>
 
