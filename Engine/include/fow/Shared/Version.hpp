@@ -19,11 +19,11 @@ namespace fow {
         Version(const uint8_t major, const uint8_t minor, const uint8_t patch, const uint32_t build) : major(major), minor(minor), patch(patch), build(build) { }
 
     private:
-        constexpr uint64_t as_u64() const {
+        FOW_CONSTEXPR uint64_t as_u64() const {
             return (static_cast<uint64_t>(major << 24 | minor << 16 | patch << 8) << 32) | static_cast<uint64_t>(build);
         }
     public:
-        constexpr auto operator<=>(const Version& other) const {
+        FOW_CONSTEXPR auto operator<=>(const Version& other) const {
             return as_u64() <=> other.as_u64();
         }
 
@@ -33,7 +33,7 @@ namespace fow {
 
 template<>
 struct std::formatter<fow::Version> {
-    constexpr auto parse(std::format_parse_context& ctx) {
+    FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         return ctx.end();
     }
 

@@ -49,14 +49,14 @@ namespace fow {
         String& operator=(const String& str);
         String& operator=(String&& str) noexcept;
 
-        [[nodiscard]] constexpr size_t size()      const { return m_uSize; }
-        [[nodiscard]] constexpr size_t capacity()  const { return m_uCapacity; }
-        [[nodiscard]] constexpr const char* data() const { return m_pData; }
-        [[nodiscard]] constexpr char* data()             { return m_pData; }
-        [[nodiscard]] constexpr const char* as_cstr() const { return m_pData; }
+        [[nodiscard]] FOW_CONSTEXPR size_t size()      const { return m_uSize; }
+        [[nodiscard]] FOW_CONSTEXPR size_t capacity()  const { return m_uCapacity; }
+        [[nodiscard]] FOW_CONSTEXPR const char* data() const { return m_pData; }
+        [[nodiscard]] FOW_CONSTEXPR char* data()             { return m_pData; }
+        [[nodiscard]] FOW_CONSTEXPR const char* as_cstr() const { return m_pData; }
         [[nodiscard]] std::string as_std_str() const;
-        [[nodiscard]] constexpr bool is_empty() const { return m_pData == nullptr || m_pData[0] == '\0'; }
-        [[nodiscard]] constexpr bool is_nullptr() const { return m_pData == nullptr; }
+        [[nodiscard]] FOW_CONSTEXPR bool is_empty() const { return m_pData == nullptr || m_pData[0] == '\0'; }
+        [[nodiscard]] FOW_CONSTEXPR bool is_nullptr() const { return m_pData == nullptr; }
 
         [[nodiscard]] bool equals(const String& str, StringCompareType compare_type = StringCompareType::CaseSensitive) const;
         [[nodiscard]] bool equals_any(const std::initializer_list<String>& strs, StringCompareType compare_type = StringCompareType::CaseSensitive) const;
@@ -133,11 +133,11 @@ namespace fow {
         [[nodiscard]] inline bool operator==(const std::nullptr_t&) const { return m_pData == nullptr;  }
         [[nodiscard]] inline bool operator!=(const String& other) const { return !equals(other); }
         [[nodiscard]] inline bool operator!=(const std::nullptr_t&) const { return m_pData != nullptr;  }
-        [[nodiscard]] constexpr char& operator[] (const size_t idx) {
+        [[nodiscard]] FOW_CONSTEXPR char& operator[] (const size_t idx) {
             if (idx > m_uSize) throw std::out_of_range("Index out of range!");
             return m_pData[idx];
         }
-        [[nodiscard]] constexpr const char& operator[] (const size_t idx) const {
+        [[nodiscard]] FOW_CONSTEXPR const char& operator[] (const size_t idx) const {
             if (idx > m_uSize) throw std::out_of_range("Index out of range!");
             return m_pData[idx];
         }
@@ -165,8 +165,16 @@ namespace fow {
             return append(str);
         }
 
-        friend std::ostream& operator<< (std::ostream& os, const String& str);
-        friend std::istream& operator>> (std::istream& is, String& str);
+        inline friend std::ostream& operator<< (std::ostream& os, const String& str) {
+            os << str.as_std_str();
+            return os;
+        }
+        inline friend std::istream& operator>> (std::istream& is, String& str) {
+            std::string std_str;
+            is >> std_str;
+            str = std_str;
+            return is;
+        }
 
         [[nodiscard]] iterator begin();
         [[nodiscard]] const_iterator begin() const;
@@ -197,7 +205,7 @@ namespace fow {
         StringIterator(StringIterator&&) noexcept = default;
         StringIterator(String& obj, const size_t offset) : m_object(obj), m_uIndex(offset) { }
 
-        [[nodiscard]] constexpr size_t index() const { return m_uIndex; }
+        [[nodiscard]] FOW_CONSTEXPR size_t index() const { return m_uIndex; }
 
         inline StringIterator& operator++() {
             ++m_uIndex;
@@ -217,13 +225,13 @@ namespace fow {
             --m_uIndex;
             return tmp;
         }
-        constexpr bool operator==(const StringIterator& other) const {
+        FOW_CONSTEXPR bool operator==(const StringIterator& other) const {
             if (m_uIndex >= m_object.m_uSize) {
                 return other.m_uIndex >= m_object.m_uSize;
             }
             return m_uIndex == other.m_uIndex;
         }
-        constexpr bool operator!=(const StringIterator& other) const {
+        FOW_CONSTEXPR bool operator!=(const StringIterator& other) const {
             return !operator==(other);
         }
         inline char& operator*() const {
@@ -269,7 +277,7 @@ namespace fow {
         StringConstIterator(const String& obj, const size_t offset) : m_object(obj), m_uIndex(offset) { }
         StringConstIterator(const StringIterator& it) : m_object(it.m_object), m_uIndex(it.m_uIndex) { }
 
-        [[nodiscard]] constexpr size_t index() const { return m_uIndex; }
+        [[nodiscard]] FOW_CONSTEXPR size_t index() const { return m_uIndex; }
 
         inline StringConstIterator& operator++() {
             ++m_uIndex;
@@ -289,13 +297,13 @@ namespace fow {
             --m_uIndex;
             return tmp;
         }
-        constexpr bool operator==(const StringConstIterator& other) const {
+        FOW_CONSTEXPR bool operator==(const StringConstIterator& other) const {
             if (m_uIndex >= m_object.m_uSize) {
                 return other.m_uIndex >= m_object.m_uSize;
             }
             return m_uIndex == other.m_uIndex;
         }
-        constexpr bool operator!=(const StringConstIterator& other) const {
+        FOW_CONSTEXPR bool operator!=(const StringConstIterator& other) const {
             return !operator==(other);
         }
         inline const char& operator*() const {
@@ -352,17 +360,17 @@ namespace fow {
         [[nodiscard]] Path as_absolute(const Path& root) const;
         [[nodiscard]] Path as_relative() const;
         [[nodiscard]] Path as_relative(const Path& root) const;
-        [[nodiscard]] constexpr String& as_string() { return m_sPath; }
-        [[nodiscard]] constexpr const String& as_string() const { return m_sPath; }
-        [[nodiscard]] constexpr const char* as_cstr() const { return m_sPath.as_cstr(); }
+        [[nodiscard]] FOW_CONSTEXPR String& as_string() { return m_sPath; }
+        [[nodiscard]] FOW_CONSTEXPR const String& as_string() const { return m_sPath; }
+        [[nodiscard]] FOW_CONSTEXPR const char* as_cstr() const { return m_sPath.as_cstr(); }
 #if __cplusplus > 202002L
-        [[nodiscard]] constexpr std::string as_std_str() const { return m_sPath.as_std_str(); }
-        [[nodiscard]] constexpr std::filesystem::path as_std_path() const { return m_sPath.as_std_str(); }
+        [[nodiscard]] FOW_CONSTEXPR std::string as_std_str() const { return m_sPath.as_std_str(); }
+        [[nodiscard]] FOW_CONSTEXPR std::filesystem::path as_std_path() const { return m_sPath.as_std_str(); }
 #else
         [[nodiscard]] inline std::string as_std_str() const { return m_sPath.as_std_str(); }
         [[nodiscard]] inline std::filesystem::path as_std_path() const { return m_sPath.as_std_str(); }
 #endif
-        [[nodiscard]] constexpr bool is_empty() const { return m_sPath.is_empty(); }
+        [[nodiscard]] FOW_CONSTEXPR bool is_empty() const { return m_sPath.is_empty(); }
         [[nodiscard]] Vector<Path> list_dir() const;
         [[nodiscard]] Vector<Path> list_dir(const String& filter) const;
         [[nodiscard]] Vector<Path> list_dir(const std::initializer_list<String>& filters) const;
@@ -454,7 +462,7 @@ struct std::hash<fow::Path> {
 
 template<>
 struct std::formatter<glm::vec2> {
-    constexpr auto parse(std::format_parse_context& ctx) {
+    FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         return ctx.end();
     }
     inline auto format(const glm::vec2& value, std::format_context& ctx) const {
@@ -463,7 +471,7 @@ struct std::formatter<glm::vec2> {
 };
 template<>
 struct std::formatter<glm::vec3> {
-    constexpr auto parse(std::format_parse_context& ctx) {
+    FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         return ctx.end();
     }
     inline auto format(const glm::vec3& value, std::format_context& ctx) const {
@@ -472,7 +480,7 @@ struct std::formatter<glm::vec3> {
 };
 template<>
 struct std::formatter<glm::vec4> {
-    constexpr auto parse(std::format_parse_context& ctx) {
+    FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         return ctx.end();
     }
     inline auto format(const glm::vec4& value, std::format_context& ctx) const {
@@ -481,7 +489,7 @@ struct std::formatter<glm::vec4> {
 };
 template<>
 struct std::formatter<glm::quat> : std::formatter<glm::vec4> {
-    constexpr auto parse(std::format_parse_context& ctx) {
+    FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         return ctx.end();
     }
     inline auto format(const glm::quat& value, std::format_context& ctx) const {
@@ -494,7 +502,7 @@ struct std::formatter<fow::Color> : std::formatter<std::string> {
     fow::ColorFormat m_format = fow::ColorFormat::RgbaFloat;
     bool m_bHexLowerCase = false, m_bHexPrefix = true;
 
-    constexpr auto parse(std::format_parse_context& ctx) {
+    FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         auto it = ctx.begin();
         if (it == ctx.end()) {
             return it;

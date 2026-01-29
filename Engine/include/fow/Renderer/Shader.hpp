@@ -90,8 +90,8 @@ namespace fow {
             return *this;
         }
 
-        [[nodiscard]] constexpr GLuint id() const { return m_uProgram; }
-        [[nodiscard]] constexpr bool is_valid() const { return m_uProgram != 0; }
+        [[nodiscard]] FOW_CONSTEXPR GLuint id() const { return m_uProgram; }
+        [[nodiscard]] FOW_CONSTEXPR bool is_valid() const { return m_uProgram != 0; }
 
         void use() const;
         bool set_uniform(const String& name, bool value)               const; // NOLINT: Return type is not always used.

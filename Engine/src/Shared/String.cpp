@@ -2,6 +2,8 @@
 #include "fow/Shared/StringConvertion.hpp"
 #include "fow/Shared/PointerHelper.hpp"
 
+#include "fow/Shared/OsSpec.hpp"
+
 #include <sstream>
 
 #ifdef _WIN32
@@ -579,7 +581,7 @@ namespace fow {
 
     bool PathMatches(const std::filesystem::path& path, const std::string& pattern) {
 #ifdef _WIN32
-    #error TODO
+        return Win32PathSpec(path.string().c_str(), pattern.c_str());
 #else
         return fnmatch(pattern.c_str(), path.string().c_str(), 0) != FNM_NOMATCH;
 #endif
@@ -707,16 +709,16 @@ namespace fow {
     }
 
     Path& Path::to_absolute() {
-        m_sPath = std::filesystem::absolute(m_sPath.as_std_str());
+        m_sPath = std::filesystem::absolute(m_sPath.as_std_str()).string();
         return *this;
     }
 
     Path& Path::to_relative() {
-        m_sPath = std::filesystem::relative(m_sPath.as_std_str());
+        m_sPath = std::filesystem::relative(m_sPath.as_std_str()).string();
         return *this;
     }
     Path& Path::to_relative(const Path& root) {
-        m_sPath = std::filesystem::relative(m_sPath.as_std_str(), root.m_sPath.as_std_str());
+        m_sPath = std::filesystem::relative(m_sPath.as_std_str(), root.m_sPath.as_std_str()).string();
         return *this;
     }
 
@@ -796,7 +798,7 @@ namespace fow {
     }
     bool Path::matches(const String& pattern) const {
 #ifdef _WIN32
-        #error TODO
+        return Win32PathSpec(m_sPath.as_cstr(), pattern.as_cstr());
 #else
         return fnmatch(pattern.as_cstr(), m_sPath.as_cstr(), 0) != FNM_NOMATCH;
 #endif
@@ -1121,17 +1123,6 @@ namespace fow {
         } catch (const std::exception& ex) {
             return Failure(std::format("Failed to parse string \"{}\" to mat4: {}", str, ex.what()));
         }
-    }
-
-    std::ostream& operator<<(std::ostream& os, const String& str) {
-        os << str.as_std_str();
-        return os;
-    }
-    std::istream& operator>>(std::istream& is, String& str) {
-        std::string sstr;
-        is >> sstr;
-        str = sstr;
-        return is;
     }
 
     std::ostream& operator<<(std::ostream& os, const Path& path) {

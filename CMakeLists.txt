@@ -15,6 +15,7 @@ else()
 endif()
 
 if (WIN32)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
     include(vcpkg.cmake)
 endif()
 
@@ -84,6 +85,17 @@ macro(add_game TARGET_NAME)
         )
         add_dependencies(${TARGET_NAME} ${TARGET_NAME}_CopyResources)
     endif()
+
+    add_custom_target(${TARGET_NAME}_CopyLibs)
+    add_custom_command(
+        TARGET ${TARGET_NAME}_CopyLibs
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+                ${GAME_BASE_DIR}
+        VERBATIM
+    )
+    add_dependencies(${TARGET_NAME} ${TARGET_NAME}_CopyLibs)
 
     math(EXPR PAIR_COUNT "${ASSET_COUNT} / 2")
     if (${PAIR_COUNT} GREATER 0)

@@ -21,7 +21,7 @@ namespace fow {
         Model& operator= (const Model&) = default;
         Model& operator= (Model&&) noexcept = default;
 
-        [[nodiscard]] constexpr const Vector<MeshPtr>& meshes() const { return m_meshes; }
+        [[nodiscard]] FOW_CONSTEXPR const Vector<MeshPtr>& meshes() const { return m_meshes; }
 
         void draw() const;
         void draw(const Transform& transform) const;

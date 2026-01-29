@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include "fow/Renderer/Shader.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -699,8 +700,10 @@ namespace fow {
         }
 
         String name(1024);
-        GLenum type;
-        glGetActiveUniform(m_uProgram, location, 1024, nullptr, nullptr, &type, name.data());
+        GLenum type    = 0;
+        GLsizei length = 0;
+        GLsizei size   = 0;
+        glGetActiveUniform(m_uProgram, location, 1024, &length, &size, &type, name.data());
         name.recalculate_size();
 
         ShaderUniformInfo info;
@@ -729,7 +732,7 @@ namespace fow {
         }
         const char* vertex_cstr = processed_vertex.value().as_cstr();
         glShaderSource(vid, 1, &vertex_cstr, nullptr);
-        glCompileShaderIncludeARB(vid, 0, nullptr, nullptr);
+        glCompileShader(vid);
         glGetShaderiv(vid, GL_COMPILE_STATUS, &status);
         if (!status) {
             String info_log(2048);
@@ -752,7 +755,7 @@ namespace fow {
         }
         const char* fragment_cstr = processed_fragment.value().as_cstr();
         glShaderSource(fid, 1, &fragment_cstr, nullptr);
-        glCompileShaderIncludeARB(fid, 0, nullptr, nullptr);
+        glCompileShader(fid);
         glGetShaderiv(fid, GL_COMPILE_STATUS, &status);
         if (!status) {
             String info_log(2048);

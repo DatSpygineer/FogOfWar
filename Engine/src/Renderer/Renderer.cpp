@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include "fow/Renderer.hpp"
 
 #include <glm/gtx/transform.hpp>
@@ -10,12 +11,23 @@ namespace fow {
         static Path s_base_path = Path::CurrentDir();
         static bool s_initialized = false;
 
-        Result<> Initialize(const Path& app_base_path) {
+        Result<> Initialize(const Path& app_base_path, void* (*loader)(const char*)) {
             if (s_initialized) {
                 return Failure("Failed to initialize renderer: already initialized");
             }
 
             s_base_path = app_base_path;
+
+            if (loader != nullptr) {
+                if (!gladLoadGLLoader(loader)) {
+                    return Failure(std::format("Failed to initialize OpenGL: GL Error {}", glGetError()));
+                }
+            }
+
+            glEnable(GL_CULL_FACE);
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LESS);
+
             s_initialized = true;
 
             return Success();
@@ -87,6 +99,10 @@ namespace fow {
         }
         Rectangle GetViewport() {
             return s_viewport;
+        }
+        void Clear(const Color& color) {
+            glClearColor(color.r, color.g, color.b, color.a);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
     }
 }

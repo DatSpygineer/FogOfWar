@@ -1,7 +1,6 @@
 #ifndef FOW_RENDERER_MESH_HPP
 #define FOW_RENDERER_MESH_HPP
 
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 
 #include "fow/Shared.hpp"
@@ -109,14 +108,14 @@ namespace fow {
             return *this;
         }
 
-        [[nodiscard]] constexpr GLuint vao() const { return m_uVao; }
-        [[nodiscard]] constexpr GLuint vbo() const { return m_uVbo; }
-        [[nodiscard]] constexpr GLuint ebo() const { return m_uEbo; }
-        [[nodiscard]] constexpr GLsizei index_count() const { return m_iIndexCount; }
-        [[nodiscard]] constexpr bool is_valid() const { return m_uVao != 0 && m_uVbo != 0 && m_uEbo != 0; }
-        [[nodiscard]] constexpr MaterialPtr& material() { return m_pMaterial; }
-        [[nodiscard]] constexpr const MaterialPtr& material() const { return m_pMaterial; }
-        [[nodiscard]] constexpr MeshPrimitive primitive_type() const { return m_ePrimitive; }
+        [[nodiscard]] FOW_CONSTEXPR GLuint vao() const { return m_uVao; }
+        [[nodiscard]] FOW_CONSTEXPR GLuint vbo() const { return m_uVbo; }
+        [[nodiscard]] FOW_CONSTEXPR GLuint ebo() const { return m_uEbo; }
+        [[nodiscard]] FOW_CONSTEXPR GLsizei index_count() const { return m_iIndexCount; }
+        [[nodiscard]] FOW_CONSTEXPR bool is_valid() const { return m_uVao != 0 && m_uVbo != 0 && m_uEbo != 0; }
+        [[nodiscard]] FOW_CONSTEXPR MaterialPtr& material() { return m_pMaterial; }
+        [[nodiscard]] FOW_CONSTEXPR const MaterialPtr& material() const { return m_pMaterial; }
+        [[nodiscard]] FOW_CONSTEXPR MeshPrimitive primitive_type() const { return m_ePrimitive; }
 
         static Result<MeshPtr> Create(const MaterialPtr& material, const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, MeshPrimitive primitive = MeshPrimitive::Triangles, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
         static Result<MeshPtr> CreateQuad(const MaterialPtr& material, const glm::vec2& scale = glm::vec2(1.0f), MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
