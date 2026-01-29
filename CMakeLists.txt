@@ -6,10 +6,6 @@ project(FogOfWar)
 
 set(CMAKE_CXX_STANDARD 23)
 
-if (WIN32)
-    include(vcpkg.cmake)
-endif()
-
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 set(FOW_SCRIPTS_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/Scripts)

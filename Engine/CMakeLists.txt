@@ -2,11 +2,7 @@ file(GLOB FOW_SHARED_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Shared/*.cpp)
 file(GLOB FOW_RENDERER_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Renderer/*.cpp ${CMAKE_CURRENT_LIST_DIR}/src/Renderer/glad/*.c)
 file(GLOB FOW_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Engine/*.cpp)
 
-find_package(libzip CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(assimp REQUIRED)
-find_package(Freetype REQUIRED)
 
 add_library(FogOfWarShared SHARED ${FOW_SHARED_SOURCES})
 target_include_directories(FogOfWarShared PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
@@ -15,8 +11,8 @@ target_link_libraries(FogOfWarShared PUBLIC pugixml::pugixml reflectcpp::reflect
 add_library(FogOfWar::Shared ALIAS FogOfWarShared)
 
 add_library(FogOfWarRenderer SHARED ${FOW_RENDERER_SOURCES})
-target_include_directories(FogOfWarRenderer PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${ASSIMP_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
-target_link_libraries(FogOfWarRenderer PUBLIC FogOfWar::Shared soil2 ${ASSIMP_LIBRARIES} ${FREETYPE_LIBRARIES})
+target_include_directories(FogOfWarRenderer PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(FogOfWarRenderer PUBLIC FogOfWar::Shared soil2 assimp::assimp freetype)
 add_library(FogOfWar::Renderer ALIAS FogOfWarRenderer)
 
 add_library(FogOfWarEngine SHARED

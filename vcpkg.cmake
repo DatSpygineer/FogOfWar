@@ -1,7 +1,0 @@
-if (WIN32)
-    find_program(VCPKG_PATH NAMES vcpkg.exe)
-else()
-    find_program(VCPKG_PATH NAMES vcpkg)
-endif()
-get_filename_component(VCPKG_BASE_PATH ${VCPKG_PATH} DIRECTORY)
-include(${VCPKG_BASE_PATH}/scripts/buildsystems/vcpkg.cmake)
