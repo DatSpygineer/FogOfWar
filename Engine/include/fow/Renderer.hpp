@@ -19,7 +19,7 @@ namespace fow {
     };
 
     namespace Renderer {
-        FOW_RENDER_API Result<> Initialize(const Path& app_base_path);
+        FOW_RENDER_API Result<> Initialize(const Path& app_base_path, void* (*loader)(const char*));
         FOW_RENDER_API void Terminate();
         FOW_RENDER_API Path GetBasePath();
         FOW_RENDER_API void EnableBlend(bool enabled, BlendFactor src = BlendFactor::SrcAlpha, BlendFactor dst = BlendFactor::OneMinusSrcAlpha);
@@ -39,6 +39,7 @@ namespace fow {
         FOW_RENDER_API void SetViewport(const Rectangle& rect);
         FOW_RENDER_API void SetViewport(float x, float y, float width, float height);
         FOW_RENDER_API Rectangle GetViewport();
+        FOW_RENDER_API void Clear(const Color& color);
     }
 }
 

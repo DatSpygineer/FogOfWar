@@ -103,7 +103,7 @@ public:
         return "Example";
     }
     [[nodiscard]] Vector<String> game_data_archives() const override {
-        return Vector<String> { "Data.fwpak" };
+        return Vector<String> { "Data.pak" };
     }
     [[nodiscard]] Path base_data_path() const override {
         return Engine::GetGameBasePath() / "data";

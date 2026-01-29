@@ -4,7 +4,7 @@
 #include "fow/Shared.hpp"
 
 namespace fow {
-    Result<> LoadLanguageFiles();
+    FOW_SHARED_API Result<> LoadLanguageFiles();
 
     FOW_SHARED_API Result<> SetLanguage(const String& lang);
     FOW_SHARED_API String GetCurrentLanguage();

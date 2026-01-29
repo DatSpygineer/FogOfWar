@@ -89,21 +89,21 @@ namespace fow {
             return *this;
         }
 
-        [[nodiscard]] constexpr const ShaderPtr& shader() const { return m_pShader; }
+        [[nodiscard]] FOW_CONSTEXPR const ShaderPtr& shader() const { return m_pShader; }
 
         void set_opaque(bool value);
-        constexpr bool get_opaque() const { return m_options.opaque; }
+        FOW_CONSTEXPR bool get_opaque() const { return m_options.opaque; }
         void set_backface_culling(bool value);
-        constexpr bool get_backface_culling() const { return m_options.backface_culling; }
+        FOW_CONSTEXPR bool get_backface_culling() const { return m_options.backface_culling; }
         void set_depth_test(bool value);
-        constexpr bool get_depth_test() const { return m_options.depth_test; }
+        FOW_CONSTEXPR bool get_depth_test() const { return m_options.depth_test; }
 
         Result<> set_parameter(const String& name, const MaterialParameterValue& value);
         Result<> get_parameter(const String& name, MaterialParameterValue& value) const;
 
         Result<> apply() const;
 
-        [[nodiscard]] constexpr bool is_valid() const { return m_pShader != nullptr; }
+        [[nodiscard]] FOW_CONSTEXPR bool is_valid() const { return m_pShader != nullptr; }
 
         static Result<MaterialPtr> ParseXml(const String& source_asset_path, const String& xml_src, AssetLoaderFlags::Type flags);
         static Result<MaterialPtr> ParseXml(const String& source, const pugi::xml_document& doc, AssetLoaderFlags::Type flags);

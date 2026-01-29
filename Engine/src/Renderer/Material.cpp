@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include "fow/Renderer/Material.hpp"
 
 namespace fow {
@@ -1176,228 +1177,233 @@ namespace fow {
 
         if (auto params_node = root.child("Parameters")) {
             for (const auto& child : params_node.children()) {
-                if (const auto uniform_info = shader->get_uniform_info(child.name()); uniform_info.has_value()) {
-                    switch (uniform_info->type) {
-                        case ShaderUniformType::Bool: {
-                            if (const auto result = StringToBool(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::BoolVector2: {
-                            if (const auto result = StringToBVec2(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::BoolVector3: {
-                            if (const auto result = StringToBVec3(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::Int: {
-                            if (const auto result = StringToInt<GLint>(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::IntVector2: {
-                            if (const auto result = StringToIVec2(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::IntVector3: {
-                            if (const auto result = StringToIVec3(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::IntVector4: {
-                            if (const auto result = StringToIVec4(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::UInt: {
-                            if (const auto result = StringToInt<GLuint>(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::UIntVector2: {
-                            if (const auto result = StringToUVec2(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::UIntVector3: {
-                            if (const auto result = StringToUVec3(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::UIntVector4: {
-                            if (const auto result = StringToUVec4(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::Float: {
-                            if (const auto result = StringToFloat<GLfloat>(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::FloatVector2: {
-                            if (const auto result = StringToVec2(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::FloatVector3: {
-                            if (const auto result = StringToVec3(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::FloatVector4: {
-                            if (const auto value = String(child.child_value()).clone_trimmed(); value.starts_with('#')) {
-                                if (const auto result = StringToInt<uint32_t>(value); result.has_value()) {
-                                    const uint32_t rgba = result.value();
-                                    params.emplace(child.name(), glm::vec4 {
-                                                       ((rgba >> 24) & 0xFF) / 255.0f,
-                                                       ((rgba >> 16) & 0xFF) / 255.0f,
-                                                       ((rgba >> 8 ) & 0xFF) / 255.0f,
-                                                       (rgba & 0xFF)         / 255.0f
-                                                   });
-                                } else {
-                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                                }
-                            } else {
-                                if (const auto result = StringToVec4(value); result.has_value()) {
+                if (const char* param_name = child.name(); param_name != nullptr) {
+                    if (const auto uniform_info = shader->get_uniform_info(child.name()); uniform_info.has_value()) {
+                        switch (uniform_info->type) {
+                            case ShaderUniformType::Bool: {
+                                if (const auto result = StringToBool(child.child_value()); result.has_value()) {
                                     params.emplace(child.name(), result.value());
                                 } else {
                                     Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
                                 }
-                            }
-                        } break;
-                        case ShaderUniformType::Double: {
-                            if (const auto result = StringToFloat<GLdouble>(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::DoubleVector2: {
-                            if (const auto result = StringToDVec2(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::DoubleVector3: {
-                            if (const auto result = StringToDVec3(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::DoubleVector4: {
-                            if (const auto result = StringToDVec4(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::Matrix4: {
-                            if (const auto result = StringToMat4(child.child_value()); result.has_value()) {
-                                params.emplace(child.name(), result.value());
-                            } else {
-                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
-                            }
-                        } break;
-                        case ShaderUniformType::Sampler2D: {
-                            const char* texture_path = child.child_value();
-                            if (strcmp(texture_path, "$DEFAULT_WHITE") == 0) {
-                                params.emplace(child.name(), Texture::DefaultWhite());
-                            } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
-                                params.emplace(child.name(), Texture::DefaultBlack());
-                            } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
-                                params.emplace(child.name(), Texture::DefaultNormal());
-                            } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
-                                params.emplace(child.name(), Texture::PlaceHolder());
-                            } else {
-                                const auto texture_result = Assets::Load<Texture2D>(texture_path, flags);
-                                if (texture_result.has_value()) {
-                                    params.emplace(child.name(), texture_result.value().ptr());
+                            } break;
+                            case ShaderUniformType::BoolVector2: {
+                                if (const auto result = StringToBVec2(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
                                 } else {
-                                    params.emplace(child.name(), Texture::PlaceHolder());
-                                    Debug::LogError(std::format("Failed to load texture \"{}\" for parameter \"{}\":\n", child.child_value(), source, texture_result.error().message));
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
                                 }
-                            }
-                        } break;
-                        case ShaderUniformType::Sampler2DArray: {
-                            const char* texture_path = child.child_value();
-                            if (strcmp(texture_path, "$DEFAULT_WHITE") == 0) {
-                                params.emplace(child.name(), Texture::DefaultWhite());
-                            } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
-                                params.emplace(child.name(), Texture::DefaultBlack());
-                            } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
-                                params.emplace(child.name(), Texture::DefaultNormal());
-                            } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
-                                params.emplace(child.name(), Texture::PlaceHolder());
-                            } else {
-                                const auto texture_result = Assets::Load<Texture2DArray>(texture_path, flags);
-                                if (texture_result.has_value()) {
-                                    params.emplace(child.name(), texture_result.value().ptr());
+                            } break;
+                            case ShaderUniformType::BoolVector3: {
+                                if (const auto result = StringToBVec3(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
                                 } else {
-                                    params.emplace(child.name(), Texture::PlaceHolder());
-                                    Debug::LogError(std::format("Failed to load texture \"{}\" for parameter \"{}\":\n{}", child.child_value(), source, texture_result.error().message));
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
                                 }
-                            }
-                        } break;
-                        case ShaderUniformType::SamplerCube: {
-                            const char* texture_path = child.child_value();
-                            if (strcmp(texture_path, "$DEFAULT_WHITE") == 0) {
-                                params.emplace(child.name(), Texture::DefaultWhite());
-                            } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
-                                params.emplace(child.name(), Texture::DefaultBlack());
-                            } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
-                                params.emplace(child.name(), Texture::DefaultNormal());
-                            } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
-                                params.emplace(child.name(), Texture::PlaceHolder());
-                            } else {
-                                const auto texture_result = Assets::Load<TextureCubeMap>(texture_path, flags);
-                                if (texture_result.has_value()) {
-                                    params.emplace(child.name(), texture_result.value().ptr());
+                            } break;
+                            case ShaderUniformType::Int: {
+                                if (const auto result = StringToInt<GLint>(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
                                 } else {
-                                    params.emplace(child.name(), Texture::PlaceHolder());
-                                    Debug::LogError(std::format("Failed to load texture \"{}\" for parameter \"{}\":\n{}", child.child_value(), source, texture_result.error().message));
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
                                 }
-                            }
-                        } break;
-                        default: {
-                            Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Uniform type \"{}\" is not supported!", child.name(), source, uniform_info->type));
-                        } break;
+                            } break;
+                            case ShaderUniformType::IntVector2: {
+                                if (const auto result = StringToIVec2(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::IntVector3: {
+                                if (const auto result = StringToIVec3(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::IntVector4: {
+                                if (const auto result = StringToIVec4(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::UInt: {
+                                if (const auto result = StringToInt<GLuint>(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::UIntVector2: {
+                                if (const auto result = StringToUVec2(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::UIntVector3: {
+                                if (const auto result = StringToUVec3(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::UIntVector4: {
+                                if (const auto result = StringToUVec4(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::Float: {
+                                if (const auto result = StringToFloat<GLfloat>(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::FloatVector2: {
+                                if (const auto result = StringToVec2(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::FloatVector3: {
+                                if (const auto result = StringToVec3(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::FloatVector4: {
+                                if (const auto value = String(child.child_value()).clone_trimmed(); value.starts_with('#')) {
+                                    if (const auto result = StringToInt<uint32_t>(value); result.has_value()) {
+                                        const uint32_t rgba = result.value();
+                                        params.emplace(child.name(), glm::vec4 {
+                                                           ((rgba >> 24) & 0xFF) / 255.0f,
+                                                           ((rgba >> 16) & 0xFF) / 255.0f,
+                                                           ((rgba >> 8 ) & 0xFF) / 255.0f,
+                                                           (rgba & 0xFF)         / 255.0f
+                                                       });
+                                    } else {
+                                        Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                    }
+                                } else {
+                                    if (const auto result = StringToVec4(value); result.has_value()) {
+                                        params.emplace(child.name(), result.value());
+                                    } else {
+                                        Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                    }
+                                }
+                            } break;
+                            case ShaderUniformType::Double: {
+                                if (const auto result = StringToFloat<GLdouble>(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::DoubleVector2: {
+                                if (const auto result = StringToDVec2(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::DoubleVector3: {
+                                if (const auto result = StringToDVec3(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::DoubleVector4: {
+                                if (const auto result = StringToDVec4(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::Matrix4: {
+                                if (const auto result = StringToMat4(child.child_value()); result.has_value()) {
+                                    params.emplace(child.name(), result.value());
+                                } else {
+                                    Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Failed to parse data: \"{}\"!", child.name(), source, uniform_info->type, result.error().message));
+                                }
+                            } break;
+                            case ShaderUniformType::Sampler2D: {
+                                const char* texture_path = child.child_value();
+                                if (strcmp(texture_path, "$DEFAULT_WHITE") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultWhite());
+                                } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultBlack());
+                                } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultNormal());
+                                } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
+                                    params.emplace(child.name(), Texture::PlaceHolder());
+                                } else {
+                                    const auto texture_result = Assets::Load<Texture2D>(texture_path, flags);
+                                    if (texture_result.has_value()) {
+                                        params.emplace(child.name(), texture_result.value().ptr());
+                                    } else {
+                                        params.emplace(child.name(), Texture::PlaceHolder());
+                                        Debug::LogError(std::format("Failed to load texture \"{}\" for parameter \"{}\":\n", child.child_value(), source, texture_result.error().message));
+                                    }
+                                }
+                            } break;
+                            case ShaderUniformType::Sampler2DArray: {
+                                const char* texture_path = child.child_value();
+                                if (strcmp(texture_path, "$DEFAULT_WHITE") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultWhite());
+                                } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultBlack());
+                                } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultNormal());
+                                } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
+                                    params.emplace(child.name(), Texture::PlaceHolder());
+                                } else {
+                                    const auto texture_result = Assets::Load<Texture2DArray>(texture_path, flags);
+                                    if (texture_result.has_value()) {
+                                        params.emplace(child.name(), texture_result.value().ptr());
+                                    } else {
+                                        params.emplace(child.name(), Texture::PlaceHolder());
+                                        Debug::LogError(std::format("Failed to load texture \"{}\" for parameter \"{}\":\n{}", child.child_value(), source, texture_result.error().message));
+                                    }
+                                }
+                            } break;
+                            case ShaderUniformType::SamplerCube: {
+                                const char* texture_path = child.child_value();
+                                if (strcmp(texture_path, "$DEFAULT_WHITE") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultWhite());
+                                } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultBlack());
+                                } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultNormal());
+                                } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
+                                    params.emplace(child.name(), Texture::PlaceHolder());
+                                } else {
+                                    const auto texture_result = Assets::Load<TextureCubeMap>(texture_path, flags);
+                                    if (texture_result.has_value()) {
+                                        params.emplace(child.name(), texture_result.value().ptr());
+                                    } else {
+                                        params.emplace(child.name(), Texture::PlaceHolder());
+                                        Debug::LogError(std::format("Failed to load texture \"{}\" for parameter \"{}\":\n{}", child.child_value(), source, texture_result.error().message));
+                                    }
+                                }
+                            } break;
+                            default: {
+                                Debug::LogError(std::format("Ignoring parameter \"{}\" in material \"{}\": Uniform type \"{}\" is not supported!", child.name(), source, uniform_info->type));
+                            } break;
+                        }
+                    } else {
+                        Debug::LogWarning(std::format("Ignoring parameter \"{}\" in material \"{}\": Shader \"{}\" has no such uniform!", child.name(), source, shader_attrib.value()));
                     }
                 } else {
-                    Debug::LogWarning(std::format("Ignoring parameter \"{}\" in material \"{}\": Shader \"{}\" has no such uniform!", child.name(), source, shader_attrib.value()));
+                    Debug::LogError(std::format("Material XML document \"{}\" is potentially corrupted!", source));
+
                 }
             }
         }

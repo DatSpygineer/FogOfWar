@@ -12,14 +12,14 @@ concept EnumType = std::is_enum_v<T>;
 
 namespace fow {
     template<IntegerType T>
-    FOW_SHARED_API Result<T> StringToInt(const String& str, int radix = 0);
+    Result<T> StringToInt(const String& str, int radix = 0);
     template<FloatType T>
-    FOW_SHARED_API Result<T> StringToFloat(const String& str);
+    Result<T> StringToFloat(const String& str);
     FOW_SHARED_API Result<bool> StringToBool(const String& str);
 
-    FOW_SHARED_API Result<glm::vec2> StringToVec2(const String& str);
-    FOW_SHARED_API Result<glm::vec3> StringToVec3(const String& str);
-    FOW_SHARED_API Result<glm::vec4> StringToVec4(const String& str);
+    FOW_SHARED_API Result<glm::vec2>  StringToVec2 (const String& str);
+    FOW_SHARED_API Result<glm::vec3>  StringToVec3 (const String& str);
+    FOW_SHARED_API Result<glm::vec4>  StringToVec4 (const String& str);
     FOW_SHARED_API Result<glm::bvec2> StringToBVec2(const String& str);
     FOW_SHARED_API Result<glm::bvec3> StringToBVec3(const String& str);
     FOW_SHARED_API Result<glm::bvec4> StringToBVec4(const String& str);
@@ -32,10 +32,10 @@ namespace fow {
     FOW_SHARED_API Result<glm::dvec2> StringToDVec2(const String& str);
     FOW_SHARED_API Result<glm::dvec3> StringToDVec3(const String& str);
     FOW_SHARED_API Result<glm::dvec4> StringToDVec4(const String& str);
-    FOW_SHARED_API Result<glm::mat4> StringToMat4(const String& str);
+    FOW_SHARED_API Result<glm::mat4>  StringToMat4 (const String& str);
 
     template<IntegerType T>
-    Result<T> StringToInt(const String& str, int radix)  {
+    inline Result<T> StringToInt(const String& str, int radix)  {
         size_t offset = 0;
         if (radix == 0) {
             if (str.starts_with("0x", StringCompareType::CaseInsensitive)) {
@@ -68,7 +68,7 @@ namespace fow {
         }
     }
     template<FloatType T>
-    Result<T> StringToFloat(const String& str) {
+    inline Result<T> StringToFloat(const String& str) {
         try {
             return Success<T>(static_cast<T>(std::stod(str.as_std_str())));
         } catch (const std::exception& ex) {
@@ -76,7 +76,7 @@ namespace fow {
         }
     }
     template<EnumType T>
-    Result<T> StringToEnum(const String& str) {
+    inline Result<T> StringToEnum(const String& str) {
         if (const auto result = rfl::string_to_enum<T>(str); result.has_value()) {
             return result;
         } else {

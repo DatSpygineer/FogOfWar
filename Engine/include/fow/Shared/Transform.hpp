@@ -10,39 +10,39 @@ namespace fow {
         glm::quat m_rotation;
         Transform* m_pParent;
     public:
-        constexpr Transform() :
+        FOW_CONSTEXPR Transform() :
             m_position(glm::vec3 { 0.0f }), m_scale(glm::vec3 { 1.0f }), m_rotation(glm::quat { 1.0f, 0.0f, 0.0f, 0.0f }), m_pParent(nullptr) { }
-        constexpr Transform(const glm::vec3& position, const glm::vec3& scale, const glm::quat& rotation, Transform* parent = nullptr) :
+        FOW_CONSTEXPR Transform(const glm::vec3& position, const glm::vec3& scale, const glm::quat& rotation, Transform* parent = nullptr) :
             m_position(position), m_scale(scale), m_rotation(rotation), m_pParent(parent) { }
-        constexpr Transform(const Transform& transform) = default;
-        constexpr Transform(Transform&& transform) noexcept = default;
-        constexpr Transform(const Transform& transform, Transform* parent) : Transform(transform) {
+        FOW_CONSTEXPR Transform(const Transform& transform) = default;
+        FOW_CONSTEXPR Transform(Transform&& transform) noexcept = default;
+        FOW_CONSTEXPR Transform(const Transform& transform, Transform* parent) : Transform(transform) {
             m_pParent = parent;
         }
-        constexpr Transform(Transform&& transform, Transform* parent) : Transform(std::forward<Transform>(transform)) {
+        FOW_CONSTEXPR Transform(Transform&& transform, Transform* parent) : Transform(std::forward<Transform>(transform)) {
             m_pParent = parent;
         }
 
         Transform with_parent(Transform* parent) const;
 
-        [[nodiscard]] constexpr const Transform* get_parent() const { return m_pParent; }
+        [[nodiscard]] FOW_CONSTEXPR const Transform* get_parent() const { return m_pParent; }
         void set_parent(Transform* parent);
-        [[nodiscard]] constexpr glm::vec3 get_position() const {
+        [[nodiscard]] FOW_CONSTEXPR glm::vec3 get_position() const {
             return m_pParent != nullptr ? (m_pParent->get_position() + m_position) : m_position;
         }
-        [[nodiscard]] constexpr glm::vec3 get_local_position() const {
+        [[nodiscard]] FOW_CONSTEXPR glm::vec3 get_local_position() const {
             return m_position;
         }
-        [[nodiscard]] constexpr glm::vec3 get_scale() const {
+        [[nodiscard]] FOW_CONSTEXPR glm::vec3 get_scale() const {
             return m_pParent != nullptr ? (m_pParent->get_scale() + m_scale) : m_scale;
         }
-        [[nodiscard]] constexpr glm::vec3 get_local_scale() const {
+        [[nodiscard]] FOW_CONSTEXPR glm::vec3 get_local_scale() const {
             return m_scale;
         }
-        [[nodiscard]] constexpr glm::quat get_rotation() const {
+        [[nodiscard]] FOW_CONSTEXPR glm::quat get_rotation() const {
             return m_pParent != nullptr ? (m_pParent->get_rotation() + m_rotation) : m_rotation;
         }
-        [[nodiscard]] constexpr glm::quat get_local_rotation() const {
+        [[nodiscard]] FOW_CONSTEXPR glm::quat get_local_rotation() const {
             return m_rotation;
         }
 
@@ -80,7 +80,7 @@ namespace fow {
         }
         void set_rotation(const glm::quat& rotation);
 
-        [[nodiscard]] constexpr glm::mat4 matrix() const {
+        [[nodiscard]] FOW_CONSTEXPR glm::mat4 matrix() const {
             auto matrix = glm::mat4 { 1.0f };
             matrix = glm::translate(matrix, get_position());
             matrix *= glm::toMat4(get_rotation());

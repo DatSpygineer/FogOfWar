@@ -43,7 +43,7 @@ namespace fow {
         inline void LogFatal(const String& message, const std::source_location& location = std::source_location::current()) {
             Log(LogLevel::Fatal, message, location);
         }
-        bool Assert(bool condition, const String& fail_message, const std::source_location& location = std::source_location::current());
+        FOW_SHARED_API bool Assert(bool condition, const String& fail_message, const std::source_location& location = std::source_location::current());
         template<typename T = std::monostate>
         inline bool Assert(const Result<T>& result) {
             if (!result.has_value()) {
@@ -52,7 +52,7 @@ namespace fow {
             }
             return true;
         }
-        bool AssertFatal(bool condition, const String& fail_message, const std::source_location& location = std::source_location::current());
+        FOW_SHARED_API bool AssertFatal(bool condition, const String& fail_message, const std::source_location& location = std::source_location::current());
         template<typename T = std::monostate>
         inline bool AssertFatal(const Result<T>& result) {
             if (!result.has_value()) {

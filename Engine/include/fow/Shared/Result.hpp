@@ -23,25 +23,25 @@ namespace fow {
     using Option = std::optional<T>;
 
     template<typename T>
-    constexpr Option<T> Some(const T& value) { return std::make_optional(value); }
+    FOW_CONSTEXPR Option<T> Some(const T& value) { return std::make_optional(value); }
     template<typename T>
-    constexpr Option<T> Some(T&& value) noexcept { return std::make_optional(std::forward<T>(value)); }
-    constexpr auto None() { return std::nullopt; }
+    FOW_CONSTEXPR Option<T> Some(T&& value) noexcept { return std::make_optional(std::forward<T>(value)); }
+    FOW_CONSTEXPR auto None() { return std::nullopt; }
 
     template<typename T = std::monostate>
     using Result = std::expected<T, Error>;
 
-    constexpr Result<> Success() { return Result(std::monostate { }); }
+    FOW_CONSTEXPR Result<> Success() { return Result(std::monostate { }); }
     template<typename T>
-    constexpr Result<T> Success(const T& value) { return Result<T>(value); }
+    FOW_CONSTEXPR Result<T> Success(const T& value) { return Result<T>(value); }
     template<typename T>
-    constexpr Result<T> Success(T&& value) noexcept { return Result<T>(std::forward<T>(value)); }
+    FOW_CONSTEXPR Result<T> Success(T&& value) noexcept { return Result<T>(std::forward<T>(value)); }
     template<typename T = std::monostate>
-    constexpr Result<T> Failure(const String& message, const std::source_location& location = std::source_location::current()) { return std::unexpected(Error(message, location)); }
+    FOW_CONSTEXPR Result<T> Failure(const String& message, const std::source_location& location = std::source_location::current()) { return std::unexpected(Error(message, location)); }
     template<typename T = std::monostate>
-    constexpr Result<T> Failure(const Error& error) { return std::unexpected(error); }
+    FOW_CONSTEXPR Result<T> Failure(const Error& error) { return std::unexpected(error); }
     template<typename T = std::monostate>
-    constexpr Result<T> Failure(Error&& error) { return std::unexpected(std::forward<T>(error)); }
+    FOW_CONSTEXPR Result<T> Failure(Error&& error) { return std::unexpected(std::forward<T>(error)); }
 }
 
 #endif

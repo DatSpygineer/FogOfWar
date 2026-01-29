@@ -182,15 +182,11 @@ namespace fow {
 
             s_window_title = title;
             glfwMakeContextCurrent(s_window);
-
-            if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-                const auto error = glGetError();
+            if (const auto result = Renderer::Initialize(s_base_path, reinterpret_cast<GLADloadproc>(glfwGetProcAddress)); !result.has_value()) {
                 glfwDestroyWindow(s_window);
                 glfwTerminate();
-                return Failure(std::format("Failed to initialize OpenGL: GL error {}", error));
+                return Failure(result.error());
             }
-
-            Debug::AssertFatal(Renderer::Initialize(s_base_path));
             Renderer::EnableBlend(true);
             Renderer::SetViewport(0.0f, 0.0f, resolution.x, resolution.y);
             glfwSetWindowSizeCallback(s_window, [](GLFWwindow* window, const int width, const int height) {
@@ -209,10 +205,6 @@ namespace fow {
 
             ImGui_ImplGlfw_InitForOpenGL(s_window, true);
             ImGui_ImplOpenGL3_Init("#version 330 core");
-
-            glEnable(GL_CULL_FACE);
-            glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_LESS);
 
             if ((GetResourcesPath() / "icon.png").exists()) {
                 int w, h;
@@ -273,8 +265,7 @@ namespace fow {
                 ImGui::Render();
                 int display_w, display_h;
                 glfwGetFramebufferSize(s_window, &display_w, &display_h);
-                glClearColor(s_background_color.r, s_background_color.g, s_background_color.b, s_background_color.a);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                Renderer::Clear(s_background_color);
 
                 if (s_game_class != nullptr) {
                     s_game_class->on_render(time - last_time);

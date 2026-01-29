@@ -126,8 +126,8 @@ namespace fow {
             return *this;
         }
 
-        [[nodiscard]] constexpr GLuint id() const { return m_uId; }
-        [[nodiscard]] constexpr bool is_valid() const { return m_uId != 0; }
+        [[nodiscard]] FOW_CONSTEXPR GLuint id() const { return m_uId; }
+        [[nodiscard]] FOW_CONSTEXPR bool is_valid() const { return m_uId != 0; }
         ABSTRACT(TextureTarget target() const);
 
         [[nodiscard]] GLsizei width() const;
@@ -173,7 +173,7 @@ namespace fow {
         Texture2D& operator= (const Texture2D& other) = default;
         Texture2D& operator= (Texture2D&& other) noexcept = default;
 
-        [[nodiscard]] constexpr TextureTarget target() const override { return TextureTarget::Texture2D; }
+        [[nodiscard]] FOW_CONSTEXPR TextureTarget target() const override { return TextureTarget::Texture2D; }
 
         static Result<Texture2DPtr> Load(const TextureInfo& info);
         static Result<Texture2DPtr> LoadFromMemory(const Vector<uint8_t>& data, const TextureInfo& info);
@@ -193,7 +193,7 @@ namespace fow {
         Texture2DArray& operator= (const Texture2DArray& other) = default;
         Texture2DArray& operator= (Texture2DArray&& other) noexcept = default;
 
-        [[nodiscard]] constexpr TextureTarget target() const override { return TextureTarget::Texture2DArray; }
+        [[nodiscard]] FOW_CONSTEXPR TextureTarget target() const override { return TextureTarget::Texture2DArray; }
 
         static Result<Texture2DArrayPtr> Load(const TextureInfo& info);
         static Result<Texture2DArrayPtr> LoadFromMemory(const Vector<uint8_t>& data, const TextureInfo& info);
@@ -213,7 +213,7 @@ namespace fow {
         TextureCubeMap& operator= (const TextureCubeMap& other) = default;
         TextureCubeMap& operator= (TextureCubeMap&& other) noexcept = default;
 
-        [[nodiscard]] constexpr TextureTarget target() const override { return TextureTarget::TextureCubeMap; }
+        [[nodiscard]] FOW_CONSTEXPR TextureTarget target() const override { return TextureTarget::TextureCubeMap; }
 
         static Result<TextureCubeMapPtr> Load(const TextureInfo& info);
         static Result<TextureCubeMapPtr> LoadFromMemory(const Vector<uint8_t>& data, const TextureInfo& info);

@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include "fow/Renderer/Texture.hpp"
 #include "fow/Shared/StringConvertion.hpp"
 
