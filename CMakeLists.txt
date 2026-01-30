@@ -95,6 +95,7 @@ macro(add_game TARGET_NAME)
                 ${GAME_BASE_DIR}
         VERBATIM
     )
+    add_dependencies(${TARGET_NAME}_CopyLibs FogOfWar::Engine)
     add_dependencies(${TARGET_NAME} ${TARGET_NAME}_CopyLibs)
 
     math(EXPR PAIR_COUNT "${ASSET_COUNT} / 2")
