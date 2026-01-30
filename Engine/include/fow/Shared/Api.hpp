@@ -55,6 +55,8 @@
     #endif
 #endif
 
+#define IMGUI_API FOW_ENGINE_API
+
 #ifndef __GNUC__
     #ifdef _WIN64
         typedef int64_t ssize_t;

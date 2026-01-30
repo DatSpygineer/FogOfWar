@@ -65,7 +65,7 @@ namespace fow {
             s_game_class = std::move(game_class_ctor());
 
             Assets::Initialize(s_game_class->base_data_path(), s_game_class->game_data_archives(), s_game_class->mod_data_path());
-            Console::Initialize();
+            Debug::Assert(Console::Initialize());
 
             HashMap<String, Vector<String>> args;
             String current_arg = "";
@@ -77,7 +77,7 @@ namespace fow {
                     args.at(current_arg).emplace_back(argv[i]);
                 }
             }
-            LoadLanguageFiles();
+            Debug::Assert(LoadLanguageFiles());
 
             if (glfwInit() != GLFW_TRUE) {
                 const char* message;
@@ -222,7 +222,7 @@ namespace fow {
 #endif
 
             if (const auto lang = cl_lang->as_string(); lang.has_value()) {
-                SetLanguage(lang.value());
+                Debug::Assert(SetLanguage(lang.value()));
             }
             s_initialized = true;
             return Success();
@@ -250,7 +250,6 @@ namespace fow {
                 if (s_game_class != nullptr) {
                     s_game_class->on_update(time - last_time);
                 }
-
 
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplGlfw_NewFrame();
