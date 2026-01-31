@@ -33,14 +33,14 @@ namespace fow {
         GLuint vao, vbo, ebo;
         glGenVertexArrays(1, &vao);
         if (vao == 0) {
-            return Failure<MeshPtr>(std::format("Failed to generate vertex array handle: GL error {}", glGetError()));
+            return Failure(std::format("Failed to generate vertex array handle: GL error {}", glGetError()));
         }
         glBindVertexArray(vao);
 
         glGenBuffers(1, &vbo);
         if (vbo == 0) {
             glDeleteVertexArrays(1, &vao);
-            return Failure<MeshPtr>(std::format("Failed to generate vertex buffer object handle: GL error {}", glGetError()));
+            return Failure(std::format("Failed to generate vertex buffer object handle: GL error {}", glGetError()));
         }
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertices.size() * sizeof(Vertex)), vertices.data(), static_cast<GLenum>(draw_mode));
@@ -49,7 +49,7 @@ namespace fow {
         if (ebo == 0) {
             glDeleteVertexArrays(1, &vao);
             glDeleteBuffers(1, &vbo);
-            return Failure<MeshPtr>(std::format("Failed to generate element buffer object handle: GL error {}", glGetError()));
+            return Failure(std::format("Failed to generate element buffer object handle: GL error {}", glGetError()));
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)), indices.data(), static_cast<GLenum>(draw_mode));
@@ -83,16 +83,16 @@ namespace fow {
         return Create(material, vertices, indices, MeshPrimitive::Triangles, draw_mode);
     }
     Result<MeshPtr> Mesh::CreateCube(const MaterialPtr& material, const glm::vec3& mins, const glm::vec3& maxs, const MeshDrawMode draw_mode) {
-        return Failure<MeshPtr>("Not implemented");
+        return Failure("Not implemented");
     }
     Result<MeshPtr> Mesh::CreateCylinder(const MaterialPtr& material, float radius, float height, float subdivision, MeshDrawMode draw_mode) {
-        return Failure<MeshPtr>("Not implemented");
+        return Failure("Not implemented");
     }
     Result<MeshPtr> Mesh::CreateCapsule(const MaterialPtr& material, float radius, float height, float subdivision, MeshDrawMode draw_mode) {
-        return Failure<MeshPtr>("Not implemented");
+        return Failure("Not implemented");
     }
     Result<MeshPtr> Mesh::CreateSphere(const MaterialPtr& material, float radius, float subdivision, MeshDrawMode draw_mode) {
-        return Failure<MeshPtr>("Not implemented");
+        return Failure("Not implemented");
     }
 
     const Mesh Mesh::Null = Mesh { };

@@ -1145,7 +1145,7 @@ namespace fow {
     Result<MaterialPtr> Material::ParseXml(const String& source_asset_path, const String& xml_src, const AssetLoaderFlags::Type flags) {
         pugi::xml_document doc;
         if (const auto result = doc.load_string(xml_src.as_cstr()); result.status != pugi::status_ok) {
-            return Failure<MaterialPtr>(std::format("Failed to load material \"{}\": Error while parsing XML document: {}", source_asset_path, result.description()));
+            return Failure(std::format("Failed to load material \"{}\": Error while parsing XML document: {}", source_asset_path, result.description()));
         }
         return ParseXml(source_asset_path, doc, flags);
     }
@@ -1153,18 +1153,18 @@ namespace fow {
         if (const auto root = doc.child("Material")) {
             return ParseXml(source, root, flags);
         }
-        return Failure<MaterialPtr>(std::format("Failed to load material \"{}\": Expected root node 'Material' in XML document!", source));
+        return Failure(std::format("Failed to load material \"{}\": Expected root node 'Material' in XML document!", source));
     }
 
     Result<MaterialPtr> Material::ParseXml(const String& source, const pugi::xml_node& root, const AssetLoaderFlags::Type flags) {
         const auto shader_attrib = root.attribute("shader");
         if (!shader_attrib) {
-            return Failure<MaterialPtr>(std::format("Failed to load material \"{}\": Expected attribute 'shader' in root node 'Material'!", source));
+            return Failure(std::format("Failed to load material \"{}\": Expected attribute 'shader' in root node 'Material'!", source));
         }
 
         const auto shader_result = Assets::Load<Shader>(shader_attrib.value());
         if (!shader_result.has_value()) {
-            return Failure<MaterialPtr>(std::format("Failed to load material \"{}\": Failed to load shader \"{}\":\n{}", source, shader_attrib.value(), shader_result.error().message));
+            return Failure(std::format("Failed to load material \"{}\": Failed to load shader \"{}\":\n{}", source, shader_attrib.value(), shader_result.error().message));
         }
 
         auto shader = std::move(shader_result.value());
@@ -1406,12 +1406,12 @@ namespace fow {
 
     Result<MaterialPtr> Material::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {
         if (!path.extension().equals(".xml", StringCompareType::CaseInsensitive)) {
-            return Failure<MaterialPtr>(std::format("Failed to load material \"{}\": Expected asset extension '.xml'", path));
+            return Failure(std::format("Failed to load material \"{}\": Expected asset extension '.xml'", path));
         }
 
         const auto doc = Assets::LoadAsXml(path, flags);
         if (!doc.has_value()) {
-            return Failure<MaterialPtr>(std::format("Failed to load material \"{}\": {}", path, doc.error().message));
+            return Failure(std::format("Failed to load material \"{}\": {}", path, doc.error().message));
         }
         return ParseXml(path.as_string(), doc.value(), flags);
     }

@@ -1,5 +1,5 @@
 # Fog Of War Engine
-A game engine written in C++23, using OpenGL 4.6 core profile.
+A game engine written in C++23, with support for C++20, using OpenGL 4.6 core profile.
 
 ## Project sturcture
 This project is made out of 3 subprojects:
@@ -18,7 +18,6 @@ Recommended minimal compiler versions:
 ### Dependencies
 Before compile, make sure you have the following libraries installed:
 - libzip
-- glm
 - glfw
 - assimp
 - freetype2

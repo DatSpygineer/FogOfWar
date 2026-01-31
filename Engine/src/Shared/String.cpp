@@ -853,13 +853,13 @@ namespace fow {
         if (const auto result = StringToInt<uint8_t>(str); result.has_value()) {
             return Success<bool>(result.value() != 0);
         }
-        return Failure<bool>(std::format("Failed to parse string \"{}\" to boolean: Invalid format!", str));
+        return Failure(std::format("Failed to parse string \"{}\" to boolean: Invalid format!", str));
     }
 
     Result<glm::vec2> StringToVec2(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 2) {
-            return Failure<glm::vec2>(std::format("Failed to parse string \"{}\" to vec2: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to vec2: Not enough tokens!", str));
         }
         try {
             return Success<glm::vec2>(glm::vec2 {
@@ -867,13 +867,13 @@ namespace fow {
                 std::stof(tokens.at(1).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::vec2>(std::format("Failed to parse string \"{}\" to vec2: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to vec2: {}", str, ex.what()));
         }
     }
     Result<glm::vec3> StringToVec3(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 3) {
-            return Failure<glm::vec3>(std::format("Failed to parse string \"{}\" to vec3: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to vec3: Not enough tokens!", str));
         }
         try {
             return Success<glm::vec3>(glm::vec3 {
@@ -882,13 +882,13 @@ namespace fow {
                 std::stof(tokens.at(2).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::vec3>(std::format("Failed to parse string \"{}\" to vec3: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to vec3: {}", str, ex.what()));
         }
     }
     Result<glm::vec4> StringToVec4(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 4) {
-            return Failure<glm::vec4>(std::format("Failed to parse string \"{}\" to vec4: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to vec4: Not enough tokens!", str));
         }
         try {
             return Success<glm::vec4>(glm::vec4 {
@@ -898,14 +898,14 @@ namespace fow {
                 std::stof(tokens.at(3).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::vec4>(std::format("Failed to parse string \"{}\" to vec4: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to vec4: {}", str, ex.what()));
         }
     }
 
     Result<glm::bvec2> StringToBVec2(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 2) {
-            return Failure<glm::bvec2>(std::format("Failed to parse string \"{}\" to bvec2: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to bvec2: Not enough tokens!", str));
         }
         try {
             const auto x = StringToBool(tokens.at(0).as_std_str());
@@ -916,16 +916,16 @@ namespace fow {
                     y.value()
                 });
             } else {
-                return Failure<glm::bvec2>(std::format("Failed to parse string \"{}\" to bvec2: Invalid format", str));
+                return Failure(std::format("Failed to parse string \"{}\" to bvec2: Invalid format", str));
             }
         } catch (const std::exception& ex) {
-            return Failure<glm::bvec2>(std::format("Failed to parse string \"{}\" to bvec2: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to bvec2: {}", str, ex.what()));
         }
     }
     Result<glm::bvec3> StringToBVec3(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 3) {
-            return Failure<glm::bvec3>(std::format("Failed to parse string \"{}\" to bvec3: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to bvec3: Not enough tokens!", str));
         }
         try {
             const auto x = StringToBool(tokens.at(0).as_std_str());
@@ -938,16 +938,16 @@ namespace fow {
                     z.value()
                 });
             } else {
-                return Failure<glm::bvec3>(std::format("Failed to parse string \"{}\" to bvec3: Invalid format", str));
+                return Failure(std::format("Failed to parse string \"{}\" to bvec3: Invalid format", str));
             }
         } catch (const std::exception& ex) {
-            return Failure<glm::bvec3>(std::format("Failed to parse string \"{}\" to bvec3: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to bvec3: {}", str, ex.what()));
         }
     }
     Result<glm::bvec4> StringToBVec4(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 4) {
-            return Failure<glm::bvec4>(std::format("Failed to parse string \"{}\" to bvec4: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to bvec4: Not enough tokens!", str));
         }
         try {
             const auto x = StringToBool(tokens.at(0).as_std_str());
@@ -962,16 +962,16 @@ namespace fow {
                     w.value()
                 });
             } else {
-                return Failure<glm::bvec4>(std::format("Failed to parse string \"{}\" to bvec4: Invalid format", str));
+                return Failure(std::format("Failed to parse string \"{}\" to bvec4: Invalid format", str));
             }
         } catch (const std::exception& ex) {
-            return Failure<glm::bvec4>(std::format("Failed to parse string \"{}\" to bvec4: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to bvec4: {}", str, ex.what()));
         }
     }
     Result<glm::uvec2> StringToUVec2(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 2) {
-            return Failure<glm::uvec2>(std::format("Failed to parse string \"{}\" to uvec2: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to uvec2: Not enough tokens!", str));
         }
         try {
             return Success<glm::uvec2>(glm::uvec2 {
@@ -979,13 +979,13 @@ namespace fow {
                 std::stoul(tokens.at(1).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::uvec2>(std::format("Failed to parse string \"{}\" to uvec2: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to uvec2: {}", str, ex.what()));
         }
     }
     Result<glm::uvec3> StringToUVec3(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 3) {
-            return Failure<glm::uvec3>(std::format("Failed to parse string \"{}\" to uvec3: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to uvec3: Not enough tokens!", str));
         }
         try {
             return Success<glm::uvec3>(glm::uvec3 {
@@ -994,13 +994,13 @@ namespace fow {
                 std::stoul(tokens.at(2).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::uvec3>(std::format("Failed to parse string \"{}\" to uvec3: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to uvec3: {}", str, ex.what()));
         }
     }
     Result<glm::uvec4> StringToUVec4(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 4) {
-            return Failure<glm::uvec4>(std::format("Failed to parse string \"{}\" to uvec4: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to uvec4: Not enough tokens!", str));
         }
         try {
             return Success<glm::uvec4>(glm::uvec4 {
@@ -1010,14 +1010,14 @@ namespace fow {
                 std::stoul(tokens.at(3).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::uvec4>(std::format("Failed to parse string \"{}\" to uvec4: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to uvec4: {}", str, ex.what()));
         }
     }
 
     Result<glm::ivec2> StringToIVec2(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 2) {
-            return Failure<glm::ivec2>(std::format("Failed to parse string \"{}\" to ivec2: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to ivec2: Not enough tokens!", str));
         }
         try {
             return Success<glm::ivec2>(glm::ivec2 {
@@ -1025,13 +1025,13 @@ namespace fow {
                 std::stoi(tokens.at(1).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::ivec2>(std::format("Failed to parse string \"{}\" to ivec2: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to ivec2: {}", str, ex.what()));
         }
     }
     Result<glm::ivec3> StringToIVec3(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 3) {
-            return Failure<glm::ivec3>(std::format("Failed to parse string \"{}\" to ivec3: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to ivec3: Not enough tokens!", str));
         }
         try {
             return Success<glm::ivec3>(glm::ivec3 {
@@ -1040,13 +1040,13 @@ namespace fow {
                 std::stoi(tokens.at(2).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::ivec3>(std::format("Failed to parse string \"{}\" to ivec3: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to ivec3: {}", str, ex.what()));
         }
     }
     Result<glm::ivec4> StringToIVec4(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 4) {
-            return Failure<glm::ivec4>(std::format("Failed to parse string \"{}\" to ivec4: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to ivec4: Not enough tokens!", str));
         }
         try {
             return Success<glm::ivec4>(glm::ivec4 {
@@ -1056,14 +1056,14 @@ namespace fow {
                 std::stoi(tokens.at(3).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::ivec4>(std::format("Failed to parse string \"{}\" to ivec4: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to ivec4: {}", str, ex.what()));
         }
     }
 
     Result<glm::dvec2> StringToDVec2(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 2) {
-            return Failure<glm::dvec2>(std::format("Failed to parse string \"{}\" to dvec2: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to dvec2: Not enough tokens!", str));
         }
         try {
             return Success<glm::dvec2>(glm::vec2 {
@@ -1071,13 +1071,13 @@ namespace fow {
                 std::stod(tokens.at(1).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::dvec2>(std::format("Failed to parse string \"{}\" to dvec2: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to dvec2: {}", str, ex.what()));
         }
     }
     Result<glm::dvec3> StringToDVec3(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 4) {
-            return Failure<glm::dvec3>(std::format("Failed to parse string \"{}\" to dvec3: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to dvec3: Not enough tokens!", str));
         }
         try {
             return Success<glm::dvec3>(glm::dvec3 {
@@ -1086,13 +1086,13 @@ namespace fow {
                 std::stod(tokens.at(2).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::dvec3>(std::format("Failed to parse string \"{}\" to dvec3: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to dvec3: {}", str, ex.what()));
         }
     }
     Result<glm::dvec4> StringToDVec4(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 4) {
-            return Failure<glm::dvec4>(std::format("Failed to parse string \"{}\" to dvec4: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to dvec4: Not enough tokens!", str));
         }
         try {
             return Success<glm::dvec4>(glm::dvec4 {
@@ -1102,14 +1102,14 @@ namespace fow {
                 std::stod(tokens.at(3).as_std_str())
             });
         } catch (const std::exception& ex) {
-            return Failure<glm::dvec4>(std::format("Failed to parse string \"{}\" to dvec4: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to dvec4: {}", str, ex.what()));
         }
     }
 
     Result<glm::mat4> StringToMat4(const String& str) {
         const auto tokens = str.split(',');
         if (tokens.size() < 16) {
-            return Failure<glm::mat4>(std::format("Failed to parse string \"{}\" to mat4: Not enough tokens!", str));
+            return Failure(std::format("Failed to parse string \"{}\" to mat4: Not enough tokens!", str));
         }
 
         try {
@@ -1119,7 +1119,7 @@ namespace fow {
             }
             return Success<glm::mat4>(result);
         } catch (const std::exception& ex) {
-            return Failure<glm::mat4>(std::format("Failed to parse string \"{}\" to mat4: {}", str, ex.what()));
+            return Failure(std::format("Failed to parse string \"{}\" to mat4: {}", str, ex.what()));
         }
     }
 

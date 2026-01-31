@@ -64,7 +64,7 @@ namespace fow {
                 return Success<T>(static_cast<T>(std::stoull((offset > 0 ? str.substr(offset) : str).as_std_str(), nullptr, radix)));
             }
         } catch (const std::exception& ex) {
-            return Failure<T>(std::format("Failed to parse string \"{}\" to integer: {}", str, String { ex.what() }));
+            return Failure(std::format("Failed to parse string \"{}\" to integer: {}", str, String { ex.what() }));
         }
     }
     template<FloatType T>
@@ -72,7 +72,7 @@ namespace fow {
         try {
             return Success<T>(static_cast<T>(std::stod(str.as_std_str())));
         } catch (const std::exception& ex) {
-            return Failure<T>(std::format("Failed to parse string \"{}\" to float: {}", str, String { ex.what() }));
+            return Failure(std::format("Failed to parse string \"{}\" to float: {}", str, String { ex.what() }));
         }
     }
     template<EnumType T>
@@ -80,7 +80,7 @@ namespace fow {
         if (const auto result = rfl::string_to_enum<T>(str); result.has_value()) {
             return result;
         } else {
-            return Failure<T>(result.error().what());
+            return Failure(result.error().what());
         }
     }
 }

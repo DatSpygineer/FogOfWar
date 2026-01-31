@@ -38,7 +38,7 @@ namespace fow {
             }
             return Success<UniquePtr<ZipEntry>>(std::make_unique<ZipEntry>(*this, fixed_path));
         } catch (const std::runtime_error& e) {
-            return Failure<UniquePtr<ZipEntry>>(e.what());
+            return Failure(e.what());
         }
     }
 
@@ -211,7 +211,7 @@ namespace fow {
             if (s_asset_cache.contains(path)) {
                 return s_asset_cache.at(path);
             }
-            return Failure<std::any>(std::format("Asset \"{}\" is not in cache!", path));
+            return Failure(std::format("Asset \"{}\" is not in cache!", path));
         }
 
         bool IsCached(const Path& path) {
@@ -233,7 +233,7 @@ namespace fow {
             const auto entry_result = zip->open_entry(asset_path);
             Result<String> result;
             if (!entry_result.has_value()) {
-                result = Failure<String>(std::format("Failed to load asset \"{}\": File doesn't exists", asset_path));
+                result = Failure(std::format("Failed to load asset \"{}\": File doesn't exists", asset_path));
             } else {
                 result = entry_result.value()->read_string();
             }
@@ -246,7 +246,7 @@ namespace fow {
             const auto entry_result = zip->open_entry(asset_path);
             Result<Vector<uint8_t>> result;
             if (!entry_result.has_value()) {
-                result = Failure<Vector<uint8_t>>(std::format("Failed to load asset \"{}\": File doesn't exists", asset_path));
+                result = Failure(std::format("Failed to load asset \"{}\": File doesn't exists", asset_path));
             } else {
                 Vector<uint8_t> result_value(entry_result.value()->size());
                 entry_result.value()->read_to_end(result_value.data(), result_value.size());
@@ -259,11 +259,11 @@ namespace fow {
         Result<pugi::xml_document> LoadFromArchiveAsXml(const Path& archive_path, const Path& asset_path) {
             const auto str = LoadFromArchiveAsString(archive_path, asset_path);
             if (!str.has_value()) {
-                return Failure<pugi::xml_document>(str.error());
+                return Failure(str.error());
             }
             pugi::xml_document doc;
             if (const auto result = doc.load_string(str->as_cstr()); result.status != pugi::status_ok) {
-                return Failure<pugi::xml_document>(std::format("Failed to parse xml document \"{}\": {}", asset_path, result.description()));
+                return Failure(std::format("Failed to parse xml document \"{}\": {}", asset_path, result.description()));
             }
             return Success<pugi::xml_document>(std::move(doc));
         }
@@ -271,13 +271,13 @@ namespace fow {
         Result<nlohmann::json> LoadFromArchiveAsJson(const Path& archive_path, const Path& asset_path) {
             const auto str = LoadFromArchiveAsString(archive_path, asset_path);
             if (!str.has_value()) {
-                return Failure<nlohmann::json>(str.error());
+                return Failure(str.error());
             }
             try {
                 auto json = nlohmann::json::parse(str->as_std_str());
                 return Success<nlohmann::json>(std::move(json));
             } catch (const std::exception& e) {
-                return Failure<nlohmann::json>(e.what());
+                return Failure(e.what());
             }
         }
 
@@ -295,7 +295,7 @@ namespace fow {
                     return result;
                 }
             }
-            return Failure<String>(std::format("Failed to load asset \"{}\": Asset cannot be found!", asset_path));
+            return Failure(std::format("Failed to load asset \"{}\": Asset cannot be found!", asset_path));
         }
 
         Result<Vector<uint8_t>> LoadAsBytes(const Path& asset_path, const AssetLoaderFlags::Type flags) {
@@ -312,17 +312,17 @@ namespace fow {
                     return result;
                 }
             }
-            return Failure<Vector<uint8_t>>(std::format("Failed to load asset \"{}\": Asset cannot be found!", asset_path));
+            return Failure(std::format("Failed to load asset \"{}\": Asset cannot be found!", asset_path));
         }
 
         Result<pugi::xml_document> LoadAsXml(const Path& asset_path, AssetLoaderFlags::Type flags) {
             const auto str = LoadAsString(asset_path, flags);
             if (!str.has_value()) {
-                return Failure<pugi::xml_document>(str.error());
+                return Failure(str.error());
             }
             pugi::xml_document doc;
             if (const auto result = doc.load_string(str->as_cstr()); result.status != pugi::status_ok) {
-                return Failure<pugi::xml_document>(std::format("Failed to parse xml document \"{}\": {}", asset_path, result.description()));
+                return Failure(std::format("Failed to parse xml document \"{}\": {}", asset_path, result.description()));
             }
             return Success<pugi::xml_document>(std::move(doc));
         }
@@ -330,13 +330,13 @@ namespace fow {
         Result<nlohmann::json> LoadAsJson(const Path& asset_path, AssetLoaderFlags::Type flags) {
             const auto str = LoadAsString(asset_path, flags);
             if (!str.has_value()) {
-                return Failure<nlohmann::json>(str.error());
+                return Failure(str.error());
             }
             try {
                 auto json = nlohmann::json::parse(str->as_std_str());
                 return Success<nlohmann::json>(std::move(json));
             } catch (const std::exception& e) {
-                return Failure<nlohmann::json>(e.what());
+                return Failure(e.what());
             }
         }
 
@@ -356,7 +356,7 @@ namespace fow {
                     result.emplace(archive_name, value.value());
                 }
             }
-            return Failure<HashMap<String, String>>(std::format("Failed to load asset \"{}\": Asset cannot be found!", asset_path));
+            return Failure(std::format("Failed to load asset \"{}\": Asset cannot be found!", asset_path));
         }
     }
 }

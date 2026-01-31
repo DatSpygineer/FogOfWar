@@ -75,12 +75,20 @@ namespace fow {
         CVarSetCallback m_fnSetCallback;
 
         static HashMap<String, SharedPtr<CVar>> s_registry;
+#if __cplusplus >= 202302L
         constexpr CVar(const String& name, const CVarValue& value, const CVarFlags::Type flags, const CVarSetCallback& callback) :
             m_sName(name), m_vValue(value), m_eFlags(flags), m_fnSetCallback(callback) { }
+#else
+        CVar(const String& name, const CVarValue& value, const CVarFlags::Type flags, const CVarSetCallback& callback) :
+            m_sName(name), m_vValue(value), m_eFlags(flags), m_fnSetCallback(callback) { }
+#endif
     public:
         constexpr CVar(const CVar&) = delete;
+#if __cplusplus >= 202302L
         constexpr CVar(CVar&& other) noexcept : m_sName(std::move(other.m_sName)), m_vValue(std::move(other.m_vValue)), m_eFlags(std::move(other.m_eFlags)), m_fnSetCallback(std::move(other.m_fnSetCallback)) { }
-
+#else
+        CVar(CVar&& other) noexcept : m_sName(std::move(other.m_sName)), m_vValue(std::move(other.m_vValue)), m_eFlags(std::move(other.m_eFlags)), m_fnSetCallback(std::move(other.m_fnSetCallback)) { }
+#endif
         CVar& operator=(const CVar&) = delete;
         CVar& operator=(CVar&&) noexcept = default;
 
@@ -98,7 +106,7 @@ namespace fow {
             if (value_type() == CVarValueType::String) {
                 return StringToBool(std::get<String>(m_vValue));
             }
-            return Failure<bool>(std::format("Cannot convert type \"{}\" to boolean", rfl::enum_to_string<CVarValueType>(value_type())));
+            return Failure(std::format("Cannot convert type \"{}\" to boolean", rfl::enum_to_string<CVarValueType>(value_type())));
         }
         constexpr Result<int> as_int() const {
             if (value_type() == CVarValueType::Bool) {
@@ -113,7 +121,7 @@ namespace fow {
             if (value_type() == CVarValueType::String) {
                 return StringToInt<int>(std::get<String>(m_vValue));
             }
-            return Failure<int>(std::format("Cannot convert type \"{}\" to integer", rfl::enum_to_string<CVarValueType>(value_type())));
+            return Failure(std::format("Cannot convert type \"{}\" to integer", rfl::enum_to_string<CVarValueType>(value_type())));
         }
         constexpr Result<float> as_float() const {
             if (value_type() == CVarValueType::Bool) {
@@ -128,31 +136,35 @@ namespace fow {
             if (value_type() == CVarValueType::String) {
                 return StringToFloat<float>(std::get<String>(m_vValue));
             }
-            return Failure<float>(std::format("Cannot convert type \"{}\" to float", rfl::enum_to_string<CVarValueType>(value_type())));
+            return Failure(std::format("Cannot convert type \"{}\" to float", rfl::enum_to_string<CVarValueType>(value_type())));
         }
+#if __cplusplus >= 202302L
         constexpr Result<String> as_string() const {
+#else
+        inline Result<String> as_string() const {
+#endif
             if (value_type() == CVarValueType::Bool) {
-                return std::get<bool>(m_vValue) ? "true" : "false";
+                return String(std::get<0>(m_vValue) ? "true" : "false");
             }
             if (value_type() == CVarValueType::Int) {
-                return std::to_string(std::get<int>(m_vValue));
+                return String(std::to_string(std::get<1>(m_vValue)));
             }
             if (value_type() == CVarValueType::Float) {
-                return std::to_string(std::get<float>(m_vValue));
+                return String(std::to_string(std::get<2>(m_vValue)));
             }
             if (value_type() == CVarValueType::String) {
-                return std::get<String>(m_vValue);
+                return std::get<3>(m_vValue);
             }
             if (value_type() == CVarValueType::Vec2) {
-                return std::format("{}", std::get<glm::vec2>(m_vValue));
+                return String(std::format("{}", std::get<4>(m_vValue)));
             }
             if (value_type() == CVarValueType::Vec3) {
-                return std::format("{}", std::get<glm::vec3>(m_vValue));
+                return String(std::format("{}", std::get<5>(m_vValue)));
             }
             if (value_type() == CVarValueType::Vec4) {
-                return std::format("{}", std::get<glm::vec4>(m_vValue));
+                return String(std::format("{}", std::get<6>(m_vValue)));
             }
-            return Failure<String>(std::format("Cannot convert type \"{}\" to string", rfl::enum_to_string<CVarValueType>(value_type())));
+            return Failure(std::format("Cannot convert type \"{}\" to string", rfl::enum_to_string<CVarValueType>(value_type())));
         }
         constexpr Result<glm::vec2> as_vec2() const {
             if (value_type() == CVarValueType::Vec2) {
@@ -161,7 +173,7 @@ namespace fow {
             if (value_type() == CVarValueType::String) {
                 return StringToVec2(std::get<String>(m_vValue));
             }
-            return Failure<glm::vec2>(std::format("Cannot convert type \"{}\" to vec2", rfl::enum_to_string<CVarValueType>(value_type())));
+            return Failure(std::format("Cannot convert type \"{}\" to vec2", rfl::enum_to_string<CVarValueType>(value_type())));
         }
         constexpr Result<glm::vec3> as_vec3() const {
             if (value_type() == CVarValueType::Vec3) {
@@ -170,7 +182,7 @@ namespace fow {
             if (value_type() == CVarValueType::String) {
                 return StringToVec3(std::get<String>(m_vValue));
             }
-            return Failure<glm::vec3>(std::format("Cannot convert type \"{}\" to vec3", rfl::enum_to_string<CVarValueType>(value_type())));
+            return Failure(std::format("Cannot convert type \"{}\" to vec3", rfl::enum_to_string<CVarValueType>(value_type())));
         }
         constexpr Result<glm::vec<4, float>> as_vec4() const {
             if (value_type() == CVarValueType::Vec4) {
@@ -179,7 +191,7 @@ namespace fow {
             if (value_type() == CVarValueType::String) {
                 return StringToVec4(std::get<String>(m_vValue));
             }
-            return Failure<glm::vec4>(std::format("Cannot convert type \"{}\" to vec4", rfl::enum_to_string<CVarValueType>(value_type())));
+            return Failure(std::format("Cannot convert type \"{}\" to vec4", rfl::enum_to_string<CVarValueType>(value_type())));
         }
         constexpr const CVarValue& value() const {
             return m_vValue;
@@ -196,7 +208,11 @@ namespace fow {
         Result<> call(const Vector<String>& args) const;
         Result<> set(const CVarValue& value);
 
+#if __cplusplus >= 202302L
         static constexpr CVarPtr Create(const String& name, const CVarValue& value, const CVarFlags::Type flags, const CVarSetCallback& callback = nullptr) {
+#else
+        inline static CVarPtr Create(const String& name, const CVarValue& value, const CVarFlags::Type flags, const CVarSetCallback& callback = nullptr) {
+#endif
             if (s_registry.contains(name)) {
                 throw CVarRedefinitionException(name);
             }
@@ -205,12 +221,16 @@ namespace fow {
         }
         static constexpr Result<CVarPtr> CreateOptional(const String& name, const CVarValue& value, const CVarFlags::Type flags, const CVarSetCallback& callback = nullptr) {
             if (s_registry.contains(name)) {
-                return Failure<CVarPtr>(std::format("CVar \"{}\" already defined!", name));
+                return Failure(std::format("CVar \"{}\" already defined!", name));
             }
             s_registry.emplace(name, std::make_shared<CVar>(std::move(CVar { name, value, flags, callback })));
             return s_registry.at(name);
         }
+#if __cplusplus >= 202302L
         static constexpr CVarPtr CreateOrGet(const String& name, const CVarValue& value, const CVarFlags::Type flags, const CVarSetCallback& callback = nullptr) {
+#else
+        inline static CVarPtr CreateOrGet(const String& name, const CVarValue& value, const CVarFlags::Type flags, const CVarSetCallback& callback = nullptr) {
+#endif
             if (!s_registry.contains(name)) {
                 s_registry.emplace(name, std::make_shared<CVar>(std::move(CVar { name, value, flags, callback })));
             }
@@ -220,7 +240,7 @@ namespace fow {
             if (s_registry.contains(name)) {
                 return Success<CVarPtr>(s_registry.at(name));
             }
-            return Failure<CVarPtr>(std::format("Could not find cvar \"{}\"", name));
+            return Failure(std::format("Could not find cvar \"{}\"", name));
         }
         static constexpr bool Exists(const String& name) {
             return s_registry.contains(name);

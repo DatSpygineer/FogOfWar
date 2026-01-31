@@ -77,12 +77,12 @@ namespace fow {
         Assimp::Importer importer;
         const auto scene = importer.ReadFileFromMemory(data.data(), data.size(), aiProcessPreset_TargetRealtime_Quality);
         if (scene == nullptr) {
-            return Failure<ModelPtr>(std::format("Failed to load model \"{}\": {}", source_path, importer.GetErrorString()));
+            return Failure(std::format("Failed to load model \"{}\": {}", source_path, importer.GetErrorString()));
         }
 
         Vector<MeshPtr> meshes;
         if (const auto proc_result = ProcessModelNodes(source_path, scene, scene->mRootNode, meshes, materials); !proc_result.has_value()) {
-            return Failure<ModelPtr>(std::format("Failed to load model \"{}\": {}", source_path, proc_result.error().message));
+            return Failure(std::format("Failed to load model \"{}\": {}", source_path, proc_result.error().message));
         }
         return Success<ModelPtr>(std::move(std::make_shared<Model>(meshes)));
     }
@@ -91,20 +91,20 @@ namespace fow {
         if (path.extension().equals(".xml", StringCompareType::CaseInsensitive)) {
             const auto doc = Assets::LoadAsXml(path, flags);
             if (!doc.has_value()) {
-                return Failure<ModelPtr>(doc.error());
+                return Failure(doc.error());
             }
             const auto root = doc->child("Model");
             if (!root) {
-                return Failure<ModelPtr>(std::format("Failed to load model \"{}\": Expected root node \"Model\" in XML document!", path));
+                return Failure(std::format("Failed to load model \"{}\": Expected root node \"Model\" in XML document!", path));
             }
 
             const auto src_node = root.child("Source");
             if (!src_node) {
-                return Failure<ModelPtr>(std::format("Failed to load model \"{}\": Expected node \"Source\" in root node \"Model\"!", path));
+                return Failure(std::format("Failed to load model \"{}\": Expected node \"Source\" in root node \"Model\"!", path));
             }
             const auto data = Assets::LoadAsBytes(src_node.child_value(), flags);
             if (!data.has_value()) {
-                return Failure<ModelPtr>(std::format("Failed to load model \"{}\": Could not read model data \"{}\"", path, src_node.child_value()));
+                return Failure(std::format("Failed to load model \"{}\": Could not read model data \"{}\"", path, src_node.child_value()));
             }
 
             Vector<MaterialPtr> materials;
@@ -116,13 +116,13 @@ namespace fow {
                         if (const auto mat = Assets::Load<Material>(attrib.value(), flags); mat.has_value()) {
                             materials.push_back(mat.value().ptr());
                         } else {
-                            return Failure<ModelPtr>(std::format("Failed to load material \"{}\" for model \"{}\":\n{}", attrib.value(), path, mat.error().message));
+                            return Failure(std::format("Failed to load material \"{}\" for model \"{}\":\n{}", attrib.value(), path, mat.error().message));
                         }
                     } else {
                         if (const auto mat = Material::ParseXml(std::format("{}:{}", path, i), material_node, flags); mat.has_value()) {
                             materials.push_back(mat.value());
                         } else {
-                            return Failure<ModelPtr>(std::format("Failed to load material {} for model \"{}\":\n{}", i, path, mat.error().message));
+                            return Failure(std::format("Failed to load material {} for model \"{}\":\n{}", i, path, mat.error().message));
                         }
                     }
                     ++i;
@@ -130,6 +130,6 @@ namespace fow {
             }
             return Load(path.as_string(), data.value(), materials);
         }
-        return Failure<ModelPtr>(std::format("Failed to load model \"{}\": Expected asset extension '.xml'", path));
+        return Failure(std::format("Failed to load model \"{}\": Expected asset extension '.xml'", path));
     }
 }

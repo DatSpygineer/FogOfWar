@@ -33,7 +33,7 @@ namespace fow {
         using iterator = StringIterator;
         using const_iterator = StringConstIterator;
 
-        String() : String(0uz) { }
+        String() : String(static_cast<size_t>(0)) { }
         explicit String(size_t capacity);
         String(char c, size_t len);
         String(const char* cstr);             // NOLINT: Intentional conversion
@@ -141,9 +141,11 @@ namespace fow {
             if (idx > m_uSize) throw std::out_of_range("Index out of range!");
             return m_pData[idx];
         }
+#if __cplusplus >= 202302L
         [[nodiscard]] inline String operator[] (const size_t start, const size_t length) const {
             return substr(start, length);
         }
+#endif
         [[nodiscard]] inline String operator+ (const char c) const {
             String result = *this;
             result.append(c);
@@ -353,8 +355,13 @@ namespace fow {
         [[nodiscard]] constexpr String& as_string() { return m_sPath; }
         [[nodiscard]] constexpr const String& as_string() const { return m_sPath; }
         [[nodiscard]] constexpr const char* as_cstr() const { return m_sPath.as_cstr(); }
+#if __cplusplus > 202002L
         [[nodiscard]] constexpr std::string as_std_str() const { return m_sPath.as_std_str(); }
         [[nodiscard]] constexpr std::filesystem::path as_std_path() const { return m_sPath.as_std_str(); }
+#else
+        [[nodiscard]] inline std::string as_std_str() const { return m_sPath.as_std_str(); }
+        [[nodiscard]] inline std::filesystem::path as_std_path() const { return m_sPath.as_std_str(); }
+#endif
         [[nodiscard]] constexpr bool is_empty() const { return m_sPath.is_empty(); }
         [[nodiscard]] Vector<Path> list_dir() const;
         [[nodiscard]] Vector<Path> list_dir(const String& filter) const;
@@ -525,5 +532,28 @@ struct std::formatter<fow::Color> : std::formatter<std::string> {
         return std::formatter<std::string>::format(result, ctx);
     }
 };
+
+#if __cplusplus < 202302L
+#include <iostream>
+
+namespace std {
+    template<typename ...Args>
+    void print(const std::format_string<Args...>& format, Args&&... args) {
+        std::cout << std::format<Args...>(format, std::forward<Args>(args)...);
+    }
+    template<typename ...Args>
+    void print(std::ostream& os, const std::format_string<Args...>& format, Args&&... args) {
+        os << std::format<Args...>(format, std::forward<Args>(args)...);
+    }
+    template<typename ...Args>
+    void println(const std::format_string<Args...>& format, Args&&... args) {
+        std::cout << std::format<Args...>(format, std::forward<Args>(args)...) << std::endl;
+    }
+    template<typename ...Args>
+    void println(std::ostream& os, const std::format_string<Args...>& format, Args&&... args) {
+        os << std::format<Args...>(format, std::forward<Args>(args)...) << std::endl;
+    }
+}
+#endif
 
 #endif
