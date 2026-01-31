@@ -4,7 +4,15 @@ project(FogOfWarShared)
 project(FogOfWarRenderer)
 project(FogOfWar)
 
-set(CMAKE_CXX_STANDARD 23)
+option(FOW_USE_CPP_20 "Use C++20 instead of C++23 when set to 'TRUE'" FALSE)
+
+if (FOW_USE_CPP_20)
+    message(STATUS "Using C++20")
+    set(CMAKE_CXX_STANDARD 20)
+else()
+    message(STATUS "Using C++23")
+    set(CMAKE_CXX_STANDARD 23)
+endif()
 
 if (WIN32)
     include(vcpkg.cmake)

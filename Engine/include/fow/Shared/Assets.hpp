@@ -129,10 +129,10 @@ namespace fow {
                             try {
                                 return std::any_cast<Asset<T>>(CacheAsset(asset_path, std::move(Asset<T> { asset_path, std::move(result.value()) })));
                             } catch (const std::bad_any_cast& e) {
-                                return Failure<Asset<T>>(std::format("Failed to load asset \"{}\": {}", asset_path, e.what()));
+                                return Failure(std::format("Failed to load asset \"{}\": {}", asset_path, e.what()));
                             }
                         } else {
-                            return Failure<Asset<T>>(result.error());
+                            return Failure(result.error());
                         }
                     } else {
                         delete archive;
@@ -156,16 +156,16 @@ namespace fow {
                         try {
                             return std::any_cast<Asset<T>>(CacheAsset(asset_path, std::move(Asset<T> { asset_path, std::move(result.value()) })));
                         } catch (const std::bad_any_cast& e) {
-                            return Failure<Asset<T>>(std::format("Failed to load asset \"{}\": {}", asset_path, e.what()));
+                            return Failure(std::format("Failed to load asset \"{}\": {}", asset_path, e.what()));
                         }
                     } else {
-                        return Failure<Asset<T>>(result.error());
+                        return Failure(result.error());
                     }
                 } else {
                     delete archive;
                 }
             }
-            return Failure<Asset<T>>(std::format("Failed to load asset \"{}\": Asset cannot be found!", asset_path));
+            return Failure(std::format("Failed to load asset \"{}\": Asset cannot be found!", asset_path));
         }
 
         FOW_SHARED_API Result<String> LoadFromArchiveAsString(const Path& archive_path, const Path& asset_path);

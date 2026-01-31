@@ -24,7 +24,7 @@ namespace fow {
                 } else {
                     const auto include_source_result = Assets::LoadAsString(asset_path);
                     if (!include_source_result.has_value()) {
-                        return Failure<String>(include_source_result.error());
+                        return Failure(include_source_result.error());
                     }
                     include_source = include_source_result.value();
                 }
@@ -688,14 +688,14 @@ namespace fow {
     Result<ShaderUniformInfo> Shader::get_uniform_info(const String& name) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
-            return Failure<ShaderUniformInfo>(std::format("No such uniform \"{}\"", name));
+            return Failure(std::format("No such uniform \"{}\"", name));
         }
         return get_uniform_info(loc);
     }
 
     Result<ShaderUniformInfo> Shader::get_uniform_info(const GLint location) const {
         if (location < 0) {
-            return Failure<ShaderUniformInfo>(std::format("Uniform location {} is out of range", location));
+            return Failure(std::format("Uniform location {} is out of range", location));
         }
 
         String name(1024);
@@ -720,12 +720,12 @@ namespace fow {
         GLint status;
         const GLuint vid = glCreateShader(GL_VERTEX_SHADER);
         if (vid == 0) {
-            return Failure<ShaderPtr>(std::format("Failed to generate vertex shader: GL Error {}", glGetError()));
+            return Failure(std::format("Failed to generate vertex shader: GL Error {}", glGetError()));
         }
 
         const auto processed_vertex = ResolveShaderIncludes(std::format("{}:vertex", name), vertex);
         if (!processed_vertex.has_value()) {
-            return Failure<ShaderPtr>(std::format("Failed to compile vertex shader, error while preprocessing: {}", processed_vertex.error().message));
+            return Failure(std::format("Failed to compile vertex shader, error while preprocessing: {}", processed_vertex.error().message));
         }
         const char* vertex_cstr = processed_vertex.value().as_cstr();
         glShaderSource(vid, 1, &vertex_cstr, nullptr);
@@ -736,19 +736,19 @@ namespace fow {
             glGetShaderInfoLog(vid, 2048, nullptr, info_log.data());
             info_log.recalculate_size();
             glDeleteShader(vid);
-            return Failure<ShaderPtr>(std::format("Failed to compile vertex shader: {}", info_log));
+            return Failure(std::format("Failed to compile vertex shader: {}", info_log));
         }
 
         const GLuint fid = glCreateShader(GL_FRAGMENT_SHADER);
         if (fid == 0) {
             glDeleteShader(vid);
-            return Failure<ShaderPtr>(std::format("Failed to generate fragment shader: GL Error {}", glGetError()));
+            return Failure(std::format("Failed to generate fragment shader: GL Error {}", glGetError()));
         }
 
         const auto processed_fragment = ResolveShaderIncludes(std::format("{}:fragment", name), fragment);
         if (!processed_fragment.has_value()) {
             glDeleteShader(vid);
-            return Failure<ShaderPtr>(std::format("Failed to compile fragment shader, error while preprocessing: {}", processed_fragment.error().message));
+            return Failure(std::format("Failed to compile fragment shader, error while preprocessing: {}", processed_fragment.error().message));
         }
         const char* fragment_cstr = processed_fragment.value().as_cstr();
         glShaderSource(fid, 1, &fragment_cstr, nullptr);
@@ -760,14 +760,14 @@ namespace fow {
             info_log.recalculate_size();
             glDeleteShader(fid);
             glDeleteShader(vid);
-            return Failure<ShaderPtr>(std::format("Failed to compile fragment shader: {}", info_log));
+            return Failure(std::format("Failed to compile fragment shader: {}", info_log));
         }
 
         const GLuint id = glCreateProgram();
         if (id == 0) {
             glDeleteShader(fid);
             glDeleteShader(vid);
-            return Failure<ShaderPtr>(std::format("Failed to generate shader program: GL Error {}", glGetError()));
+            return Failure(std::format("Failed to generate shader program: GL Error {}", glGetError()));
         }
         glAttachShader(id, vid);
         glAttachShader(id, fid);
@@ -779,7 +779,7 @@ namespace fow {
             info_log.recalculate_size();
             glDeleteShader(fid);
             glDeleteShader(vid);
-            return Failure<ShaderPtr>(std::format("Failed to link shader program: {}", info_log));
+            return Failure(std::format("Failed to link shader program: {}", info_log));
         }
         glDeleteShader(fid);
         glDeleteShader(vid);
@@ -792,11 +792,11 @@ namespace fow {
         GLuint ids[] = { };
         ids[0] = glCreateShader(GL_VERTEX_SHADER);
         if (ids[0] == 0) {
-            return Failure<ShaderPtr>(std::format("Failed to generate vertex shader: GL Error {}", glGetError()));
+            return Failure(std::format("Failed to generate vertex shader: GL Error {}", glGetError()));
         }
         ids[1] = glCreateShader(GL_FRAGMENT_SHADER);
         if (ids[1] == 0) {
-            return Failure<ShaderPtr>(std::format("Failed to generate vertex shader: GL Error {}", glGetError()));
+            return Failure(std::format("Failed to generate vertex shader: GL Error {}", glGetError()));
         }
 
         glShaderBinary(2, ids, GL_SHADER_BINARY_FORMAT_SPIR_V, data, data_size);
@@ -809,7 +809,7 @@ namespace fow {
             info_log.recalculate_size();
             glDeleteShader(ids[0]);
             glDeleteShader(ids[1]);
-            return Failure<ShaderPtr>(std::format("Failed to load vertex shader: {}", info_log));
+            return Failure(std::format("Failed to load vertex shader: {}", info_log));
         }
         glGetShaderiv(ids[1], GL_COMPILE_STATUS, &status);
         if (!status) {
@@ -818,14 +818,14 @@ namespace fow {
             info_log.recalculate_size();
             glDeleteShader(ids[0]);
             glDeleteShader(ids[1]);
-            return Failure<ShaderPtr>(std::format("Failed to load fragment shader: {}", info_log));
+            return Failure(std::format("Failed to load fragment shader: {}", info_log));
         }
 
         const GLuint id = glCreateProgram();
         if (id == 0) {
             glDeleteShader(ids[0]);
             glDeleteShader(ids[1]);
-            return Failure<ShaderPtr>(std::format("Failed to generate shader program: GL Error {}", glGetError()));
+            return Failure(std::format("Failed to generate shader program: GL Error {}", glGetError()));
         }
         glAttachShader(id, ids[0]);
         glAttachShader(id, ids[1]);
@@ -837,7 +837,7 @@ namespace fow {
             info_log.recalculate_size();
             glDeleteShader(ids[0]);
             glDeleteShader(ids[1]);
-            return Failure<ShaderPtr>(std::format("Failed to link shader program: {}", info_log));
+            return Failure(std::format("Failed to link shader program: {}", info_log));
         }
         glDeleteShader(ids[0]);
         glDeleteShader(ids[1]);
@@ -851,7 +851,7 @@ namespace fow {
         GLint status;
         const GLuint vid = glCreateShader(GL_VERTEX_SHADER);
         if (vid == 0) {
-            return Failure<ShaderPtr>(std::format("Failed to generate vertex shader: GL Error {}", glGetError()));
+            return Failure(std::format("Failed to generate vertex shader: GL Error {}", glGetError()));
         }
         glShaderBinary(1, &vid, GL_SHADER_BINARY_FORMAT_SPIR_V, vertex_data, vertex_data_size);
         glSpecializeShader(vid, vertex_entry.as_cstr(), 0, nullptr, nullptr);
@@ -861,12 +861,12 @@ namespace fow {
             glGetShaderInfoLog(vid, 2048, nullptr, info_log.data());
             info_log.recalculate_size();
             glDeleteShader(vid);
-            return Failure<ShaderPtr>(std::format("Failed to load vertex shader: {}", info_log));
+            return Failure(std::format("Failed to load vertex shader: {}", info_log));
         }
 
         const GLuint fid = glCreateShader(GL_FRAGMENT_SHADER);
         if (fid == 0) {
-            return Failure<ShaderPtr>(std::format("Failed to generate fragment shader: GL Error {}", glGetError()));
+            return Failure(std::format("Failed to generate fragment shader: GL Error {}", glGetError()));
         }
         glShaderBinary(1, &fid, GL_SHADER_BINARY_FORMAT_SPIR_V, fragment_data, fragment_data_size);
         glSpecializeShader(fid, fragment_entry.as_cstr(), 0, nullptr, nullptr);
@@ -877,14 +877,14 @@ namespace fow {
             info_log.recalculate_size();
             glDeleteShader(fid);
             glDeleteShader(vid);
-            return Failure<ShaderPtr>(std::format("Failed to load fragment shader: {}", info_log));
+            return Failure(std::format("Failed to load fragment shader: {}", info_log));
         }
 
         const GLuint id = glCreateProgram();
         if (id == 0) {
             glDeleteShader(fid);
             glDeleteShader(vid);
-            return Failure<ShaderPtr>(std::format("Failed to generate shader program: GL Error {}", glGetError()));
+            return Failure(std::format("Failed to generate shader program: GL Error {}", glGetError()));
         }
         glAttachShader(id, vid);
         glAttachShader(id, fid);
@@ -896,7 +896,7 @@ namespace fow {
             info_log.recalculate_size();
             glDeleteShader(fid);
             glDeleteShader(vid);
-            return Failure<ShaderPtr>(std::format("Failed to link shader program: {}", info_log));
+            return Failure(std::format("Failed to link shader program: {}", info_log));
         }
         glDeleteShader(fid);
         glDeleteShader(vid);
@@ -910,29 +910,29 @@ namespace fow {
             if (xml_str.has_value()) {
                 pugi::xml_document doc;
                 if (const auto xml_result = doc.load_string(xml_str->as_cstr()); xml_result.status != pugi::status_ok) {
-                    return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Error while parsing XML '{}'", path, xml_result.description()));
+                    return Failure(std::format("Failed to load shader \"{}\": Error while parsing XML '{}'", path, xml_result.description()));
                 }
 
                 const auto shader_node = doc.child("Shader");
                 if (!shader_node) {
-                    return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Expected root node 'Shader' in XML document!", path));
+                    return Failure(std::format("Failed to load shader \"{}\": Expected root node 'Shader' in XML document!", path));
                 }
 
-                Result<ShaderPtr> result = Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Expected child node 'Sources', 'Binaries' or 'Binary' in root node 'Shader'", path));
+                Result<ShaderPtr> result = Failure(std::format("Failed to load shader \"{}\": Expected child node 'Sources', 'Binaries' or 'Binary' in root node 'Shader'", path));
                 if (const auto sources_node = shader_node.child("Sources"); sources_node) {
                     const auto vertex_attrib = sources_node.attribute("vertex");
                     const auto fragment_attrib = sources_node.attribute("fragment");
                     if (!vertex_attrib || !fragment_attrib) {
-                        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Expected attributes 'vertex' and 'fragment' in Sources node!", path));
+                        return Failure(std::format("Failed to load shader \"{}\": Expected attributes 'vertex' and 'fragment' in Sources node!", path));
                     }
 
                     const auto vertex_str = Assets::LoadAsString(vertex_attrib.value());
                     if (!vertex_str.has_value()) {
-                        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Failed to read vertex shader \"{}\"!", path, vertex_str.value()));
+                        return Failure(std::format("Failed to load shader \"{}\": Failed to read vertex shader \"{}\"!", path, vertex_str.value()));
                     }
                     const auto fragment_str = Assets::LoadAsString(fragment_attrib.value());
                     if (!fragment_str.has_value()) {
-                        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Failed to read fragment shader \"{}\"!", path, fragment_str.value()));
+                        return Failure(std::format("Failed to load shader \"{}\": Failed to read fragment shader \"{}\"!", path, fragment_str.value()));
                     }
                     result = std::move(Compile(path.as_string(), vertex_str.value(), fragment_str.value()));
                     if (!result.has_value()) {
@@ -943,28 +943,28 @@ namespace fow {
                     const auto vertex_node = binaries_node.child("Vertex");
                     const auto fragment_node = binaries_node.child("Fragment");
                     if (!vertex_node || !fragment_node) {
-                        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Expected child nodes 'Vertex' and 'Fragment' in Binaries node!", path));
+                        return Failure(std::format("Failed to load shader \"{}\": Expected child nodes 'Vertex' and 'Fragment' in Binaries node!", path));
                     }
 
                     const auto vertex_data_attrib = vertex_node.attribute("data");
                     const auto vertex_entry_attrib = vertex_node.attribute("entry");
                     if (!vertex_data_attrib || !vertex_entry_attrib) {
-                        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Expected attributes 'data' and 'entry' in Vertex node!", path));
+                        return Failure(std::format("Failed to load shader \"{}\": Expected attributes 'data' and 'entry' in Vertex node!", path));
                     }
 
                     const auto fragment_data_attrib = vertex_node.attribute("data");
                     const auto fragment_entry_attrib = vertex_node.attribute("entry");
                     if (!fragment_data_attrib || !fragment_entry_attrib) {
-                        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Expected attributes 'data' and 'entry' in Fragment node!", path));
+                        return Failure(std::format("Failed to load shader \"{}\": Expected attributes 'data' and 'entry' in Fragment node!", path));
                     }
 
                     const auto vertex_data = Assets::LoadAsBytes(vertex_data_attrib.value());
                     if (!vertex_data.has_value()) {
-                        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Failed to read vertex data \"{}\"!", path, vertex_data_attrib.value()));
+                        return Failure(std::format("Failed to load shader \"{}\": Failed to read vertex data \"{}\"!", path, vertex_data_attrib.value()));
                     }
                     const auto fragment_data = Assets::LoadAsBytes(fragment_data_attrib.value());
                     if (!fragment_data.has_value()) {
-                        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Failed to read fragment data \"{}\"!", path, fragment_data_attrib.value()));
+                        return Failure(std::format("Failed to load shader \"{}\": Failed to read fragment data \"{}\"!", path, fragment_data_attrib.value()));
                     }
                     result = FromBinary(path.as_string(),
                         vertex_data->data(), vertex_data->size(),
@@ -980,12 +980,12 @@ namespace fow {
                     const auto vertex_entry_attrib = binary_node.attribute("vertex_entry");
                     const auto fragment_entry_attrib = binary_node.attribute("fragment_entry");
                     if (!data_attrib || !vertex_entry_attrib || !vertex_entry_attrib) {
-                        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Expected attributes 'data', 'vertex_entry' and 'fragment_entry' in Binary node!", path));
+                        return Failure(std::format("Failed to load shader \"{}\": Expected attributes 'data', 'vertex_entry' and 'fragment_entry' in Binary node!", path));
                     }
 
                     const auto data = Assets::LoadAsBytes(data_attrib.value());
                     if (!data.has_value()) {
-                        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Failed to read binary file \"{}\"", path, data_attrib.value()));
+                        return Failure(std::format("Failed to load shader \"{}\": Failed to read binary file \"{}\"", path, data_attrib.value()));
                     }
                     result = FromBinary(path.as_string(), data->data(), data->size(), vertex_entry_attrib.value(), fragment_entry_attrib.value());
                     if (!result.has_value()) {
@@ -998,9 +998,9 @@ namespace fow {
 
                 return std::move(result);
             }
-            return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": {}", path, xml_str.error().message));
+            return Failure(std::format("Failed to load shader \"{}\": {}", path, xml_str.error().message));
         }
-        return Failure<ShaderPtr>(std::format("Failed to load shader \"{}\": Expected asset extension '.xml'", path));
+        return Failure(std::format("Failed to load shader \"{}\": Expected asset extension '.xml'", path));
     }
 
     static ShaderPtr s_placeholder_shader = nullptr;

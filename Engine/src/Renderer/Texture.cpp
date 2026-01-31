@@ -31,7 +31,7 @@ namespace fow {
         if (const auto result = rfl::string_to_enum<TextureTarget>(value.as_std_str()); result.has_value()) {
             return result.value();
         } else {
-            return Failure<TextureTarget>(result.error().what());
+            return Failure(result.error().what());
         }
     }
     template<>
@@ -57,7 +57,7 @@ namespace fow {
         if (const auto result = rfl::string_to_enum<TextureWrapMode>(value.as_std_str()); result.has_value()) {
             return result.value();
         } else {
-            return Failure<TextureWrapMode>(result.error().what());
+            return Failure(result.error().what());
         }
     }
     template<>
@@ -71,7 +71,7 @@ namespace fow {
         if (const auto result = rfl::string_to_enum<TextureMagFilterMode>(value.as_std_str()); result.has_value()) {
             return result.value();
         } else {
-            return Failure<TextureMagFilterMode>(result.error().what());
+            return Failure(result.error().what());
         }
     }
     template<>
@@ -97,24 +97,24 @@ namespace fow {
         if (const auto result = rfl::string_to_enum<TextureMinFilterMode>(value.as_std_str()); result.has_value()) {
             return result.value();
         } else {
-            return Failure<TextureMinFilterMode>(result.error().what());
+            return Failure(result.error().what());
         }
     }
 
     static Result<TextureInfo> ParseTextureInfo(const String& src) {
         pugi::xml_document doc;
         if (const auto result = doc.load_string(src.as_cstr()); result.status != pugi::status_ok) {
-            return Failure<TextureInfo>(result.description());
+            return Failure(result.description());
         }
 
         const auto root = doc.child("Texture");
         if (!root) {
-            return Failure<TextureInfo>("Expected root node \"Texture\"");
+            return Failure("Expected root node \"Texture\"");
         }
 
         const auto src_attrib = root.attribute("src");
         if (!src_attrib) {
-            return Failure<TextureInfo>("Expected attribute \"src\" on root node");
+            return Failure("Expected attribute \"src\" on root node");
         }
 
         TextureInfo info;
@@ -125,43 +125,43 @@ namespace fow {
                 if (const auto result = StringToEnum<TextureTarget>(node.child_value()); result.has_value()) {
                     info.Target = result.value();
                 } else {
-                    return Failure<TextureInfo>(std::format("Failed to parse node \"Target\" with value \"{}\": {}", node.child_value(), result.error().message));
+                    return Failure(std::format("Failed to parse node \"Target\" with value \"{}\": {}", node.child_value(), result.error().message));
                 }
             } else if (String(node.name()) == "MagFilter") {
                 if (const auto result = StringToEnum<TextureMagFilterMode>(node.child_value()); result.has_value()) {
                     info.MagFilter = result.value();
                 } else {
-                    return Failure<TextureInfo>(std::format("Failed to parse node \"MagFilter\" with value \"{}\": {}", node.child_value(), result.error().message));
+                    return Failure(std::format("Failed to parse node \"MagFilter\" with value \"{}\": {}", node.child_value(), result.error().message));
                 }
             } else if (String(node.name()) == "MinFilter") {
                 if (const auto result = StringToEnum<TextureMinFilterMode>(node.child_value()); result.has_value()) {
                     info.MinFilter = result.value();
                 } else {
-                    return Failure<TextureInfo>(std::format("Failed to parse node \"MinFilter\" with value \"{}\": {}", node.child_value(), result.error().message));
+                    return Failure(std::format("Failed to parse node \"MinFilter\" with value \"{}\": {}", node.child_value(), result.error().message));
                 }
             } else if (String(node.name()) == "WrapS") {
                 if (const auto result = StringToEnum<TextureWrapMode>(node.child_value()); result.has_value()) {
                     info.WrapS = result.value();
                 } else {
-                    return Failure<TextureInfo>(std::format("Failed to parse node \"WrapS\" with value \"{}\": {}", node.child_value(), result.error().message));
+                    return Failure(std::format("Failed to parse node \"WrapS\" with value \"{}\": {}", node.child_value(), result.error().message));
                 }
             } else if (String(node.name()) == "WrapT") {
                 if (const auto result = StringToEnum<TextureWrapMode>(node.child_value()); result.has_value()) {
                     info.WrapT = result.value();
                 } else {
-                    return Failure<TextureInfo>(std::format("Failed to parse node \"WrapT\" with value \"{}\": {}", node.child_value(), result.error().message));
+                    return Failure(std::format("Failed to parse node \"WrapT\" with value \"{}\": {}", node.child_value(), result.error().message));
                 }
             } else if (String(node.name()) == "FrameCount") {
                 try {
                     info.FrameCount = std::stoi(node.child_value());
                 } catch (const std::exception& e) {
-                    return Failure<TextureInfo>("Expected integer value for node \"FrameCount\"");
+                    return Failure("Expected integer value for node \"FrameCount\"");
                 }
             } else if (String(node.name()) == "GenerateMipMaps") {
                 if (const auto result = StringToBool(node.child_value()); result.has_value()) {
                     info.GenerateMipMaps = result.value();
                 } else {
-                    return Failure<TextureInfo>(std::format("Expected boolean value for \"GenerateMipMaps\""));
+                    return Failure(std::format("Expected boolean value for \"GenerateMipMaps\""));
                 }
             } else {
                 Debug::LogError(std::format("Unknown parameter \"{}\"", node.name()));
@@ -394,7 +394,7 @@ namespace fow {
         glCreateTextures(gl_target, 1, &id);
 
         if (id == 0) {
-            result = Failure<GLuint>(std::format("Failed to generate OpenGL texture handle: GL error \"{}\"", glGetError()));
+            result = Failure(std::format("Failed to generate OpenGL texture handle: GL error \"{}\"", glGetError()));
             goto LOAD_GL_TEXTURE_END;
         }
 
@@ -405,7 +405,7 @@ namespace fow {
         } else if (target == TextureTarget::Texture2DArray) {
             id = SOIL_load_OGL_texture_array_from_atlas_grid_from_memory(data.data(), data.size(), frame_count, 1, SOIL_LOAD_AUTO, id, 0);
         } else {
-            result = Failure<GLuint>("Failed to load OpenGL texture data: Unsupported texture target");
+            result = Failure("Failed to load OpenGL texture data: Unsupported texture target");
             goto LOAD_GL_TEXTURE_END;
         }
 
@@ -432,7 +432,7 @@ namespace fow {
     Result<Texture2DPtr> Texture2D::Load(const TextureInfo& info) {
         const auto image_data = Assets::LoadAsBytes(info.Source.c_str());
         if (!image_data.has_value()) {
-            return Failure<Texture2DPtr>(std::format("Failed to load image \"{}\": Image asset doesn't exists!", info.Source));
+            return Failure(std::format("Failed to load image \"{}\": Image asset doesn't exists!", info.Source));
         }
         return LoadFromMemory(image_data.value(), info);
     }
@@ -441,34 +441,34 @@ namespace fow {
         if (id_result.has_value()) {
             return Success<Texture2DPtr>(std::make_shared<Texture2D>(std::move(Texture2D { id_result.value() })));
         }
-        return Failure<Texture2DPtr>(std::format("Failed to load image data \"{}\": {}", info.Source, id_result.error().message), id_result.error().location);
+        return Failure(std::format("Failed to load image data \"{}\": {}", info.Source, id_result.error().message), id_result.error().location);
     }
 
     Result<Texture2DPtr> Texture2D::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {
         if (!path.extension().equals(".xml", StringCompareType::CaseInsensitive)) {
-            return Failure<Texture2DPtr>(std::format("Failed to load texture \"{}\": Expected asset extension '.xml'", path));
+            return Failure(std::format("Failed to load texture \"{}\": Expected asset extension '.xml'", path));
         }
         const auto xml_str = Assets::LoadAsString(path, flags);
         if (!xml_str.has_value()) {
-            return Failure<Texture2DPtr>(std::format("Failed to load texture \"{}\": {}", path, xml_str.error().message));
+            return Failure(std::format("Failed to load texture \"{}\": {}", path, xml_str.error().message));
         }
         const auto info_value = ParseTextureInfo(xml_str.value().as_std_str());
         if (!info_value.has_value()) {
-            return Failure<Texture2DPtr>(std::format("Failed to load texture \"{}\": {}", path, info_value.error().message));
+            return Failure(std::format("Failed to load texture \"{}\": {}", path, info_value.error().message));
         }
         if (info_value->Target.value_or(TextureTarget::Texture2D) != TextureTarget::Texture2D) {
-            return Failure<Texture2DPtr>(std::format("Failed to load texture \"{}\": Expected target 'Texture2D'", path));
+            return Failure(std::format("Failed to load texture \"{}\": Expected target 'Texture2D'", path));
         }
         if (const auto image_data = Assets::LoadAsBytes(info_value->Source.c_str(), flags); image_data.has_value()) {
             return LoadFromMemory(image_data.value(), info_value.value());
         }
-        return Failure<Texture2DPtr>(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
+        return Failure(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
     }
 
     Result<Texture2DArrayPtr> Texture2DArray::Load(const TextureInfo& info) {
         const auto image_data = Assets::LoadAsBytes(info.Source.c_str());
         if (!image_data.has_value()) {
-            return Failure<Texture2DArrayPtr>(std::format("Failed to load image \"{}\": Image asset doesn't exists!", info.Source));
+            return Failure(std::format("Failed to load image \"{}\": Image asset doesn't exists!", info.Source));
         }
         return LoadFromMemory(image_data.value(), info);
     }
@@ -477,34 +477,34 @@ namespace fow {
         if (id_result.has_value()) {
             return Success<Texture2DArrayPtr>(std::make_shared<Texture2DArray>(std::move(Texture2DArray { id_result.value() })));
         }
-        return Failure<Texture2DArrayPtr>(std::format("Failed to load image data \"{}\": {}", info.Source, id_result.error().message), id_result.error().location);
+        return Failure(std::format("Failed to load image data \"{}\": {}", info.Source, id_result.error().message), id_result.error().location);
     }
 
     Result<Texture2DArrayPtr> Texture2DArray::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {
         if (!path.extension().equals(".xml", StringCompareType::CaseInsensitive)) {
-            return Failure<Texture2DArrayPtr>(std::format("Failed to load texture \"{}\": Expected asset extension '.xml'", path));
+            return Failure(std::format("Failed to load texture \"{}\": Expected asset extension '.xml'", path));
         }
         const auto xml_str = Assets::LoadAsString(path, flags);
         if (!xml_str.has_value()) {
-            return Failure<Texture2DArrayPtr>(std::format("Failed to load texture \"{}\": {}", path, xml_str.error().message));
+            return Failure(std::format("Failed to load texture \"{}\": {}", path, xml_str.error().message));
         }
         const auto info_value = ParseTextureInfo(xml_str.value().as_std_str());
         if (!info_value.has_value()) {
-            return Failure<Texture2DArrayPtr>(std::format("Failed to load texture \"{}\": {}", path, info_value.error().message));
+            return Failure(std::format("Failed to load texture \"{}\": {}", path, info_value.error().message));
         }
         if (info_value->Target.value_or(TextureTarget::Texture2DArray) != TextureTarget::Texture2DArray) {
-            return Failure<Texture2DArrayPtr>(std::format("Failed to load texture \"{}\": Expected target 'Texture2DArray'", path));
+            return Failure(std::format("Failed to load texture \"{}\": Expected target 'Texture2DArray'", path));
         }
         if (const auto image_data = Assets::LoadAsBytes(info_value->Source.c_str(), flags); image_data.has_value()) {
             return LoadFromMemory(image_data.value(), info_value.value());
         }
-        return Failure<Texture2DArrayPtr>(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
+        return Failure(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
     }
 
     Result<TextureCubeMapPtr> TextureCubeMap::Load(const TextureInfo& info) {
         const auto image_data = Assets::LoadAsBytes(info.Source.c_str());
         if (!image_data.has_value()) {
-            return Failure<TextureCubeMapPtr>(std::format("Failed to load image \"{}\": Image asset doesn't exists!", info.Source));
+            return Failure(std::format("Failed to load image \"{}\": Image asset doesn't exists!", info.Source));
         }
         return LoadFromMemory(image_data.value(), info);
     }
@@ -513,27 +513,27 @@ namespace fow {
         if (id_result.has_value()) {
             return Success<TextureCubeMapPtr>(std::make_shared<TextureCubeMap>(std::move(TextureCubeMap { id_result.value() })));
         }
-        return Failure<TextureCubeMapPtr>(std::format("Failed to load image data \"{}\": {}", info.Source, id_result.error().message), id_result.error().location);
+        return Failure(std::format("Failed to load image data \"{}\": {}", info.Source, id_result.error().message), id_result.error().location);
     }
 
     Result<TextureCubeMapPtr> TextureCubeMap::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {
         if (!path.extension().equals(".xml", StringCompareType::CaseInsensitive)) {
-            return Failure<TextureCubeMapPtr>(std::format("Failed to load texture \"{}\": Expected asset extension '.xml'", path));
+            return Failure(std::format("Failed to load texture \"{}\": Expected asset extension '.xml'", path));
         }
         const auto xml_str = Assets::LoadAsString(path, flags);
         if (!xml_str.has_value()) {
-            return Failure<TextureCubeMapPtr>(std::format("Failed to load texture \"{}\": {}", path, xml_str.error().message));
+            return Failure(std::format("Failed to load texture \"{}\": {}", path, xml_str.error().message));
         }
         const auto info_value = ParseTextureInfo(xml_str.value().as_std_str());
         if (!info_value.has_value()) {
-            return Failure<TextureCubeMapPtr>(std::format("Failed to load texture \"{}\": {}", path, info_value.error().message));
+            return Failure(std::format("Failed to load texture \"{}\": {}", path, info_value.error().message));
         }
         if (info_value->Target.value_or(TextureTarget::TextureCubeMap) != TextureTarget::TextureCubeMap) {
-            return Failure<TextureCubeMapPtr>(std::format("Failed to load texture \"{}\": Expected target 'TextureCubeMap'", path));
+            return Failure(std::format("Failed to load texture \"{}\": Expected target 'TextureCubeMap'", path));
         }
         if (const auto image_data = Assets::LoadAsBytes(info_value->Source.c_str(), flags); image_data.has_value()) {
             return LoadFromMemory(image_data.value(), info_value.value());
         }
-        return Failure<TextureCubeMapPtr>(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
+        return Failure(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
     }
 }

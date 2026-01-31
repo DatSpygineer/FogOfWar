@@ -99,7 +99,11 @@ public:
     void on_window_resized(const glm::ivec2& new_size) override {
     }
 
+#if __cplusplus >= 202302L
     [[nodiscard]] constexpr String title() const override {
+#else
+    [[nodiscard]] inline String title() const override {
+#endif
         return "Example";
     }
     [[nodiscard]] Vector<String> game_data_archives() const override {
