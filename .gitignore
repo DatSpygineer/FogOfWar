@@ -1,6 +1,12 @@
+# IDE settings
 .vs
 .idea
 
+# Build files
 Build
 
+# Generated code
+Game/Example/shaderlib
+
+# VCPKG cache
 vcpkg_installed

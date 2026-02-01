@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Shader>
-    <Sources vertex="/Shaders/Source/test.vsh" fragment="/Shaders/Source/test.fsh"/>
-</Shader>

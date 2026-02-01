@@ -6,41 +6,6 @@
 #include "fow/Shared/StringConvertion.hpp"
 
 namespace fow {
-    static HashMap<String, String> s_built_in_shader_headers = { };
-
-    static Result<String> ResolveShaderIncludes(const String& name, const String& source) {
-        std::istringstream input(source.as_std_str());
-        std::string line;
-        std::ostringstream result;
-        size_t line_i = 1;
-
-        while (std::getline(input, line)) {
-            if (auto s_line = String(line); s_line.clone_trimmed().starts_with("#include")) {
-                auto asset_path = s_line.clone_trimmed().remove_prefix("#include");
-                asset_path.trim().trim("\"").trim_begin("<").trim_end(">");
-                result << "#line 1 \"" << asset_path.as_std_str() << "\"" << std::endl;
-                String include_source;
-                if (s_built_in_shader_headers.contains(asset_path)) {
-                    include_source = s_built_in_shader_headers.at(asset_path);
-                } else {
-                    const auto include_source_result = Assets::LoadAsString(asset_path);
-                    if (!include_source_result.has_value()) {
-                        return Failure(include_source_result.error());
-                    }
-                    include_source = include_source_result.value();
-                }
-                line_i++;
-                result << include_source.as_std_str() << std::endl;
-                result << std::endl;
-                result << "#line " << line_i << " \"" << name << "\"" << std::endl;
-            } else {
-                result << line << std::endl;
-                line_i++;
-            }
-        }
-        return Success<String>(result.str());
-    }
-
     Shader::~Shader() {
         if (m_uProgram != 0 && m_bInitialized) {
             glDeleteProgram(m_uProgram);
@@ -735,17 +700,17 @@ namespace fow {
     }
 
     Result<ShaderPtr> Shader::Compile(const String& name, const String& vertex, const String& fragment) {
+        if (IsCached(name)) {
+            return FromCache(name);
+        }
+
         GLint status;
         const GLuint vid = glCreateShader(GL_VERTEX_SHADER);
         if (vid == 0) {
             return Failure(std::format("Failed to generate vertex shader: GL Error {}", glGetError()));
         }
 
-        const auto processed_vertex = ResolveShaderIncludes(std::format("{}:vertex", name), vertex);
-        if (!processed_vertex.has_value()) {
-            return Failure(std::format("Failed to compile vertex shader, error while preprocessing: {}", processed_vertex.error().message));
-        }
-        const char* vertex_cstr = processed_vertex.value().as_cstr();
+        const char* vertex_cstr = vertex.as_cstr();
         glShaderSource(vid, 1, &vertex_cstr, nullptr);
         glCompileShader(vid);
         glGetShaderiv(vid, GL_COMPILE_STATUS, &status);
@@ -763,12 +728,7 @@ namespace fow {
             return Failure(std::format("Failed to generate fragment shader: GL Error {}", glGetError()));
         }
 
-        const auto processed_fragment = ResolveShaderIncludes(std::format("{}:fragment", name), fragment);
-        if (!processed_fragment.has_value()) {
-            glDeleteShader(vid);
-            return Failure(std::format("Failed to compile fragment shader, error while preprocessing: {}", processed_fragment.error().message));
-        }
-        const char* fragment_cstr = processed_fragment.value().as_cstr();
+        const char* fragment_cstr = fragment.as_cstr();
         glShaderSource(fid, 1, &fragment_cstr, nullptr);
         glCompileShader(fid);
         glGetShaderiv(fid, GL_COMPILE_STATUS, &status);
@@ -802,10 +762,13 @@ namespace fow {
         glDeleteShader(fid);
         glDeleteShader(vid);
 
-        return Success<ShaderPtr>(std::move(std::make_shared<Shader>(std::move(Shader { id }))));
+        return Success<ShaderPtr>(CacheShader(std::move(std::make_shared<Shader>(std::move(Shader { name, id })))));
     }
-    Result<ShaderPtr> Shader::FromBinary(const String& name, const void* data, const size_t data_size,
-        const String& vertex_entry, const String& fragment_entry) {
+    Result<ShaderPtr> Shader::FromBinary(const String& name, const void* data, const size_t data_size, const String& vertex_entry, const String& fragment_entry) {
+        if (IsCached(name)) {
+            return FromCache(name);
+        }
+
         GLint status;
         GLuint ids[] = { };
         ids[0] = glCreateShader(GL_VERTEX_SHADER);
@@ -860,11 +823,14 @@ namespace fow {
         glDeleteShader(ids[0]);
         glDeleteShader(ids[1]);
 
-        return Success<ShaderPtr>(std::make_shared<Shader>(std::move(Shader { id })));
+        return Success<ShaderPtr>(CacheShader(std::move(std::make_shared<Shader>(std::move(Shader { name, id })))));
     }
     Result<ShaderPtr> Shader::FromBinary(const String& name, const void* vertex_data, const size_t vertex_data_size,
         const void* fragment_data, const size_t fragment_data_size, const String& vertex_entry,
         const String& fragment_entry) {
+        if (IsCached(name)) {
+            return FromCache(name);
+        }
 
         GLint status;
         const GLuint vid = glCreateShader(GL_VERTEX_SHADER);
@@ -919,115 +885,16 @@ namespace fow {
         glDeleteShader(fid);
         glDeleteShader(vid);
 
-        return Success<ShaderPtr>(std::make_shared<Shader>(std::move(Shader { id })));
+        return Success<ShaderPtr>(CacheShader(std::move(std::make_shared<Shader>(std::move(Shader { name, id })))));
     }
 
-    Result<ShaderPtr> Shader::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {
-        if (path.extension().equals(".xml", StringCompareType::CaseInsensitive)) {
-            const auto xml_str = Assets::LoadAsString(path, flags);
-            if (xml_str.has_value()) {
-                pugi::xml_document doc;
-                if (const auto xml_result = doc.load_string(xml_str->as_cstr()); xml_result.status != pugi::status_ok) {
-                    return Failure(std::format("Failed to load shader \"{}\": Error while parsing XML '{}'", path, xml_result.description()));
-                }
-
-                const auto shader_node = doc.child("Shader");
-                if (!shader_node) {
-                    return Failure(std::format("Failed to load shader \"{}\": Expected root node 'Shader' in XML document!", path));
-                }
-
-                Result<ShaderPtr> result = Failure(std::format("Failed to load shader \"{}\": Expected child node 'Sources', 'Binaries' or 'Binary' in root node 'Shader'", path));
-                if (const auto sources_node = shader_node.child("Sources"); sources_node) {
-                    const auto vertex_attrib = sources_node.attribute("vertex");
-                    const auto fragment_attrib = sources_node.attribute("fragment");
-                    if (!vertex_attrib || !fragment_attrib) {
-                        return Failure(std::format("Failed to load shader \"{}\": Expected attributes 'vertex' and 'fragment' in Sources node!", path));
-                    }
-
-                    const auto vertex_str = Assets::LoadAsString(vertex_attrib.value());
-                    if (!vertex_str.has_value()) {
-                        return Failure(std::format("Failed to load shader \"{}\": Failed to read vertex shader \"{}\"!", path, vertex_str.value()));
-                    }
-                    const auto fragment_str = Assets::LoadAsString(fragment_attrib.value());
-                    if (!fragment_str.has_value()) {
-                        return Failure(std::format("Failed to load shader \"{}\": Failed to read fragment shader \"{}\"!", path, fragment_str.value()));
-                    }
-                    result = std::move(Compile(path.as_string(), vertex_str.value(), fragment_str.value()));
-                    if (!result.has_value()) {
-                        return result;
-                    }
-                }
-                if (const auto binaries_node = shader_node.child("Binaries"); binaries_node) {
-                    const auto vertex_node = binaries_node.child("Vertex");
-                    const auto fragment_node = binaries_node.child("Fragment");
-                    if (!vertex_node || !fragment_node) {
-                        return Failure(std::format("Failed to load shader \"{}\": Expected child nodes 'Vertex' and 'Fragment' in Binaries node!", path));
-                    }
-
-                    const auto vertex_data_attrib = vertex_node.attribute("data");
-                    const auto vertex_entry_attrib = vertex_node.attribute("entry");
-                    if (!vertex_data_attrib || !vertex_entry_attrib) {
-                        return Failure(std::format("Failed to load shader \"{}\": Expected attributes 'data' and 'entry' in Vertex node!", path));
-                    }
-
-                    const auto fragment_data_attrib = vertex_node.attribute("data");
-                    const auto fragment_entry_attrib = vertex_node.attribute("entry");
-                    if (!fragment_data_attrib || !fragment_entry_attrib) {
-                        return Failure(std::format("Failed to load shader \"{}\": Expected attributes 'data' and 'entry' in Fragment node!", path));
-                    }
-
-                    const auto vertex_data = Assets::LoadAsBytes(vertex_data_attrib.value());
-                    if (!vertex_data.has_value()) {
-                        return Failure(std::format("Failed to load shader \"{}\": Failed to read vertex data \"{}\"!", path, vertex_data_attrib.value()));
-                    }
-                    const auto fragment_data = Assets::LoadAsBytes(fragment_data_attrib.value());
-                    if (!fragment_data.has_value()) {
-                        return Failure(std::format("Failed to load shader \"{}\": Failed to read fragment data \"{}\"!", path, fragment_data_attrib.value()));
-                    }
-                    result = FromBinary(path.as_string(),
-                        vertex_data->data(), vertex_data->size(),
-                        fragment_data->data(), fragment_data->size(),
-                        vertex_entry_attrib.value(), fragment_entry_attrib.value()
-                    );
-                    if (!result.has_value()) {
-                        return result;
-                    }
-                }
-                if (const auto binary_node = shader_node.child("Binary"); binary_node) {
-                    const auto data_attrib = binary_node.attribute("data");
-                    const auto vertex_entry_attrib = binary_node.attribute("vertex_entry");
-                    const auto fragment_entry_attrib = binary_node.attribute("fragment_entry");
-                    if (!data_attrib || !vertex_entry_attrib || !vertex_entry_attrib) {
-                        return Failure(std::format("Failed to load shader \"{}\": Expected attributes 'data', 'vertex_entry' and 'fragment_entry' in Binary node!", path));
-                    }
-
-                    const auto data = Assets::LoadAsBytes(data_attrib.value());
-                    if (!data.has_value()) {
-                        return Failure(std::format("Failed to load shader \"{}\": Failed to read binary file \"{}\"", path, data_attrib.value()));
-                    }
-                    result = FromBinary(path.as_string(), data->data(), data->size(), vertex_entry_attrib.value(), fragment_entry_attrib.value());
-                    if (!result.has_value()) {
-                        return result;
-                    }
-                }
-                if (!result.has_value()) {
-                    return result;
-                }
-
-                return std::move(result);
-            }
-            return Failure(std::format("Failed to load shader \"{}\": {}", path, xml_str.error().message));
-        }
-        return Failure(std::format("Failed to load shader \"{}\": Expected asset extension '.xml'", path));
-    }
-
-    static ShaderPtr s_placeholder_shader = nullptr;
+    static std::unordered_map<String, ShaderPtr> s_shaders;
 
     ShaderPtr Shader::PlaceHolder() {
-        if (s_placeholder_shader != nullptr) {
-            return s_placeholder_shader;
+        if (IsCached(FOW_SHADER_PLACEHOLDER_NAME)) {
+            return FromCache(FOW_SHADER_PLACEHOLDER_NAME);
         }
-        const auto result = Compile(FOW_SHADER_PLACEHOLDER_ASSET_PATH,
+        const auto result = Compile(FOW_SHADER_PLACEHOLDER_NAME,
                 "#version 330 core\n"
                 "layout (location = 0) in vec3 VERTEX_POSITION;\n"
                 "uniform mat4 MATRIX_PVM;\n"
@@ -1041,15 +908,33 @@ namespace fow {
                 "}"
             );
         if (result.has_value()) {
-            s_placeholder_shader = std::move(result.value());
-            return s_placeholder_shader;
+            return CacheShader(std::move(result.value()));
         }
         throw std::runtime_error(std::format("Failed to compile placeholder shader: {}", result.error().message));
     }
 
-    void Shader::UnloadPlaceHolder() {
-        if (s_placeholder_shader != nullptr) {
-            s_placeholder_shader = nullptr;
+    ShaderPtr Shader::CacheShader(const ShaderPtr& shader) {
+        const auto name = shader->m_sName;
+        if (!s_shaders.contains(name)) {
+            s_shaders.emplace(name, shader);
         }
+        return s_shaders.at(name);
+    }
+    ShaderPtr Shader::CacheShader(ShaderPtr&& shader) noexcept {
+        const auto name = shader->m_sName;
+        if (!s_shaders.contains(name)) {
+            s_shaders.emplace(name, std::move(shader));
+        }
+        return s_shaders.at(name);
+    }
+    ShaderPtr Shader::FromCache(const String& name) {
+        return s_shaders.contains(name) ? s_shaders.at(name) : nullptr;
+    }
+    bool Shader::IsCached(const String& name) {
+        return s_shaders.contains(name);
+    }
+
+    void Shader::UnloadShaderCache() {
+        s_shaders.clear();
     }
 }

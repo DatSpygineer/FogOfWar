@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include "fow/Renderer.hpp"
+#include "fow/Renderer/ShaderLib.hpp"
 
 #include <glm/gtx/transform.hpp>
 
@@ -24,6 +25,10 @@ namespace fow {
                 }
             }
 
+            if (const auto result = ShaderLib::Load(s_base_path); !result.has_value()) {
+                return result;
+            }
+
             Debug::LogInfo(std::format("Initialized OpenGL v{}", reinterpret_cast<const char*>(glGetString(GL_VERSION))));
 
             glEnable(GL_CULL_FACE);
@@ -35,6 +40,7 @@ namespace fow {
             return Success();
         }
         void Terminate() {
+            ShaderLib::Unload();
         }
 
         Path GetBasePath() {

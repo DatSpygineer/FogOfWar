@@ -2,7 +2,8 @@
 <Model>
     <Source>/Models/LightGizmo.glb</Source>
     <Materials>
-        <Material shader="/Shaders/test.shader.xml">
+        <Material shader="UnlitGeneric">
+            <Opaque>true</Opaque>
             <Parameters>
                 <MainTexture>$DEFAULT_WHITE</MainTexture>
             </Parameters>

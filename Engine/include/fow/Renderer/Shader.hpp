@@ -9,8 +9,9 @@
 
 #include "fow/Shared.hpp"
 #include "fow/Renderer/Texture.hpp"
+#include "fow/Renderer/ShaderLib.hpp"
 
-#define FOW_SHADER_PLACEHOLDER_ASSET_PATH "FOGOFWAR::Shaders/Null"
+#define FOW_SHADER_PLACEHOLDER_NAME "NULL"
 
 namespace fow {
     enum class ShaderUniformType {
@@ -58,8 +59,9 @@ namespace fow {
     class FOW_RENDER_API Shader final {
         GLuint m_uProgram;
         bool   m_bInitialized;
+        String m_sName;
 
-        explicit Shader(const GLuint id) : m_uProgram(id), m_bInitialized(true) { }
+        explicit Shader(const String& name, const GLuint id) : m_uProgram(id), m_bInitialized(true), m_sName(name) { }
     public:
         Shader() : m_uProgram(0),  m_bInitialized(false) { }
         Shader(const Shader& other) = delete;
@@ -205,6 +207,12 @@ namespace fow {
         [[nodiscard]] Result<ShaderUniformInfo> get_uniform_info(GLint location) const;
         [[nodiscard]] size_t get_uniform_count() const;
 
+#if __cplusplus >= 202302L
+        [[nodiscard]] constexpr const String& name() const { return m_sName; }
+#else
+        [[nodiscard]] inline const String& name() const { return m_sName; }
+#endif
+
         static Result<ShaderPtr> Compile(const String& name, const String& vertex, const String& fragment);
         static Result<ShaderPtr> FromBinary(const String& name, const void* data, size_t data_size, const String& vertex_entry, const String& fragment_entry);
         static Result<ShaderPtr> FromBinary(const String& name,
@@ -212,10 +220,13 @@ namespace fow {
             const void* fragment_data, size_t fragment_data_size,
             const String& vertex_entry, const String& fragment_entry
         );
-        static Result<ShaderPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
 
         static ShaderPtr PlaceHolder();
-        static void UnloadPlaceHolder();
+        static ShaderPtr CacheShader(const ShaderPtr& shader);
+        static ShaderPtr CacheShader(ShaderPtr&& shader) noexcept;
+        static ShaderPtr FromCache(const String& name);
+        static bool IsCached(const String& name);
+        static void UnloadShaderCache();
     };
 }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Model>
-    <Source>/Models/Cube.glb</Source>
+    <Source>/Models/Plane.glb</Source>
     <Materials shader="UnlitGeneric">
-        <Material src="/Materials/Cube.material.xml"/>
+        <Material src="/Materials/Plane.material.xml"/>
     </Materials>
 </Model>

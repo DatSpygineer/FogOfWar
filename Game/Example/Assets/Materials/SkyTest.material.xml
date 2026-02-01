@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Material shader="/Shaders/Sky.shader.xml">
+<Material shader="Skybox">
     <DepthTest>false</DepthTest>
     <Parameters>
         <SkyTexture>/Textures/sky_test.texture.xml</SkyTexture>

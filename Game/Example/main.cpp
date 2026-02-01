@@ -1,6 +1,6 @@
-#include <fow/Core.hpp>
+#include "fow/Core.hpp"
 
-#include <fow/Engine/ImGui.hpp>
+#include "imgui.h"
 
 using namespace fow;
 
@@ -15,10 +15,11 @@ struct LightInfo {
 
 class ExampleGame : public Game {
     Asset<Model> test_model;
+    Asset<Model> test_plane_model;
     Asset<Model> light_model;
     Transform test_transform;
     float m_fAngle = 0.0f;
-    glm::vec3 m_cameraPos = glm::vec3 { 0.0f, 5.0f, 5.0f };
+    glm::vec3 m_cameraPos = glm::vec3 { 0.0f, 3.0f, 3.0f };
 
     float m_fPhongStrength  = 0.5f;
     float m_fPhongExponent  = 0.5f;
@@ -52,21 +53,53 @@ public:
         if (model.has_value()) {
             test_model = std::move(model.value());
         }
+        model = Assets::Load<Model>("/Models/Plane.model.xml");
+        Debug::AssertFatal(model);
+        if (model.has_value()) {
+            test_plane_model = std::move(model.value());
+        }
         model = Assets::Load<Model>("/Models/LightGizmo.model.xml");
         Debug::AssertFatal(model);
         if (model.has_value()) {
             light_model = std::move(model.value());
         }
 
+        test_transform.set_local_position(glm::vec3 { 0.0f, 1.0f, 0.0f });
         Renderer::UpdateCameraProjectionPerspective(60.0f, Engine::GetWindowSize(), 0.1f, 1000.0f);
-        Renderer::UpdateCameraPosition(m_cameraPos, glm::vec3 { 0.0f, 0.0f, 0.0f }, glm::vec3 { 0.0f, 1.0f, 0.0f });
+        Renderer::UpdateCameraPosition(m_cameraPos, glm::vec3 { 0.0f, 1.0f, 0.0f }, glm::vec3 { 0.0f, 1.0f, 0.0f });
     }
     void on_update(const double dt) override {
         test_transform.set_local_rotation(glm::vec3 { 0.0f, 1.0f, 0.0f }, m_fAngle);
         m_fAngle += static_cast<float>(dt * 0.5f);
+        if (Input::KeyIsPressed(KeyCode::F10)) {
+            Console::ToggleConsoleVisible();
+        }
     }
     void on_render(const double dt) override {
-        for (auto& mat : test_model->materials()) {
+        for (const auto& mat : test_plane_model->materials()) {
+            Debug::Assert(mat->set_parameter("ViewPos", m_cameraPos));
+            Debug::Assert(mat->set_parameter("PhongStrength", m_fPhongStrength));
+            Debug::Assert(mat->set_parameter("PhongExponent", m_fPhongExponent));
+            Debug::Assert(mat->set_parameter("Environment.AmbientColor", m_ambientLightColor));
+            Debug::Assert(mat->set_parameter("Environment.AmbientStrength", m_ambientLightStrength));
+            Debug::Assert(mat->set_parameter("Environment.SunDirection", m_sunDir));
+            Debug::Assert(mat->set_parameter("Environment.SunLightColor", m_sunColor));
+            Debug::Assert(mat->set_parameter("Lights[0].Position", m_light1.position));
+            Debug::Assert(mat->set_parameter("Lights[0].Color", m_light1.color));
+            Debug::Assert(mat->set_parameter("Lights[0].Constant", m_light1.constant));
+            Debug::Assert(mat->set_parameter("Lights[0].Linear", m_light1.linear));
+            Debug::Assert(mat->set_parameter("Lights[0].Quadratic", m_light1.quadratic));
+            Debug::Assert(mat->set_parameter("Lights[1].Position", m_light2.position));
+            Debug::Assert(mat->set_parameter("Lights[1].Color", m_light2.color));
+            Debug::Assert(mat->set_parameter("Lights[1].Constant", m_light2.constant));
+            Debug::Assert(mat->set_parameter("Lights[1].Linear", m_light2.linear));
+            Debug::Assert(mat->set_parameter("Lights[1].Quadratic", m_light2.quadratic));
+            Debug::Assert(mat->set_parameter("LightCount", 2));
+            Debug::Assert(mat->set_parameter("EnvMapStrength", m_fEnvMapStrength));
+        }
+        test_plane_model->draw();
+
+        for (const auto& mat : test_model->materials()) {
             Debug::Assert(mat->set_parameter("ViewPos", m_cameraPos));
             Debug::Assert(mat->set_parameter("PhongStrength", m_fPhongStrength));
             Debug::Assert(mat->set_parameter("PhongExponent", m_fPhongExponent));
@@ -90,11 +123,11 @@ public:
         test_model->draw(test_transform);
 
         for (auto& mat : light_model->materials()) {
-            Debug::AssertWarn(mat->set_parameter("TextureColor", glm::vec4(m_light1.color, 1.0f)));
+            mat->set_parameter("ColorTint", glm::vec4(m_light1.color, 1.0f));
         }
         light_model->draw(Transform { m_light1.position, glm::vec3 { 1.0f }, glm::quat() });
         for (auto& mat : light_model->materials()) {
-            Debug::AssertWarn(mat->set_parameter("TextureColor", glm::vec4(m_light2.color, 1.0f)));
+            mat->set_parameter("ColorTint", glm::vec4(m_light2.color, 1.0f));
         }
         light_model->draw(Transform { m_light2.position, glm::vec3 { 1.0f }, glm::quat() });
     }
