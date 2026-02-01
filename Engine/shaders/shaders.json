@@ -10,6 +10,10 @@
     "UnlitGeneric": {
       "vertex":   "src/Generic3D.vsh",
       "fragment": "src/UnlitGeneric.fsh"
+    },
+    "Skybox": {
+      "vertex":   "src/Sky.vsh",
+      "fragment": "src/Sky.fsh"
     }
   }
 }
