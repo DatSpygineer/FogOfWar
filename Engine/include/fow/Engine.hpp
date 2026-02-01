@@ -72,6 +72,13 @@ namespace fow {
             int keycode;
         };
 
+        enum CursorMode {
+            Normal   = GLFW_CURSOR_NORMAL,
+            Hidden   = GLFW_CURSOR_HIDDEN,
+            Disabled = GLFW_CURSOR_DISABLED,
+            Captured = GLFW_CURSOR_CAPTURED
+        };
+
         FOW_ENGINE_API void Initialize();
         FOW_ENGINE_API void Poll();
 
@@ -83,6 +90,9 @@ namespace fow {
 
         FOW_ENGINE_API Result<Action> StringToAction(const String& key);
         FOW_ENGINE_API Result<String> ActionToString(Action action);
+
+        FOW_ENGINE_API void SetCursorMode(CursorMode mode);
+        FOW_ENGINE_API CursorMode GetCursorMode();
 
         FOW_ENGINE_API bool ActionIsPressed(const String& action);
         FOW_ENGINE_API bool ActionIsDown(const String& action);

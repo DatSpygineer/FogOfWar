@@ -6,6 +6,7 @@
 #include "fow/Renderer/Material.hpp"
 #include "fow/Renderer/Mesh.hpp"
 #include "fow/Renderer/Model.hpp"
+#include "fow/Renderer/Skybox.hpp"
 
 namespace fow {
     enum class BlendFactor : GLenum {

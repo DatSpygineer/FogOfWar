@@ -17,8 +17,8 @@ namespace fow {
     static void UpdateMSAA(const CVarPtr& self);
     static void UpdateLanguage(const CVarPtr& self);
     static Result<> QuitCommand(const Vector<String>& args);
-    static Result<> BindKeyCommand(const Vector<String>& args);
-    static Result<> UnBindKeyCommand(const Vector<String>& args);
+    static Result<> CreateActionCommand(const Vector<String>& args);
+    static Result<> RemoveActionCommand(const Vector<String>& args);
     static Result<> ToggleConsoleCommand(const Vector<String>& args);
 
     const auto vid_resolution  = CVar::Create("vid_resolution",  glm::vec2(1280, 720),  CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
@@ -28,8 +28,8 @@ namespace fow {
     const auto r_msaa          = CVar::Create("r_msaa",          0,                     CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMSAA);
     const auto cl_lang         = CVar::Create("cl_lang",         "en_us",               CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateLanguage);
     const auto quit            = CVar::Create("quit",            &QuitCommand,          CVarFlags::Default);
-    const auto bind            = CVar::Create("bind",            &BindKeyCommand,       CVarFlags::Default);
-    const auto unbind          = CVar::Create("unbind",          &UnBindKeyCommand,     CVarFlags::Default);
+    const auto create_action   = CVar::Create("create_action",   &CreateActionCommand,  CVarFlags::Default);
+    const auto remove_action   = CVar::Create("remove_action",   &RemoveActionCommand,  CVarFlags::Default);
     const auto toggle_console  = CVar::Create("toggle_console",  &ToggleConsoleCommand, CVarFlags::Default);
 
     namespace Engine {
@@ -776,6 +776,13 @@ namespace fow {
             return Failure(std::format("Invalid key type \"{}\"", static_cast<int>(action.type)));
         }
 
+        void SetCursorMode(const CursorMode mode) {
+            glfwSetInputMode(Engine::s_window, GLFW_CURSOR, mode);
+        }
+        CursorMode GetCursorMode() {
+            return static_cast<CursorMode>(glfwGetInputMode(Engine::s_window, GLFW_CURSOR));
+        }
+
         bool ActionIsPressed(const String& action) {
             if (!s_actions.contains(action)) {
                 Debug::LogError(std::format("Input action \"{}\" doesn't exists!", action));
@@ -920,7 +927,7 @@ namespace fow {
         }
     }
 
-    static Result<> BindKeyCommand(const Vector<String>& args) {
+    static Result<> CreateActionCommand(const Vector<String>& args) {
         if (args.size() == 1) {
             const auto& name = args.at(0);
            if (Input::s_actions.contains(args.at(0))) {
@@ -940,7 +947,7 @@ namespace fow {
 
         return Success();
     }
-    static Result<> UnBindKeyCommand(const Vector<String>& args) {
+    static Result<> RemoveActionCommand(const Vector<String>& args) {
         if (args.size() < 1) {
             return Failure("Usage: unbind <name>");
         }

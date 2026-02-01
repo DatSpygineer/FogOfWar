@@ -1,6 +1,7 @@
 #include "fow/Core.hpp"
 
 #include "imgui.h"
+#include "glm/gtx/matrix_interpolation.hpp"
 
 using namespace fow;
 
@@ -13,31 +14,89 @@ struct LightInfo {
     float quadratic;
 };
 
+class Camera {
+    glm::vec3 m_position, m_forward, m_right, m_up;
+    float m_fYaw = 0.0f;
+    float m_fPitch = 0.0f;
+    bool m_bEnableFreeLook = false;
+public:
+    Camera() { }
+    Camera(const glm::vec3& position) : m_position(position), m_forward(glm::vec3 { 0.0f, 0.0f, 1.0f }), m_right(glm::vec3 { 1.0f, 0.0f, 0.0f }), m_up(glm::vec3 { 0.0f, 1.0f, 0.0f }) {
+        Renderer::UpdateCameraProjectionPerspective(60.0f, Engine::GetWindowSize(), 0.1f, 1000.0f);
+        Renderer::UpdateCameraPosition(m_position, m_position + m_forward, m_up);
+    }
+
+    void update(const double dt) {
+        auto update = false;
+
+        if (Input::KeyIsPressed(KeyCode::Escape)) {
+            m_bEnableFreeLook = !m_bEnableFreeLook;
+            Input::SetCursorMode(m_bEnableFreeLook ? Input::CursorMode::Disabled : Input::CursorMode::Normal);
+        }
+
+        const auto x_axis = -Input::GetAxis("move_right", "move_left");
+        const auto y_axis = Input::GetAxis("move_forward", "move_backward");
+        const auto z_axis = Input::GetAxis("move_up", "move_down");
+        const float speed = Input::KeyIsDown(KeyCode::LeftShift) ? 8.0f : 4.0f;
+        auto motion = glm::vec3 { 0.0f };
+        auto motion_y = 0.0f;
+        if (x_axis != 0) {
+            motion += m_right * x_axis * static_cast<float>(dt) * speed;
+            update = true;
+        }
+        if (y_axis != 0) {
+            motion += m_forward * y_axis * static_cast<float>(dt) * speed;
+            update = true;
+        }
+        if (z_axis != 0) {
+            motion_y += z_axis * static_cast<float>(dt) * speed;
+            update = true;
+        }
+        const auto look_movement = Input::MouseMovement();
+        if (look_movement.length() != 0.0f && m_bEnableFreeLook) {
+            m_fPitch = static_cast<float>(m_fPitch + look_movement.y * dt * 2.0f);
+            m_fYaw -= look_movement.x * dt * 2.0f;
+            update = true;
+        }
+
+        if (update) {
+            const auto forward = glm::normalize(glm::vec3((glm::axisAngleMatrix(m_up, m_fYaw) * glm::axisAngleMatrix(m_right, m_fPitch) * glm::vec4(m_forward, 0.0f))));
+            m_position += glm::vec3((glm::axisAngleMatrix(m_up, m_fYaw) * glm::axisAngleMatrix(m_right, m_fPitch) * glm::vec4(motion, 0.0f))) + m_up * motion_y;
+            Renderer::UpdateCameraPosition(m_position, m_position + forward, m_up);
+        }
+    }
+
+    constexpr auto position() const {
+        return m_position;
+    }
+};
+
 class ExampleGame : public Game {
     Asset<Model> test_model;
     Asset<Model> test_plane_model;
-    Asset<Model> light_model;
-    Transform test_transform;
+    Asset<Material> skybox_material;
     float m_fAngle = 0.0f;
-    glm::vec3 m_cameraPos = glm::vec3 { 0.0f, 3.0f, 3.0f };
 
     float m_fPhongStrength  = 0.5f;
     float m_fPhongExponent  = 0.5f;
     float m_fEnvMapStrength = 0.5f;
+    SkyboxPtr m_pSkybox = nullptr;
+
+    Camera m_camera;
 
     LightInfo m_light1 = {
         .position  = glm::vec3 { 2.0f, 0.0f, 0.0f },
         .color     = glm::vec3 { 1.0f, 0.0f, 0.0f },
         .constant  = 1.0f,
-        .linear    = 0.0f,
-        .quadratic = 0.0f
+        .linear    = 0.09f,
+        .quadratic = 0.032f
     };
     LightInfo m_light2 = {
         .position  = glm::vec3 { -2.0f, 0.0f, 0.0f },
         .color     = glm::vec3 { 0.0f, 1.0f, 0.0f },
         .constant  = 1.0f,
-        .linear    = 0.0f,
-        .quadratic = 0.0f
+        .linear    = 0.09f,
+        .quadratic = 0.032f
     };
 
     float m_ambientLightStrength = 0.125f;
@@ -58,49 +117,34 @@ public:
         if (model.has_value()) {
             test_plane_model = std::move(model.value());
         }
-        model = Assets::Load<Model>("/Models/LightGizmo.model.xml");
-        Debug::AssertFatal(model);
-        if (model.has_value()) {
-            light_model = std::move(model.value());
+
+        auto material = Assets::Load<Material>("/Materials/SkyTest.material.xml");
+        Debug::AssertFatal(material);
+        if (material.has_value()) {
+            skybox_material = material.value();
         }
 
-        test_transform.set_local_position(glm::vec3 { 0.0f, 1.0f, 0.0f });
-        Renderer::UpdateCameraProjectionPerspective(60.0f, Engine::GetWindowSize(), 0.1f, 1000.0f);
-        Renderer::UpdateCameraPosition(m_cameraPos, glm::vec3 { 0.0f, 1.0f, 0.0f }, glm::vec3 { 0.0f, 1.0f, 0.0f });
+        Input::CreateAction("move_left",     Input::Type::KeyboardKey, KeyCode::A);
+        Input::CreateAction("move_right",    Input::Type::KeyboardKey, KeyCode::D);
+        Input::CreateAction("move_forward",  Input::Type::KeyboardKey, KeyCode::W);
+        Input::CreateAction("move_backward", Input::Type::KeyboardKey, KeyCode::S);
+        Input::CreateAction("move_up",       Input::Type::KeyboardKey, KeyCode::Space);
+        Input::CreateAction("move_down",     Input::Type::KeyboardKey, KeyCode::LeftControl);
+
+        m_camera = Camera { glm::vec3 { 0.0f, 0.0f, -5.0f } };
+        m_pSkybox = std::make_shared<Skybox>(skybox_material.ptr());
     }
     void on_update(const double dt) override {
-        test_transform.set_local_rotation(glm::vec3 { 0.0f, 1.0f, 0.0f }, m_fAngle);
+        m_camera.update(dt);
         m_fAngle += static_cast<float>(dt * 0.5f);
         if (Input::KeyIsPressed(KeyCode::F10)) {
             Console::ToggleConsoleVisible();
         }
     }
     void on_render(const double dt) override {
-        for (const auto& mat : test_plane_model->materials()) {
-            Debug::Assert(mat->set_parameter("ViewPos", m_cameraPos));
-            Debug::Assert(mat->set_parameter("PhongStrength", m_fPhongStrength));
-            Debug::Assert(mat->set_parameter("PhongExponent", m_fPhongExponent));
-            Debug::Assert(mat->set_parameter("Environment.AmbientColor", m_ambientLightColor));
-            Debug::Assert(mat->set_parameter("Environment.AmbientStrength", m_ambientLightStrength));
-            Debug::Assert(mat->set_parameter("Environment.SunDirection", m_sunDir));
-            Debug::Assert(mat->set_parameter("Environment.SunLightColor", m_sunColor));
-            Debug::Assert(mat->set_parameter("Lights[0].Position", m_light1.position));
-            Debug::Assert(mat->set_parameter("Lights[0].Color", m_light1.color));
-            Debug::Assert(mat->set_parameter("Lights[0].Constant", m_light1.constant));
-            Debug::Assert(mat->set_parameter("Lights[0].Linear", m_light1.linear));
-            Debug::Assert(mat->set_parameter("Lights[0].Quadratic", m_light1.quadratic));
-            Debug::Assert(mat->set_parameter("Lights[1].Position", m_light2.position));
-            Debug::Assert(mat->set_parameter("Lights[1].Color", m_light2.color));
-            Debug::Assert(mat->set_parameter("Lights[1].Constant", m_light2.constant));
-            Debug::Assert(mat->set_parameter("Lights[1].Linear", m_light2.linear));
-            Debug::Assert(mat->set_parameter("Lights[1].Quadratic", m_light2.quadratic));
-            Debug::Assert(mat->set_parameter("LightCount", 2));
-            Debug::Assert(mat->set_parameter("EnvMapStrength", m_fEnvMapStrength));
-        }
-        test_plane_model->draw();
-
+        m_pSkybox->draw();
         for (const auto& mat : test_model->materials()) {
-            Debug::Assert(mat->set_parameter("ViewPos", m_cameraPos));
+            Debug::Assert(mat->set_parameter("ViewPos", m_camera.position()));
             Debug::Assert(mat->set_parameter("PhongStrength", m_fPhongStrength));
             Debug::Assert(mat->set_parameter("PhongExponent", m_fPhongExponent));
             Debug::Assert(mat->set_parameter("Environment.AmbientColor", m_ambientLightColor));
@@ -120,16 +164,9 @@ public:
             Debug::Assert(mat->set_parameter("LightCount", 2));
             Debug::Assert(mat->set_parameter("EnvMapStrength", m_fEnvMapStrength));
         }
-        test_model->draw(test_transform);
-
-        for (auto& mat : light_model->materials()) {
-            mat->set_parameter("ColorTint", glm::vec4(m_light1.color, 1.0f));
-        }
-        light_model->draw(Transform { m_light1.position, glm::vec3 { 1.0f }, glm::quat() });
-        for (auto& mat : light_model->materials()) {
-            mat->set_parameter("ColorTint", glm::vec4(m_light2.color, 1.0f));
-        }
-        light_model->draw(Transform { m_light2.position, glm::vec3 { 1.0f }, glm::quat() });
+        test_model->draw();
+        test_model->draw(Transform { glm::vec3 { 4.0f, 0.0f, -4.0f }, glm::vec3 { 1.0f }, glm::quat { } });
+        test_model->draw(Transform { glm::vec3 { -4.0f, 0.0f, 4.0f }, glm::vec3 { 1.0f }, glm::quat { } });
     }
     void on_close() override {
     }
