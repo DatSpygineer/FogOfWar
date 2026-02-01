@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Material shader="PhongLitGeneric">
+    <Opaque>true</Opaque>
+    <Parameters>
+        <MainTexture>/Textures/test_tiles.texture.xml</MainTexture>
+        <SpecularMap>/Textures/test_tiles_phong.texture.xml</SpecularMap>
+        <NormalMap>/Textures/test_tiles_n.texture.xml</NormalMap>
+        <EnvMap>/Textures/cubemap_test.texture.xml</EnvMap>
+        <SelfIllumMask>$DEFAULT_BLACK</SelfIllumMask>
+    </Parameters>
+</Material>

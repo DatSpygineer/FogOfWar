@@ -1,4 +1,5 @@
 #include "fow/Renderer.hpp"
+#include "fow/Renderer/ShaderLib.hpp"
 
 #include <glm/gtx/transform.hpp>
 
@@ -16,11 +17,15 @@ namespace fow {
             }
 
             s_base_path = app_base_path;
+            if (const auto result = ShaderLib::Load(s_base_path); !result.has_value()) {
+                return result;
+            }
             s_initialized = true;
 
             return Success();
         }
         void Terminate() {
+            ShaderLib::Unload();
         }
 
         Path GetBasePath() {

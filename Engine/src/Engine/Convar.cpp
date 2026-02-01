@@ -57,6 +57,13 @@ namespace fow {
                 }
             }
             ofs << std::endl;
+
+            for (const auto& [ name, action ] : Input::AvailableActions()) {
+                if (const auto result = Input::ActionToString(action); result.has_value()) {
+                    ofs << "bind \"" << name << "\" " << result.value() << std::endl;
+                }
+            }
+
             ofs.close();
         }
         Result<> ExecuteCommand(const String& command) {
@@ -261,8 +268,8 @@ namespace fow {
                     }
                     ImGui::EndTable();
                 }
-                ImGui::End();
             }
+            ImGui::End();
         }
     }
 
