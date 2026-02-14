@@ -425,8 +425,14 @@ namespace fow {
         Path& operator= (const Path& other) = default;
         Path& operator= (Path&& other) noexcept = default;
 
-        friend std::ostream& operator<< (std::ostream& os, const Path& path);
-        friend std::istream& operator>> (std::istream& is, Path& path);
+        inline friend std::ostream& operator<<(std::ostream& os, const Path& path) {
+            os << path.m_sPath;
+            return os;
+        }
+        inline friend std::istream& operator>>(std::istream& is, Path& path) {
+            is >> path.m_sPath;
+            return is;
+        }
     };
 
     inline Path operator""_p(const char* cstr, const size_t len) {

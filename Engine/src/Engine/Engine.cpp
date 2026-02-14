@@ -6,9 +6,7 @@
 
 #include "SOIL2.h"
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <fow/Engine/ImGui.hpp>
 
 namespace fow {
     static void UpdateResolution(const CVarPtr& self);
@@ -171,6 +169,9 @@ namespace fow {
                 }
             }
 
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
             s_window = glfwCreateWindow(resolution.x, resolution.y, title.as_cstr(), monitor, nullptr);
 
             if (s_window == nullptr) {
@@ -182,7 +183,7 @@ namespace fow {
 
             s_window_title = title;
             glfwMakeContextCurrent(s_window);
-            if (const auto result = Renderer::Initialize(s_base_path, reinterpret_cast<GLADloadproc>(glfwGetProcAddress)); !result.has_value()) {
+            if (const auto result = Renderer::Initialize(s_base_path, reinterpret_cast<GLLoadProc>(glfwGetProcAddress)); !result.has_value()) {
                 glfwDestroyWindow(s_window);
                 glfwTerminate();
                 return Failure(result.error());

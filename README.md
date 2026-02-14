@@ -25,19 +25,20 @@ Before compile, make sure you have the following libraries installed:
 
 #### Install dependencies on Ubuntu/Debian:
 ```shell
-sudo apt install libzip-dev libglm-dev libglfw3-dev libassimp-dev libfreetype-dev googletest -y
+sudo apt install libzip-dev libglfw3-dev libassimp-dev libfreetype-dev googletest -y
 ```
 #### Install dependencies on Fedora:
 ```shell
-sudo dnf install libzip glm-devel glfw assimp freetype gtest
+sudo dnf install libzip glfw assimp freetype gtest
 ```
 #### Install dependencies on Arch:
 ```shell
 # TODO
 ```
 #### Install dependencies via VCPKG:
+Open terminal in the project root and run:
 ```shell
-vcpkg install libzip glm glfw3 assimp freetype gtest
+vcpkg install
 ```
 
 On Linux, execute the shell script `build.sh`, on Windows use `build.bat`. You can use `--debug` argument to build the debug version.

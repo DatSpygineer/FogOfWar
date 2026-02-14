@@ -1,0 +1,11 @@
+{
+  "dependencies": [
+    "libzip",
+    "glew",
+    "glfw3",
+    "assimp",
+    "freetype",
+    "pugixml",
+    "gtest"
+  ]
+}

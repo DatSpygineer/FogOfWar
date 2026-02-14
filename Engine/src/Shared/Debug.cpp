@@ -109,6 +109,14 @@ namespace fow::Debug {
         }
         return !condition;
     }
+
+    bool AssertWarn(const bool condition, const String& fail_message, const std::source_location& location) {
+        if (!condition) {
+            Log(LogLevel::Warning, fail_message, location);
+        }
+        return !condition;
+    }
+
     bool AssertFatal(const bool condition, const String& fail_message, const std::source_location& location) {
         if (!condition) {
             Log(LogLevel::Fatal, fail_message, location);

@@ -220,6 +220,7 @@ namespace fow {
         memmove(m_pData + idx + str.m_uSize, m_pData + idx, m_uSize - idx);
         memcpy(m_pData + idx, str.m_pData, str.m_uSize);
         m_uSize += str.m_uSize;
+        m_pData[m_uSize] = '\0';
         return *this;
     }
 
@@ -1123,14 +1124,5 @@ namespace fow {
         } catch (const std::exception& ex) {
             return Failure(std::format("Failed to parse string \"{}\" to mat4: {}", str, ex.what()));
         }
-    }
-
-    std::ostream& operator<<(std::ostream& os, const Path& path) {
-        os << path.m_sPath;
-        return os;
-    }
-    std::istream& operator>>(std::istream& is, Path& path) {
-        is >> path.m_sPath;
-        return is;
     }
 }

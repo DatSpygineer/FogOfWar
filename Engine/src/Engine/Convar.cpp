@@ -6,7 +6,7 @@
 #include <imgui.h>
 #include <ranges>
 
-#include "imgui_internal.h"
+#include <fow/Engine/ImGui.hpp>
 
 namespace fow {
     namespace Console {

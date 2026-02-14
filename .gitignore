@@ -2,3 +2,5 @@
 .idea
 
 Build
+
+vcpkg_installed

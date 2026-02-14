@@ -699,12 +699,23 @@ namespace fow {
             return Failure(std::format("Uniform location {} is out of range", location));
         }
 
+        GLint activeCount;
+        glGetProgramiv(m_uProgram, GL_ACTIVE_UNIFORMS, &activeCount);
+
+        if (activeCount <= location) {
+            return Failure(std::format("Uniform location {} is out of range, maximum uniform count: {}", location, activeCount));
+        }
+
         String name(1024);
         GLenum type    = 0;
         GLsizei length = 0;
         GLsizei size   = 0;
         glGetActiveUniform(m_uProgram, location, 1024, &length, &size, &type, name.data());
         name.recalculate_size();
+
+        if (type == 0) {
+            return Failure(std::format("Failed to get uniform info for \"{}\"", name));
+        }
 
         ShaderUniformInfo info;
         info.name = name;
@@ -775,7 +786,7 @@ namespace fow {
         glAttachShader(id, vid);
         glAttachShader(id, fid);
         glLinkProgram(id);
-        glGetShaderiv(id, GL_LINK_STATUS, &status);
+        glGetProgramiv(id, GL_LINK_STATUS, &status);
         if (!status) {
             String info_log(2048);
             glGetProgramInfoLog(id, 2048, nullptr, info_log.data());
@@ -833,7 +844,7 @@ namespace fow {
         glAttachShader(id, ids[0]);
         glAttachShader(id, ids[1]);
         glLinkProgram(id);
-        glGetShaderiv(id, GL_LINK_STATUS, &status);
+        glGetProgramiv(id, GL_LINK_STATUS, &status);
         if (!status) {
             String info_log(2048);
             glGetProgramInfoLog(id, 2048, nullptr, info_log.data());
