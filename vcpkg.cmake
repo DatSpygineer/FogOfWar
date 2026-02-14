@@ -1,7 +1,15 @@
-if (WIN32)
-    find_program(VCPKG_PATH NAMES vcpkg.exe)
+set(VCPKG_ROOT $ENV{VCPKG_ROOT})
+
+if (NOT VCPKG_ROOT)
+    if (WIN32)
+        find_program(VCPKG_PATH NAMES vcpkg.exe)
+    else()
+        find_program(VCPKG_PATH NAMES vcpkg)
+    endif()
+
+    get_filename_component(VCPKG_BASE_PATH ${VCPKG_PATH} DIRECTORY)
 else()
-    find_program(VCPKG_PATH NAMES vcpkg)
+    set(VCPKG_BASE_PATH ${VCPKG_ROOT})
 endif()
-get_filename_component(VCPKG_BASE_PATH ${VCPKG_PATH} DIRECTORY)
+
 include(${VCPKG_BASE_PATH}/scripts/buildsystems/vcpkg.cmake)

@@ -52,6 +52,15 @@ namespace fow {
             }
             return true;
         }
+        FOW_SHARED_API bool AssertWarn(bool condition, const String& fail_message, const std::source_location& location = std::source_location::current());
+        template<typename T>
+        inline bool AssertWarn(const Result<T>& result) {
+            if (!result.has_value()) {
+                LogWarning(result.error().message, result.error().location);
+                return false;
+            }
+            return true;
+        }
         FOW_SHARED_API bool AssertFatal(bool condition, const String& fail_message, const std::source_location& location = std::source_location::current());
         template<typename T>
         inline bool AssertFatal(const Result<T>& result) {

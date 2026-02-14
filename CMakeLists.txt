@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.25)
 
+project(imgui)
 project(FogOfWarShared)
 project(FogOfWarRenderer)
 project(FogOfWar)
 
 option(FOW_USE_CPP_20 "Use C++20 instead of C++23 when set to 'TRUE'" FALSE)
 
-if (FOW_USE_CPP_20)
+if (FOW_USE_CPP_20 OR WIN32)
     message(STATUS "Using C++20")
     set(CMAKE_CXX_STANDARD 20)
 else()
@@ -86,17 +87,55 @@ macro(add_game TARGET_NAME)
         add_dependencies(${TARGET_NAME} ${TARGET_NAME}_CopyResources)
     endif()
 
-    add_custom_target(${TARGET_NAME}_CopyLibs)
-    add_custom_command(
-        TARGET ${TARGET_NAME}_CopyLibs
-        PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-                ${GAME_BASE_DIR}
-        VERBATIM
-    )
-    add_dependencies(${TARGET_NAME}_CopyLibs FogOfWar::Engine)
-    add_dependencies(${TARGET_NAME} ${TARGET_NAME}_CopyLibs)
+    if (WIN32)
+        add_custom_target(${TARGET_NAME}_CopyLibs)
+        add_custom_command(
+            TARGET ${TARGET_NAME}_CopyLibs
+            PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/FogOfWarShared.dll
+                    ${GAME_BASE_DIR}/FogOfWarShared.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/FogOfWarRenderer.dll
+                    ${GAME_BASE_DIR}/FogOfWarRenderer.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/FogOfWarEngine.dll
+                    ${GAME_BASE_DIR}/FogOfWarEngine.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/imgui.dll
+                    ${GAME_BASE_DIR}/imgui.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/glfw3.dll
+                    ${GAME_BASE_DIR}/glfw3.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/glm.dll
+                    ${GAME_BASE_DIR}/glm.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/minizip.dll
+                    ${GAME_BASE_DIR}/minizip.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/poly2tri.dll
+                    ${GAME_BASE_DIR}/poly2tri.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/pugixml.dll
+                    ${GAME_BASE_DIR}/pugixml.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zip.dll
+                    ${GAME_BASE_DIR}/zip.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlibd1.dll
+                    ${GAME_BASE_DIR}/zlibd1.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/bz2d.dll
+                    ${GAME_BASE_DIR}/bz2d.dll
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/assimp-vc143-mtd.dll
+                    ${GAME_BASE_DIR}/assimp-vc143-mtd.dll
+            VERBATIM
+        )
+        add_dependencies(${TARGET_NAME}_CopyLibs FogOfWar::Engine)
+        add_dependencies(${TARGET_NAME} ${TARGET_NAME}_CopyLibs)
+    endif()
 
     math(EXPR PAIR_COUNT "${ASSET_COUNT} / 2")
     if (${PAIR_COUNT} GREATER 0)

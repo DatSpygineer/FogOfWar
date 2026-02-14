@@ -14,6 +14,7 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(assimp REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(pugixml CONFIG REQUIRED)
 
 set(FOW_IMGUI_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/imgui.cpp
@@ -24,6 +25,15 @@ set(FOW_IMGUI_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/backends/imgui_impl_glfw.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/backends/imgui_impl_opengl3.cpp
 )
+
+add_library(imgui SHARED ${FOW_IMGUI_SOURCES})
+target_compile_definitions(imgui PUBLIC "-DIMGUI_USER_CONFIG=\"fow/Engine/ImGuiCfg.hpp\"")
+target_include_directories(imgui PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}/include
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/backends
+)
+target_link_libraries(imgui PUBLIC OpenGL::GL glfw)
 
 add_library(FogOfWarShared SHARED ${FOW_SHARED_SOURCES} ${FOW_SHARED_OS_SPEC_SOURCES})
 target_include_directories(FogOfWarShared PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
@@ -40,12 +50,8 @@ target_include_directories(FogOfWarRenderer PUBLIC ${CMAKE_CURRENT_LIST_DIR}/inc
 target_link_libraries(FogOfWarRenderer PUBLIC FogOfWar::Shared soil2 ${ASSIMP_LIBRARIES} ${FREETYPE_LIBRARIES})
 add_library(FogOfWar::Renderer ALIAS FogOfWarRenderer)
 
-add_library(FogOfWarEngine SHARED ${FOW_SOURCES} ${FOW_IMGUI_SOURCES})
-target_include_directories(FogOfWarEngine PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
-    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui
-    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/backends
-)
-target_link_libraries(FogOfWarEngine PUBLIC FogOfWar::Shared FogOfWar::Renderer glfw)
+add_library(FogOfWarEngine SHARED ${FOW_SOURCES})
+target_include_directories(FogOfWarEngine PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(FogOfWarEngine PUBLIC FogOfWar::Shared FogOfWar::Renderer glfw imgui)
 target_compile_definitions(FogOfWarEngine PUBLIC -DGLFW_INCLUDE_NONE)
 add_library(FogOfWar::Engine ALIAS FogOfWarEngine)

@@ -24,6 +24,8 @@ namespace fow {
                 }
             }
 
+            Debug::LogInfo(std::format("Initialized OpenGL v{}", reinterpret_cast<const char*>(glGetString(GL_VERSION))));
+
             glEnable(GL_CULL_FACE);
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LESS);

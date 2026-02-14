@@ -107,8 +107,8 @@ TEST(String, Manipulation) {
     a.resize(10);
     EXPECT_EQ(a.capacity(), 10);
 
-    const char dummy[5] = { 0, 0, 0, 0, 0 };
-    EXPECT_TRUE(memcmp(a.data() + 5, dummy, 5) == 0);
+    const char* remains = a.data() + 5;
+    EXPECT_TRUE(remains != nullptr && *remains == 0);
     a.clear();
     EXPECT_TRUE(a.is_empty());
 
