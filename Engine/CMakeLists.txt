@@ -14,7 +14,10 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(assimp REQUIRED)
 find_package(Freetype REQUIRED)
-find_package(pugixml CONFIG REQUIRED)
+
+if (WIN32) # On Linux Assimp already loads pugixml in
+    find_package(pugixml CONFIG REQUIRED)
+endif()
 
 set(FOW_IMGUI_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/imgui.cpp
