@@ -699,6 +699,19 @@ namespace fow {
         return count;
     }
 
+    HashMap<String, ShaderUniformInfo> Shader::list_uniforms() const {
+        HashMap<String, ShaderUniformInfo> uniforms;
+        int count = 0;
+        glGetProgramiv(m_uProgram, GL_ACTIVE_UNIFORMS, &count);
+        uniforms.reserve(count);
+        for (int i = 0; i < count; ++i) {
+            if (const auto info = get_uniform_info(i); info.has_value()) {
+                uniforms.emplace(info->name, info.value());
+            }
+        }
+        return uniforms;
+    }
+
     Result<ShaderPtr> Shader::Compile(const String& name, const String& vertex, const String& fragment) {
         if (IsCached(name)) {
             return FromCache(name);

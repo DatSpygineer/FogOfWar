@@ -14,7 +14,8 @@ namespace fow {
     public:
         Skybox() : m_pMaterial(nullptr), m_uVbo(0), m_uVao(0) { }
         explicit Skybox(const MaterialPtr& material);
-        Skybox(const Skybox& skybox) : m_pMaterial(skybox.m_pMaterial), m_uVbo(skybox.m_uVbo), m_uVao(skybox.m_uVao) { }
+        explicit Skybox(MaterialPtr&& material) noexcept;
+        Skybox(const Skybox& skybox) = default;
         Skybox(Skybox&& skybox) noexcept : m_pMaterial(std::move(skybox.m_pMaterial)), m_uVbo(skybox.m_uVbo), m_uVao(skybox.m_uVao) { }
         ~Skybox();
 

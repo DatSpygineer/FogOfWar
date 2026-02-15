@@ -63,11 +63,12 @@ namespace fow {
 
         explicit Shader(const String& name, const GLuint id) : m_uProgram(id), m_bInitialized(true), m_sName(name) { }
     public:
-        Shader() : m_uProgram(0),  m_bInitialized(false) { }
+        Shader() : m_uProgram(0),  m_bInitialized(false), m_sName("NULL") { }
         Shader(const Shader& other) = delete;
-        Shader(Shader&& other) noexcept : m_uProgram(other.m_uProgram), m_bInitialized(other.m_bInitialized) {
+        Shader(Shader&& other) noexcept : m_uProgram(other.m_uProgram), m_bInitialized(other.m_bInitialized), m_sName(std::move(other.m_sName)) {
             other.m_uProgram = 0;
             other.m_bInitialized = false;
+            other.m_sName = "";
         }
         ~Shader();
 
@@ -206,6 +207,7 @@ namespace fow {
         [[nodiscard]] Result<ShaderUniformInfo> get_uniform_info(const String& name) const;
         [[nodiscard]] Result<ShaderUniformInfo> get_uniform_info(GLint location) const;
         [[nodiscard]] size_t get_uniform_count() const;
+        [[nodiscard]] HashMap<String, ShaderUniformInfo> list_uniforms() const;
 
 #if __cplusplus >= 202302L
         [[nodiscard]] constexpr const String& name() const { return m_sName; }

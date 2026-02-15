@@ -9,5 +9,6 @@ out vec3 FRAGMENT_SKY_COORDS;
 
 void main() {
     FRAGMENT_SKY_COORDS = VERTEX_POSITION;
-    gl_Position = MATRIX_PROJECTION * MATRIX_VIEW * vec4(VERTEX_POSITION, 1.0);
+    vec4 pos = MATRIX_PROJECTION * MATRIX_VIEW * vec4(VERTEX_POSITION, 1.0);
+    gl_Position = pos.xyww;
 }
