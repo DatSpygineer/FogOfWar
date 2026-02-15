@@ -699,29 +699,33 @@ namespace fow {
             return Failure(std::format("Uniform location {} is out of range", location));
         }
 
-        GLint activeCount;
-        glGetProgramiv(m_uProgram, GL_ACTIVE_UNIFORMS, &activeCount);
-
-        if (activeCount <= location) {
-            return Failure(std::format("Uniform location {} is out of range, maximum uniform count: {}", location, activeCount));
+        if (!glIsProgram(m_uProgram)) {
+            return Failure(std::format("Shader with id {} is not a valid Shader program!", m_uProgram));
         }
 
-        String name(1024);
-        GLenum type    = 0;
-        GLsizei length = 0;
-        GLsizei size   = 0;
-        glGetActiveUniform(m_uProgram, location, 1024, &length, &size, &type, name.data());
-        name.recalculate_size();
+        GLint uniform_count;
+        glGetProgramInterfaceiv(m_uProgram, GL_UNIFORM, GL_ACTIVE_RESOURCES, &uniform_count);
 
-        if (type == 0) {
-            return Failure(std::format("Failed to get uniform info for \"{}\"", name));
+
+        constexpr GLenum properties[] = { GL_LOCATION, GL_TYPE, GL_NAME_LENGTH };
+        for (size_t i = 0; i < uniform_count; i++) {
+            GLint results[3];
+            glGetProgramResourceiv(m_uProgram, GL_UNIFORM, i, 3, properties, 3, nullptr, results);
+            if (results[0] == location) {
+                String name(1024);
+                glGetProgramResourceName(m_uProgram, GL_UNIFORM, i, name.capacity(), nullptr, name.data());
+                name.recalculate_size();
+
+                ShaderUniformInfo info;
+                info.name = name;
+                info.location = location;
+                info.type = static_cast<ShaderUniformType>(results[1]);
+
+                return Success<ShaderUniformInfo>(info);
+            }
         }
 
-        ShaderUniformInfo info;
-        info.name = name;
-        info.location = location;
-        info.type = static_cast<ShaderUniformType>(type);
-        return Success<ShaderUniformInfo>(info);
+        return Failure(std::format("Uniform at location {} not found!", location));
     }
 
     size_t Shader::get_uniform_count() const {
