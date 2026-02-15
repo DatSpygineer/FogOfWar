@@ -12,7 +12,7 @@ struct PBRLightInfo {
 uniform sampler2D MainTexture;
 uniform sampler2D NormalMap;
 uniform sampler2D SpecularMap;
-uniform sampler2D SelfIllumMask;
+uniform sampler2D EmissionMap;
 uniform sampler2D BrdfLut;
 uniform samplerCube EnvMap;
 uniform samplerCube EnvMapBlur;
@@ -120,6 +120,7 @@ void main() {
     vec3 refl = reflect(-view, normal);
 
     vec4 mainTex   = texture(MainTexture, FRAGMENT_TEXTURE_COORDS) * ColorTint;
+    vec3 emission  = texture(EmissionMap, FRAGMENT_TEXTURE_COORDS).rgb;
     vec3 albedo    = pow(mainTex.rgb, vec3(2.2));
     vec4 specular  = texture(SpecularMap, FRAGMENT_TEXTURE_COORDS);
     float metallic  = specular.r * Metallicness;
@@ -139,7 +140,7 @@ void main() {
     vec3 ks = f;
     vec3 kd = 1.0 - ks;
     kd *= 1.0 - metallic;
-    vec3 envmap = texture(EnvMap, normal).rgb;
+    vec3 envmap = texture(EnvMap, reflect(-view, normal)).rgb;
     vec3 diffuse = albedo;
 
     vec3 light = pbr_light(normal, view, base_reflectivity, albedo, metallic, roughness);
@@ -158,5 +159,5 @@ void main() {
     // gamma correction
     color = pow(color, vec3(1.0 / 2.2));
 
-    FRAGMENT_COLOR = vec4(color, alpha);
+    FRAGMENT_COLOR = vec4(color + emission, alpha);
 }

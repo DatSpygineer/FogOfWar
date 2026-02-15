@@ -8,6 +8,6 @@
         <NormalMap>/Textures/test_n.texture.xml</NormalMap>
         <EnvMap>/Textures/cubemap_test.texture.xml</EnvMap>
         <EnvMapBlur>/Textures/cubemap_test_blur.texture.xml</EnvMapBlur>
-        <SelfIllumMask>/Textures/test_i.texture.xml</SelfIllumMask>
+        <EmissionMap>/Textures/test_i.texture.xml</EmissionMap>
     </Parameters>
 </Material>

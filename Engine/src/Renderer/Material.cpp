@@ -1364,7 +1364,7 @@ namespace fow {
                                         params.emplace(child.name(), texture_result.value().ptr());
                                     } else {
                                         params.emplace(child.name(), Texture::PlaceHolder());
-                                        Debug::LogError(std::format("Failed to load texture \"{}\" for parameter \"{}\":\n", child.child_value(), source, texture_result.error().message));
+                                        Debug::LogError(std::format("Failed to load texture \"{}\" for parameter \"{}\":\n{}", child.child_value(), source, texture_result.error().message));
                                     }
                                 }
                             } break;

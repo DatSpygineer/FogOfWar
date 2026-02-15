@@ -34,35 +34,37 @@ public:
             Input::SetCursorMode(m_bEnableFreeLook ? Input::CursorMode::Disabled : Input::CursorMode::Normal);
         }
 
-        const auto x_axis = -Input::GetAxis("move_right", "move_left");
-        const auto y_axis = Input::GetAxis("move_forward", "move_backward");
-        const auto z_axis = Input::GetAxis("move_up", "move_down");
-        const float speed = Input::KeyIsDown(KeyCode::LeftShift) ? 8.0f : 4.0f;
-        auto motion = glm::vec3 { 0.0f };
-        auto motion_y = 0.0f;
-        if (x_axis != 0) {
-            motion += m_right * x_axis * static_cast<float>(dt) * speed;
-            update = true;
-        }
-        if (y_axis != 0) {
-            motion += m_forward * y_axis * static_cast<float>(dt) * speed;
-            update = true;
-        }
-        if (z_axis != 0) {
-            motion_y += z_axis * static_cast<float>(dt) * speed;
-            update = true;
-        }
-        const auto look_movement = Input::MouseMovement();
-        if (look_movement.length() != 0.0f && m_bEnableFreeLook) {
-            m_fPitch = static_cast<float>(m_fPitch + look_movement.y * dt * 2.0f);
-            m_fYaw -= look_movement.x * dt * 2.0f;
-            update = true;
-        }
+        if (m_bEnableFreeLook) {
+            const auto x_axis = -Input::GetAxis("move_right", "move_left");
+            const auto y_axis = Input::GetAxis("move_forward", "move_backward");
+            const auto z_axis = Input::GetAxis("move_up", "move_down");
+            const float speed = Input::KeyIsDown(KeyCode::LeftShift) ? 8.0f : 4.0f;
+            auto motion = glm::vec3 { 0.0f };
+            auto motion_y = 0.0f;
+            if (x_axis != 0) {
+                motion += m_right * x_axis * static_cast<float>(dt) * speed;
+                update = true;
+            }
+            if (y_axis != 0) {
+                motion += m_forward * y_axis * static_cast<float>(dt) * speed;
+                update = true;
+            }
+            if (z_axis != 0) {
+                motion_y += z_axis * static_cast<float>(dt) * speed;
+                update = true;
+            }
+            const auto look_movement = Input::MouseMovement();
+            if (look_movement.length() != 0.0f) {
+                m_fPitch = static_cast<float>(m_fPitch + look_movement.y * dt * 2.0f);
+                m_fYaw -= look_movement.x * dt * 2.0f;
+                update = true;
+            }
 
-        if (update) {
-            const auto forward = glm::normalize(glm::vec3((glm::axisAngleMatrix(m_up, m_fYaw) * glm::axisAngleMatrix(m_right, m_fPitch) * glm::vec4(m_forward, 0.0f))));
-            m_position += glm::vec3((glm::axisAngleMatrix(m_up, m_fYaw) * glm::axisAngleMatrix(m_right, m_fPitch) * glm::vec4(motion, 0.0f))) + m_up * motion_y;
-            Renderer::UpdateCameraPosition(m_position, m_position + forward, m_up);
+            if (update) {
+                const auto forward = glm::normalize(glm::vec3((glm::axisAngleMatrix(m_up, m_fYaw) * glm::axisAngleMatrix(m_right, m_fPitch) * glm::vec4(m_forward, 0.0f))));
+                m_position += glm::vec3((glm::axisAngleMatrix(m_up, m_fYaw) * glm::axisAngleMatrix(m_right, m_fPitch) * glm::vec4(motion, 0.0f))) + m_up * motion_y;
+                Renderer::UpdateCameraPosition(m_position, m_position + forward, m_up);
+            }
         }
     }
 
@@ -87,14 +89,14 @@ class ExampleGame : public Game {
     Vector<LightInfo> m_lights = {
         LightInfo {
             .position  = glm::vec3 { 10.0f, 0.0f, 0.0f },
-            .color     = glm::vec4 { 1.0f, 0.0f, 0.0f, 300.0f },
+            .color     = glm::vec4 { 1.0f, 1.0f, 1.0f, 300.0f },
             .constant  = 1.0f,
             .linear    = 0.09f,
             .quadratic = 0.032f
         },
         LightInfo {
             .position  = glm::vec3 { -10.0f, 0.0f, 0.0f },
-            .color     = glm::vec4 { 0.0f, 1.0f, 0.0f, 300.0f },
+            .color     = glm::vec4 { 1.0f, 1.0f, 1.0f, 300.0f },
             .constant  = 1.0f,
             .linear    = 0.09f,
             .quadratic = 0.032f
