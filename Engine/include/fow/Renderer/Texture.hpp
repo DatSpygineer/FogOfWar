@@ -1,7 +1,7 @@
 #ifndef FOW_RENDERER_TEXTURE_HPP
 #define FOW_RENDERER_TEXTURE_HPP
 
-#include <glad/glad.h>
+#include "fow/Renderer/GL.hpp"
 #include <pugixml.hpp>
 #include <rfl.hpp>
 #include <rfl/xml.hpp>
@@ -82,6 +82,8 @@ namespace fow {
         Option<TextureWrapMode> WrapS;
         Option<TextureWrapMode> WrapT;
         Option<bool> GenerateMipMaps;
+        Option<bool> CoCg;
+        Option<bool> SRgb;
     };
 
     template<typename T>

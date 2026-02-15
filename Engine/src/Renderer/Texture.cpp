@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include "fow/Renderer/GL.hpp"
 #include "fow/Renderer/Texture.hpp"
 #include "fow/Shared/StringConvertion.hpp"
 
@@ -121,6 +121,9 @@ namespace fow {
         TextureInfo info;
         info.Source = src_attrib.value();
 
+        bool pointFilter = false;
+        bool clamp = false;
+
         for (const auto& node : root.children()) {
             if (String(node.name()) == "Target") {
                 if (const auto result = StringToEnum<TextureTarget>(node.child_value()); result.has_value()) {
@@ -128,29 +131,17 @@ namespace fow {
                 } else {
                     return Failure(std::format("Failed to parse node \"Target\" with value \"{}\": {}", node.child_value(), result.error().message));
                 }
-            } else if (String(node.name()) == "MagFilter") {
-                if (const auto result = StringToEnum<TextureMagFilterMode>(node.child_value()); result.has_value()) {
-                    info.MagFilter = result.value();
+            } else if (String(node.name()) == "PointFilter") {
+                if (const auto result = StringToBool(node.child_value()); result.has_value()) {
+                    pointFilter = result.value();
                 } else {
-                    return Failure(std::format("Failed to parse node \"MagFilter\" with value \"{}\": {}", node.child_value(), result.error().message));
+                    return Failure(std::format("Expected boolean value for \"SRGB\""));
                 }
-            } else if (String(node.name()) == "MinFilter") {
-                if (const auto result = StringToEnum<TextureMinFilterMode>(node.child_value()); result.has_value()) {
-                    info.MinFilter = result.value();
+            } else if (String(node.name()) == "Clamp") {
+                if (const auto result = StringToBool(node.child_value()); result.has_value()) {
+                    clamp = result.value();
                 } else {
-                    return Failure(std::format("Failed to parse node \"MinFilter\" with value \"{}\": {}", node.child_value(), result.error().message));
-                }
-            } else if (String(node.name()) == "WrapS") {
-                if (const auto result = StringToEnum<TextureWrapMode>(node.child_value()); result.has_value()) {
-                    info.WrapS = result.value();
-                } else {
-                    return Failure(std::format("Failed to parse node \"WrapS\" with value \"{}\": {}", node.child_value(), result.error().message));
-                }
-            } else if (String(node.name()) == "WrapT") {
-                if (const auto result = StringToEnum<TextureWrapMode>(node.child_value()); result.has_value()) {
-                    info.WrapT = result.value();
-                } else {
-                    return Failure(std::format("Failed to parse node \"WrapT\" with value \"{}\": {}", node.child_value(), result.error().message));
+                    return Failure(std::format("Expected boolean value for \"SRGB\""));
                 }
             } else if (String(node.name()) == "FrameCount") {
                 try {
@@ -164,10 +155,30 @@ namespace fow {
                 } else {
                     return Failure(std::format("Expected boolean value for \"GenerateMipMaps\""));
                 }
+            } else if (String(node.name()) == "CoCg") {
+                if (const auto result = StringToBool(node.child_value()); result.has_value()) {
+                    info.CoCg = result.value();
+                } else {
+                    return Failure(std::format("Expected boolean value for \"CoCg\""));
+                }
+            }  else if (String(node.name()) == "SRGB") {
+                if (const auto result = StringToBool(node.child_value()); result.has_value()) {
+                    info.SRgb = result.value();
+                } else {
+                    return Failure(std::format("Expected boolean value for \"SRGB\""));
+                }
             } else {
                 Debug::LogError(std::format("Unknown parameter \"{}\"", node.name()));
             }
         }
+
+        info.MagFilter = pointFilter ? TextureMagFilterMode::Nearest : TextureMagFilterMode::Linear;
+        info.MinFilter = info.GenerateMipMaps ?
+            (pointFilter ? TextureMinFilterMode::NearestMipmapLinear : TextureMinFilterMode::LinearMipmapLinear) :
+            (pointFilter ? TextureMinFilterMode::Nearest : TextureMinFilterMode::Linear);
+        info.WrapS = clamp ? TextureWrapMode::ClampToEdge : TextureWrapMode::Repeat;
+        info.WrapT = clamp ? TextureWrapMode::ClampToEdge : TextureWrapMode::Repeat;
+
         return info;
     }
 
@@ -381,8 +392,7 @@ namespace fow {
     static Result<GLuint> LoadOpenGLTexture(const Vector<uint8_t>& data, const TextureInfo& info) {
         Result<GLuint> result;
         GLuint id = 0;
-        GLint format = GL_RGBA;
-        GLint iformat = GL_RGBA;
+        unsigned flags = 0;
 
         const auto mag_filter = info.MagFilter.value_or(TextureMagFilterMode::Linear);
         const auto min_filter = info.MinFilter.value_or(TextureMinFilterMode::Linear);
@@ -399,12 +409,22 @@ namespace fow {
             goto LOAD_GL_TEXTURE_END;
         }
 
+        if (info.GenerateMipMaps) {
+            flags |= SOIL_FLAG_MIPMAPS;
+        }
+        if (info.CoCg.value_or(false)) {
+            flags |= SOIL_FLAG_CoCg_Y;
+        }
+        if (info.SRgb.value_or(false)) {
+            flags |= SOIL_FLAG_SRGB_COLOR_SPACE;
+        }
+
         if (target == TextureTarget::TextureCubeMap) {
-            id = SOIL_load_OGL_single_cubemap_from_memory(data.data(), data.size(), SOIL_DDS_CUBEMAP_FACE_ORDER, SOIL_LOAD_AUTO, id, 0);
+            id = SOIL_load_OGL_single_cubemap_from_memory(data.data(), data.size(), SOIL_DDS_CUBEMAP_FACE_ORDER, SOIL_LOAD_AUTO, id, flags);
         } else if (target == TextureTarget::Texture2D) {
-            id = SOIL_load_OGL_texture_from_memory(data.data(), data.size(), SOIL_LOAD_AUTO, id, 0);
+            id = SOIL_load_OGL_texture_from_memory(data.data(), data.size(), SOIL_LOAD_AUTO, id, flags);
         } else if (target == TextureTarget::Texture2DArray) {
-            id = SOIL_load_OGL_texture_array_from_atlas_grid_from_memory(data.data(), data.size(), frame_count, 1, SOIL_LOAD_AUTO, id, 0);
+            id = SOIL_load_OGL_texture_array_from_atlas_grid_from_memory(data.data(), data.size(), frame_count, 1, SOIL_LOAD_AUTO, id, flags);
         } else {
             result = Failure("Failed to load OpenGL texture data: Unsupported texture target");
             goto LOAD_GL_TEXTURE_END;
@@ -415,10 +435,6 @@ namespace fow {
         glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(min_filter));
         glTextureParameteri(id, GL_TEXTURE_WRAP_S,     static_cast<GLint>(wrap_s)    );
         glTextureParameteri(id, GL_TEXTURE_WRAP_T,     static_cast<GLint>(wrap_t)    );
-
-        if (info.GenerateMipMaps) {
-            glGenerateTextureMipmap(id);
-        }
 
         glBindTexture(gl_target, 0);
         result = Success<GLuint>(id);

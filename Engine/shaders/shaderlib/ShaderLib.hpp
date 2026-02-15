@@ -25,7 +25,7 @@ extern "C" {
         std::string vertex, fragment;
     };
 
-    SHADER_LIB_API void ShaderLibInitialize(void(*register_fn)(const char*, const char*));
+    SHADER_LIB_API void ShaderLibInitialize();
     SHADER_LIB_API const char* ShaderLibGetSource(const char* name);
     SHADER_LIB_API bool ShaderLibGetRequiredSources(const char* name, ShaderSources* sources);
 }

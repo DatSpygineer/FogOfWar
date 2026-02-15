@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include "fow/Renderer/GL.hpp"
 #include "fow/Renderer/Model.hpp"
 
 #include <assimp/Importer.hpp>

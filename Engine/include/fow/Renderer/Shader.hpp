@@ -1,7 +1,7 @@
 #ifndef FOW_RENDERER_SHADER_HPP
 #define FOW_RENDERER_SHADER_HPP
 
-#include <glad/glad.h>
+#include "fow/Renderer/GL.hpp"
 
 #include <variant>
 #include <glm/glm.hpp>

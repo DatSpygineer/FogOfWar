@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include "fow/Renderer/GL.hpp"
 #include "fow/Renderer/Shader.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -793,7 +793,7 @@ namespace fow {
             return Failure(std::format("Failed to generate vertex shader: GL Error {}", glGetError()));
         }
 
-        glShaderBinary(2, ids, GL_SHADER_BINARY_FORMAT_SPIR_V, data, data_size);
+        glShaderBinary(2, ids, GL_SHADER_BINARY_FORMAT_SPIR_V, data, static_cast<GLsizei>(data_size));
         glSpecializeShader(ids[0], vertex_entry.as_cstr(), 0, nullptr, nullptr);
         glSpecializeShader(ids[1], fragment_entry.as_cstr(), 0, nullptr, nullptr);
         glGetShaderiv(ids[0], GL_COMPILE_STATUS, &status);

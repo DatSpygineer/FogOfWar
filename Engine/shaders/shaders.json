@@ -1,11 +1,13 @@
 {
-  "include_dirs": [
-    "include"
-  ],
+  "include_dirs": [ ],
   "shaders": {
     "PhongLitGeneric": {
       "vertex":   "src/Generic3D.vsh",
       "fragment": "src/PhongLitGeneric.fsh"
+    },
+    "PBRGeneric": {
+      "vertex":   "src/Generic3D.vsh",
+      "fragment": "src/PBRGeneric.fsh"
     },
     "UnlitGeneric": {
       "vertex":   "src/Generic3D.vsh",

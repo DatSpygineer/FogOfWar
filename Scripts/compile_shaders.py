@@ -13,7 +13,7 @@ SHADERLIB_SOURCE = """#include "ShaderLib.hpp"
 static std::unordered_map<std::string, std::string> s_sources;
 static std::unordered_map<std::string, ShaderSources> s_shaders;
 
-void ShaderLibInitialize(void(*register_fn)(const char*, const char*)) {
+void ShaderLibInitialize() {
 $(SHADER_REGISTER)
 }
 const char* ShaderLibGetSource(const char* name) {
@@ -124,8 +124,6 @@ f'''    if (s_sources.contains("{name}"))  {{
         s_sources.emplace("{name}", "{source_cstr}");
     }}
 '''
-			shader_register += f'    if (register_fn != nullptr) register_fn("/{name}", "{source_cstr}");\n'
-
 		for name, shader in shaders_result.items():
 			shader_register += \
 f'''

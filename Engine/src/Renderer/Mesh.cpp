@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include "fow/Renderer/GL.hpp"
 #include "fow/Renderer/Mesh.hpp"
 #include "fow/Renderer.hpp"
 

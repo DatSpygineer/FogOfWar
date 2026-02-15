@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Material shader="PhongLitGeneric">
+<Material shader="PBRGeneric">
     <Opaque>true</Opaque>
     <Parameters>
         <MainTexture>/Textures/test.texture.xml</MainTexture>
         <SpecularMap>$DEFAULT_WHITE</SpecularMap>
+        <BrdfLut>/Textures/ibl_brdf_lut.texture.xml</BrdfLut>
         <NormalMap>/Textures/test_n.texture.xml</NormalMap>
         <EnvMap>/Textures/cubemap_test.texture.xml</EnvMap>
+        <EnvMapBlur>/Textures/cubemap_test_blur.texture.xml</EnvMapBlur>
         <SelfIllumMask>/Textures/test_i.texture.xml</SelfIllumMask>
     </Parameters>
 </Material>

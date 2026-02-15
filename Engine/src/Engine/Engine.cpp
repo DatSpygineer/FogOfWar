@@ -1,8 +1,8 @@
 #include "fow/Engine.hpp"
 #include "fow/Engine/Convar.hpp"
 
+#include "fow/Renderer/GL.hpp"
 #include "fow/Renderer.hpp"
-#include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
 #include "SOIL2.h"
@@ -199,7 +199,7 @@ namespace fow {
             Input::Initialize();
             s_window_title = title;
             glfwMakeContextCurrent(s_window);
-            if (const auto result = Renderer::Initialize(s_base_path, reinterpret_cast<GLADloadproc>(glfwGetProcAddress)); !result.has_value()) {
+            if (const auto result = Renderer::Initialize(s_base_path, msaa, reinterpret_cast<void*(*)(const char*)>(glfwGetProcAddress)); !result.has_value()) {
                 glfwDestroyWindow(s_window);
                 glfwTerminate();
                 return Failure(result.error());
@@ -222,16 +222,6 @@ namespace fow {
 
             ImGui_ImplGlfw_InitForOpenGL(s_window, true);
             ImGui_ImplOpenGL3_Init("#version 330 core");
-
-            if (msaa > 0) {
-                glEnable(GL_MULTISAMPLE);
-            } else {
-                glDisable(GL_MULTISAMPLE);
-            }
-
-            glEnable(GL_CULL_FACE);
-            glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_LESS);
 
             if ((GetResourcesPath() / "icon.png").exists()) {
                 int w, h;

@@ -7,7 +7,7 @@ using namespace fow;
 
 struct LightInfo {
     glm::vec3 position;
-    glm::vec3 color;
+    glm::vec4 color;
 
     float constant;
     float linear;
@@ -84,19 +84,21 @@ class ExampleGame : public Game {
 
     Camera m_camera;
 
-    LightInfo m_light1 = {
-        .position  = glm::vec3 { 2.0f, 0.0f, 0.0f },
-        .color     = glm::vec3 { 1.0f, 0.0f, 0.0f },
-        .constant  = 1.0f,
-        .linear    = 0.09f,
-        .quadratic = 0.032f
-    };
-    LightInfo m_light2 = {
-        .position  = glm::vec3 { -2.0f, 0.0f, 0.0f },
-        .color     = glm::vec3 { 0.0f, 1.0f, 0.0f },
-        .constant  = 1.0f,
-        .linear    = 0.09f,
-        .quadratic = 0.032f
+    Vector<LightInfo> m_lights = {
+        LightInfo {
+            .position  = glm::vec3 { 10.0f, 0.0f, 0.0f },
+            .color     = glm::vec4 { 1.0f, 0.0f, 0.0f, 300.0f },
+            .constant  = 1.0f,
+            .linear    = 0.09f,
+            .quadratic = 0.032f
+        },
+        LightInfo {
+            .position  = glm::vec3 { -10.0f, 0.0f, 0.0f },
+            .color     = glm::vec4 { 0.0f, 1.0f, 0.0f, 300.0f },
+            .constant  = 1.0f,
+            .linear    = 0.09f,
+            .quadratic = 0.032f
+        }
     };
 
     float m_ambientLightStrength = 0.125f;
@@ -107,7 +109,7 @@ public:
     ExampleGame() : Game() { }
 
     void on_init() override {
-        auto model = Assets::Load<Model>("/Models/Cube.model.xml");
+        auto model = Assets::Load<Model>("/Models/Sphere.model.xml");
         Debug::AssertFatal(model);
         if (model.has_value()) {
             test_model = std::move(model.value());
@@ -145,6 +147,7 @@ public:
         m_pSkybox->draw();
         for (const auto& mat : test_model->materials()) {
             Debug::Assert(mat->set_parameter("ViewPos", m_camera.position()));
+#if 0
             Debug::Assert(mat->set_parameter("PhongStrength", m_fPhongStrength));
             Debug::Assert(mat->set_parameter("PhongExponent", m_fPhongExponent));
             Debug::Assert(mat->set_parameter("Environment.AmbientColor", m_ambientLightColor));
@@ -163,10 +166,20 @@ public:
             Debug::Assert(mat->set_parameter("Lights[1].Quadratic", m_light2.quadratic));
             Debug::Assert(mat->set_parameter("LightCount", 2));
             Debug::Assert(mat->set_parameter("EnvMapStrength", m_fEnvMapStrength));
+#endif
+            for (size_t i = 0; i < m_lights.size(); i++) {
+                Debug::Assert(mat->set_parameter(std::format("Lights[{}].Position", i), m_lights.at(i).position));
+                Debug::Assert(mat->set_parameter(std::format("Lights[{}].Color", i), m_lights.at(i).color));
+            }
+            Debug::Assert(mat->set_parameter("Roughness", m_fPhongStrength));
+            Debug::Assert(mat->set_parameter("Metallicness", m_fPhongExponent));
+            Debug::Assert(mat->set_parameter("LightCount", static_cast<GLint>(m_lights.size())));
+            Debug::Assert(mat->set_parameter("EnvMapStrength", m_fEnvMapStrength));
+
         }
         test_model->draw();
-        test_model->draw(Transform { glm::vec3 { 4.0f, 0.0f, -4.0f }, glm::vec3 { 1.0f }, glm::quat { } });
-        test_model->draw(Transform { glm::vec3 { -4.0f, 0.0f, 4.0f }, glm::vec3 { 1.0f }, glm::quat { } });
+        test_model->draw(Transform { glm::vec3 {  2.0f, 0.0f, -2.0f }, glm::vec3 { 1.0f }, glm::quat { } });
+        test_model->draw(Transform { glm::vec3 { -2.0f, 0.0f,  2.0f }, glm::vec3 { 1.0f }, glm::quat { } });
     }
     void on_close() override {
     }
@@ -197,21 +210,9 @@ public:
             ImGui::InputFloat3("Sun Direction", glm::value_ptr(m_sunDir));
             ImGui::ColorEdit3("Sun Color", glm::value_ptr(m_sunColor));
         ImGui::SeparatorText("Phong Parameters");
-            ImGui::SliderFloat("Phong Strength", &m_fPhongStrength, 0.0f, 1.0f);
-            ImGui::SliderFloat("Phong Exponent", &m_fPhongExponent, 0.0f, 1.0f);
+            ImGui::SliderFloat("Roughness", &m_fPhongStrength, 0.0f, 1.0f);
+            ImGui::SliderFloat("Metallicness", &m_fPhongExponent, 0.0f, 1.0f);
             ImGui::SliderFloat("Envmap Strength", &m_fEnvMapStrength, 0.0f, 1.0f);
-        ImGui::SeparatorText("Light 1 Parameters");
-            ImGui::InputFloat3("L1 Position", glm::value_ptr(m_light1.position));
-            ImGui::ColorEdit3("L1 Color", glm::value_ptr(m_light1.color), ImGuiColorEditFlags_Float);
-            ImGui::InputFloat("L1 Linear", &m_light1.linear);
-            ImGui::InputFloat("L1 Constant", &m_light1.constant);
-            ImGui::InputFloat("L1 Quadratic", &m_light1.quadratic);
-        ImGui::SeparatorText("Light 2 Parameters");
-            ImGui::InputFloat3("L2 Position", glm::value_ptr(m_light2.position));
-            ImGui::ColorEdit3("L2 Color", glm::value_ptr(m_light2.color), ImGuiColorEditFlags_Float);
-            ImGui::InputFloat("L2 Linear", &m_light2.linear);
-            ImGui::InputFloat("L2 Constant", &m_light2.constant);
-            ImGui::InputFloat("L2 Quadratic", &m_light2.quadratic);
         ImGui::End();
     }
 };

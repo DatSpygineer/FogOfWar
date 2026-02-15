@@ -10,7 +10,7 @@
 namespace fow {
     Dylib::Dylib(const Path& path) {
 #ifdef _WIN32
-    #error TODO
+        m_pLibrary = LoadLibraryA(path.as_cstr());
 #else
         m_pLibrary = dlopen(path.as_cstr(), RTLD_LAZY);
 #endif
@@ -18,7 +18,7 @@ namespace fow {
     Dylib::~Dylib() {
         if (m_pLibrary != nullptr) {
 #ifdef _WIN32
-    #error TODO
+            FreeLibrary(static_cast<HMODULE>(m_pLibrary));
 #else
             dlclose(m_pLibrary);
 #endif
@@ -30,7 +30,7 @@ namespace fow {
             return nullptr;
         }
 #ifdef _WIN32
-    #error TODO
+        return static_cast<void*>(GetProcAddress(static_cast<HMODULE>(m_pLibrary), name.as_cstr()));
 #else
         return dlsym(m_pLibrary, name.as_cstr());
 #endif

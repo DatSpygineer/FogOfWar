@@ -1,7 +1,7 @@
 #include "fow/Renderer/ShaderLib.hpp"
 #include "fow/Shared/Dylib.hpp"
 
-#include <glad/glad.h>
+#include "fow/Renderer/GL.hpp"
 
 #ifdef _WIN32
     #define SHADERLIB_FILENAME "shaderlib.dll"
@@ -12,18 +12,14 @@
 const fow::Dylib* s_shaderlib = nullptr;
 
 namespace fow::ShaderLib {
-    static void NamedString(const char* name, const char* source) {
-        glNamedStringARB(GL_SHADER_INCLUDE_ARB, -1, name, -1, source);
-    }
-
     Result<> Load(const Path& base_path) {
         s_shaderlib = new Dylib(base_path / SHADERLIB_FILENAME);
         if (!s_shaderlib->is_valid()) {
             return Failure("Failed to load shader library!");
         }
 
-        if (const auto shaderlib_init = s_shaderlib->symbol<void(*)(void(*)(const char*, const char*))>("ShaderLibInitialize"); shaderlib_init != nullptr) {
-            shaderlib_init(&NamedString);
+        if (const auto shaderlib_init = s_shaderlib->symbol<void(*)()>("ShaderLibInitialize"); shaderlib_init != nullptr) {
+            shaderlib_init();
             return Success();
         }
         return Failure("Failed to initialize shader library!");

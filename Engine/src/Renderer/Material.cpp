@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include "fow/Renderer/GL.hpp"
 #include "fow/Renderer/Material.hpp"
 
 namespace fow {
