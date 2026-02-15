@@ -23,7 +23,8 @@ endif()
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 set(FOW_SCRIPTS_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/Scripts)
-set(FOW_BUILD_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/Build)
+set(FOW_BUILD_DIRECTORY   ${CMAKE_CURRENT_LIST_DIR}/Build)
+set(FOW_ENGINE_DIRECTORY  ${CMAKE_CURRENT_LIST_DIR}/Engine)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${FOW_BUILD_DIRECTORY}/Bin/${CMAKE_BUILD_TYPE})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${FOW_BUILD_DIRECTORY}/Bin/${CMAKE_BUILD_TYPE})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${FOW_BUILD_DIRECTORY}/Lib/${CMAKE_BUILD_TYPE})
@@ -31,7 +32,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 macro(add_game TARGET_NAME)
     set(options "")
-    set(oneValueArgs BASE_DIR RESOURCES_DIR)
+    set(oneValueArgs BASE_DIR RESOURCES_DIR SHADERS)
     set(multiValueArgs ASSETS SOURCES)
 
     cmake_parse_arguments(
@@ -64,13 +65,48 @@ macro(add_game TARGET_NAME)
     endif()
 
     add_executable(${TARGET_NAME} ${GAME_SOURCES})
-    target_link_libraries(${TARGET_NAME} PRIVATE FogOfWar::Engine)
     set_target_properties(${TARGET_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${GAME_BASE_DIR}
         LIBRARY_OUTPUT_DIRECTORY ${GAME_BASE_DIR}
         ARCHIVE_OUTPUT_DIRECTORY ${GAME_BASE_DIR}
     )
+    target_link_libraries(${TARGET_NAME} PRIVATE FogOfWar::Engine)
     message(STATUS "Setting game base directory \"${GAME_BASE_DIR}\"")
+
+    set(SHADERLIB_SRC ${CMAKE_CURRENT_LIST_DIR}/shaderlib/ShaderLib.cpp)
+    set(SHADERLIB_INC ${CMAKE_CURRENT_LIST_DIR}/shaderlib ${FOW_ENGINE_DIRECTORY}/shaders/shaderlib)
+
+    add_library(${TARGET_NAME}_ShaderLib SHARED ${SHADERLIB_SRC})
+    target_compile_definitions(${TARGET_NAME}_ShaderLib PRIVATE -DSHADER_LIB_EXPORTS)
+    target_include_directories(${TARGET_NAME}_ShaderLib PUBLIC ${SHADERLIB_INC})
+    set_target_properties(${TARGET_NAME}_ShaderLib PROPERTIES
+        OUTPUT_NAME shaderlib
+        RUNTIME_OUTPUT_DIRECTORY ${GAME_BASE_DIR}
+        LIBRARY_OUTPUT_DIRECTORY ${GAME_BASE_DIR}
+        ARCHIVE_OUTPUT_DIRECTORY ${GAME_BASE_DIR}
+        ADDITIONAL_CLEAN_FILES   ${SHADERLIB_SRC}
+    )
+    add_dependencies(${TARGET_NAME} ${TARGET_NAME}_ShaderLib)
+
+    if (NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/shaderlib)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaderlib)
+    endif()
+
+    set(SHADER_COMPILE_ARGS
+        --source-out "${CMAKE_CURRENT_LIST_DIR}/shaderlib"
+        --engine-shaders "${FOW_ENGINE_DIRECTORY}/shaders"
+    )
+
+    if (GAME_SHADERS)
+        set(SHADER_COMPILE_ARGS --game-shaders "${GAME_SHADERS}")
+    endif()
+
+    add_custom_target(${TARGET_NAME}_ShaderLibGenerate ALL DEPENDS ${SHADERLIB_SRC})
+    add_custom_command(
+        OUTPUT ${SHADERLIB_SRC}
+        COMMAND "${Python3_EXECUTABLE}" "${FOW_SCRIPTS_DIRECTORY}/compile_shaders.py" ${SHADER_COMPILE_ARGS}
+    )
+    add_dependencies(${TARGET_NAME}_ShaderLib ${TARGET_NAME}_ShaderLibGenerate)
 
     if (NOT EXISTS ${GAME_BASE_DIR}/res)
         file(MAKE_DIRECTORY ${GAME_BASE_DIR}/res)

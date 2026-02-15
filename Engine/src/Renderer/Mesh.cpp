@@ -1,15 +1,17 @@
-#include <glad/glad.h>
+#include "fow/Renderer/GL.hpp"
 #include "fow/Renderer/Mesh.hpp"
 #include "fow/Renderer.hpp"
 
 namespace fow {
-    Vector<Vertex> Vertex::CreateVertexArrayFromBuffers(const Vector<glm::vec3>& positions, const Vector<glm::vec3>& normals, const Vector<glm::vec2>& uvs) {
+    Vector<Vertex> Vertex::CreateVertexArrayFromBuffers(const Vector<glm::vec3>& positions, const Vector<glm::vec3>& normals, const Vector<glm::vec3>& tangents, const Vector<glm::vec3>& bitangents, const Vector<glm::vec2>& uvs) {
         Vector<Vertex> vertices;
         vertices.reserve(positions.size());
         for (size_t i = 0; i < positions.size(); ++i) {
             vertices.emplace_back(
                 positions.at(i),
                 normals.at(i),
+                tangents.at(i),
+                bitangents.at(i),
                 uvs.at(i)
             );
         }
@@ -61,9 +63,15 @@ namespace fow {
         // Normal
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
-        // UV
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(6 * sizeof(float)));
+        // Tangent
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(6 * sizeof(float)));
         glEnableVertexAttribArray(2);
+        // Bitangent
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(9 * sizeof(float)));
+        glEnableVertexAttribArray(3);
+        // UV
+        glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(12 * sizeof(float)));
+        glEnableVertexAttribArray(4);
 
         glBindVertexArray(0);
 
@@ -72,10 +80,10 @@ namespace fow {
 
     Result<MeshPtr> Mesh::CreateQuad(const MaterialPtr& material, const glm::vec2& scale, const MeshDrawMode draw_mode) {
         const Vector vertices = {
-            Vertex { glm::vec3 { scale.x *  0.5f, scale.y * -0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 1.0f, 1.0f } },
-            Vertex { glm::vec3 { scale.x *  0.5f, scale.y *  0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 1.0f, 0.0f } },
-            Vertex { glm::vec3 { scale.x * -0.5f, scale.y *  0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 0.0f, 0.0f } },
-            Vertex { glm::vec3 { scale.x * -0.5f, scale.y * -0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 0.0f, 1.0f } }
+            Vertex { glm::vec3 { scale.x *  0.5f, scale.y * -0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 1.0f, 1.0f } },
+            Vertex { glm::vec3 { scale.x *  0.5f, scale.y *  0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 1.0f, 0.0f } },
+            Vertex { glm::vec3 { scale.x * -0.5f, scale.y *  0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 0.0f, 0.0f } },
+            Vertex { glm::vec3 { scale.x * -0.5f, scale.y * -0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 0.0f, 1.0f } }
         };
         const Vector indices = {
             0u, 1u, 2u,

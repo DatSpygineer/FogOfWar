@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Texture src="/Textures/test_tiles_n.png">
+    <CoCg>true</CoCg>
+</Texture>

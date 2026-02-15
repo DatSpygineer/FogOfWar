@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/SOIL2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/glm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/googletest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/imgui" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/nlohmann_json" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/pugixml" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/reflect-cpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/reflect-cpp/vcpkg" vcs="Git" />
+  </component>
+</project>

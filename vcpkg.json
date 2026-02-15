@@ -6,6 +6,7 @@
     "assimp",
     "freetype",
     "pugixml",
-    "gtest"
+    "gtest",
+    "shaderc"
   ]
 }

@@ -1,7 +1,6 @@
 file(GLOB FOW_SHARED_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Shared/*.cpp)
 file(GLOB FOW_RENDERER_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Renderer/*.cpp)
 file(GLOB FOW_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Engine/*.cpp)
-file(GLOB FOW_GLAD_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Renderer/glad/*.c)
 
 if (WIN32)
     set(FOW_SHARED_OS_SPEC_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Shared/OsSpecific/Windows.cpp)
@@ -15,8 +14,12 @@ find_package(glfw3 REQUIRED)
 find_package(assimp REQUIRED)
 find_package(Freetype REQUIRED)
 
-if (WIN32) # On Linux Assimp already loads pugixml in
-    find_package(pugixml CONFIG REQUIRED)
+if (WIN32)
+    find_package(pugixml CONFIG REQUIRED) # On Linux Assimp already loads pugixml already
+    find_package(GLEW CONFIG REQUIRED)
+    set(FOW_GLAD_SOURCES )
+else()
+    file(GLOB FOW_GLAD_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Renderer/glad/*.c)
 endif()
 
 set(FOW_IMGUI_SOURCES
@@ -52,6 +55,9 @@ add_library(FogOfWarRenderer SHARED ${FOW_RENDERER_SOURCES} ${FOW_GLAD_SOURCES})
 target_include_directories(FogOfWarRenderer PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${ASSIMP_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(FogOfWarRenderer PUBLIC FogOfWar::Shared soil2 ${ASSIMP_LIBRARIES} ${FREETYPE_LIBRARIES})
 add_library(FogOfWar::Renderer ALIAS FogOfWarRenderer)
+if (WIN32)
+    target_link_libraries(FogOfWarRenderer PUBLIC GLEW::GLEW)
+endif()
 
 add_library(FogOfWarEngine SHARED ${FOW_SOURCES})
 target_include_directories(FogOfWarEngine PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)

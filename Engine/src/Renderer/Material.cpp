@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include "fow/Renderer/GL.hpp"
 #include "fow/Renderer/Material.hpp"
 
 namespace fow {
@@ -1011,7 +1011,7 @@ namespace fow {
     void Material::set_backface_culling(const bool value) {
         m_options.backface_culling = value;
     }
-    void Material::set_depth_test(bool value) {
+    void Material::set_depth_test(const bool value) {
         m_options.depth_test = value;
     }
 
@@ -1163,7 +1163,21 @@ namespace fow {
             return Failure(std::format("Failed to load material \"{}\": Expected attribute 'shader' in root node 'Material'!", source));
         }
 
-        const auto shader_result = Assets::Load<Shader>(shader_attrib.value());
+        const auto shader_sources_result = ShaderLib::GetSourcesForShader(shader_attrib.value());
+        if (!shader_sources_result.has_value()) {
+            return Failure(std::format("Failed to load material \"{}\": Could not find shader \"{}\"\n{}", source, shader_attrib.value(), shader_sources_result.error().message));
+        }
+
+        const auto vert_result = ShaderLib::GetSource(shader_sources_result.value().vertex);
+        if (!vert_result.has_value()) {
+            return Failure(std::format("Failed to load material \"{}\": Could not find shader source for vertex shader \"{}\": {}", source, shader_sources_result.value().vertex, vert_result.error().message));
+        }
+        const auto frag_result = ShaderLib::GetSource(shader_sources_result.value().fragment);
+        if (!frag_result.has_value()) {
+            return Failure(std::format("Failed to load material \"{}\": Could not find shader source for fragment shader \"{}\": {}", source, shader_sources_result.value().fragment, frag_result.error().message));
+        }
+
+        const auto shader_result = Shader::Compile(shader_attrib.value(), vert_result.value(), frag_result.value());
         if (!shader_result.has_value()) {
             return Failure(std::format("Failed to load material \"{}\": Failed to load shader \"{}\":\n{}", source, shader_attrib.value(), shader_result.error().message));
         }
@@ -1350,7 +1364,7 @@ namespace fow {
                                         params.emplace(child.name(), texture_result.value().ptr());
                                     } else {
                                         params.emplace(child.name(), Texture::PlaceHolder());
-                                        Debug::LogError(std::format("Failed to load texture \"{}\" for parameter \"{}\":\n", child.child_value(), source, texture_result.error().message));
+                                        Debug::LogError(std::format("Failed to load texture \"{}\" for parameter \"{}\":\n{}", child.child_value(), source, texture_result.error().message));
                                     }
                                 }
                             } break;
@@ -1407,7 +1421,29 @@ namespace fow {
                 }
             }
         }
-        return Success<MaterialPtr>(std::make_shared<Material>(shader.ptr(), params));
+        auto mat = std::make_shared<Material>(shader, params);
+        if (opaque_node) {
+            const auto value = StringToBool(opaque_node.child_value());
+            if (!value.has_value()) {
+                return Failure(std::format("Failed to load material \"{}\": Expected boolean value for node \"Opaque\"", source));
+            }
+            mat->set_opaque(value.value());
+        }
+        if (backface_culling_node) {
+            const auto value = StringToBool(backface_culling_node.child_value());
+            if (!value.has_value()) {
+                return Failure(std::format("Failed to load material \"{}\": Expected boolean value for node \"BackfaceCulling\"", source));
+            }
+            mat->set_backface_culling(value.value());
+        }
+        if (depth_test_node) {
+            const auto value = StringToBool(depth_test_node.child_value());
+            if (!value.has_value()) {
+                return Failure(std::format("Failed to load material \"{}\": Expected boolean value for node \"DepthTest\"", source));
+            }
+            mat->set_depth_test(value.value());
+        }
+        return Success<MaterialPtr>(std::move(mat));
     }
 
     Result<MaterialPtr> Material::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {

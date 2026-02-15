@@ -198,16 +198,6 @@ namespace fow {
                         result.emplace_back(line);
                     }
                     ifs.close();
-                } else {
-                    if (!mod_dir.value().exists()) {
-                        Path::CreateDirectory(mod_dir.value(), true);
-                    }
-                    std::ofstream ofs((mod_dir.value() / "mods.txt").as_std_path());
-                    for (const auto& path : mod_dir.value().list_dir({ "*.zip", "*.fwpak" })) {
-                        result.emplace_back(path.as_std_str());
-                        ofs << path.as_std_str() << std::endl;
-                    }
-                    ofs.close();
                 }
             }
             return result;

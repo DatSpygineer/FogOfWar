@@ -67,11 +67,32 @@ namespace fow {
             Mb5, Mb6, Mb7, Mb8
         };
 
+        struct FOW_ENGINE_API Action {
+            Type type;
+            int keycode;
+        };
+
+        enum CursorMode {
+            Normal   = GLFW_CURSOR_NORMAL,
+            Hidden   = GLFW_CURSOR_HIDDEN,
+            Disabled = GLFW_CURSOR_DISABLED,
+            Captured = GLFW_CURSOR_CAPTURED
+        };
+
         FOW_ENGINE_API void Initialize();
         FOW_ENGINE_API void Poll();
 
+        FOW_ENGINE_API Result<> CreateAction(const String& name, Action action);
         FOW_ENGINE_API Result<> CreateAction(const String& name, Type type, int value);
         inline Result<> CreateAction(const String& name, const Type type, const KeyCode value) { return CreateAction(name, type, static_cast<int>(value)); }
+        FOW_ENGINE_API void DeleteAction(const String& name);
+        FOW_ENGINE_API const HashMap<String, Action>& AvailableActions();
+
+        FOW_ENGINE_API Result<Action> StringToAction(const String& key);
+        FOW_ENGINE_API Result<String> ActionToString(Action action);
+
+        FOW_ENGINE_API void SetCursorMode(CursorMode mode);
+        FOW_ENGINE_API CursorMode GetCursorMode();
 
         FOW_ENGINE_API bool ActionIsPressed(const String& action);
         FOW_ENGINE_API bool ActionIsDown(const String& action);

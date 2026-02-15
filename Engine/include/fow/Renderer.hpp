@@ -6,6 +6,7 @@
 #include "fow/Renderer/Material.hpp"
 #include "fow/Renderer/Mesh.hpp"
 #include "fow/Renderer/Model.hpp"
+#include "fow/Renderer/Skybox.hpp"
 
 namespace fow {
     enum class BlendFactor : GLenum {
@@ -19,7 +20,7 @@ namespace fow {
     };
 
     namespace Renderer {
-        FOW_RENDER_API Result<> Initialize(const Path& app_base_path, void* (*loader)(const char*));
+        FOW_RENDER_API Result<> Initialize(const Path& app_base_path, int msaa, void* (*loader)(const char*));
         FOW_RENDER_API void Terminate();
         FOW_RENDER_API Path GetBasePath();
         FOW_RENDER_API void EnableBlend(bool enabled, BlendFactor src = BlendFactor::SrcAlpha, BlendFactor dst = BlendFactor::OneMinusSrcAlpha);
