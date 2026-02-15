@@ -23,23 +23,25 @@ namespace fow {
         [[nodiscard]] bool has_entry(const Path& path) const;
         [[nodiscard]] Result<UniquePtr<ZipEntry>> open_entry(const Path& path) const;
 
-        [[nodiscard]] constexpr bool is_valid() const { return m_pZip != nullptr; }
+        [[nodiscard]] FOW_CONSTEXPR bool is_valid() const { return m_pZip != nullptr; }
+        [[nodiscard]] Vector<String> list_assets() const;
+        [[nodiscard]] int64_t entry_count() const;
 
         friend class ZipEntry;
     };
     class FOW_SHARED_API ZipEntry final {
-        Path m_sPath;
+        String m_sPath;
         const ZipArchive& m_refArchive;
         zip_file_t* m_pZipFile;
     public:
-        ZipEntry(const ZipArchive& archive, const Path& path);
+        ZipEntry(const ZipArchive& archive, const String& path);
         ~ZipEntry();
 
         [[nodiscard]] uint64_t size() const;
         int64_t read(void* buffer, uint64_t read_size) const;
         int64_t read_to_end(void* buffer, uint64_t max_buffer_size) const;
         [[nodiscard]] String read_string() const;
-        [[nodiscard]] constexpr const Path& path() const { return m_sPath; }
+        [[nodiscard]] FOW_CONSTEXPR const String& path() const { return m_sPath; }
     };
 
     template<typename T>
@@ -71,16 +73,16 @@ namespace fow {
             return *this;
         }
 
-        [[nodiscard]] constexpr const Path& path() const { return m_sPath; }
-        [[nodiscard]] constexpr bool is_valid() const { return !m_sPath.is_empty() && m_pData != nullptr; }
+        [[nodiscard]] FOW_CONSTEXPR const Path& path() const { return m_sPath; }
+        [[nodiscard]] FOW_CONSTEXPR bool is_valid() const { return !m_sPath.is_empty() && m_pData != nullptr; }
 
-        [[nodiscard]] constexpr SharedPtr<T>& ptr() { return m_pData; }
-        [[nodiscard]] constexpr const SharedPtr<T>& ptr() const { return m_pData; }
-        [[nodiscard]] constexpr T& value() { return *m_pData.get(); }
-        [[nodiscard]] constexpr const T& value() const { return *m_pData.get(); }
+        [[nodiscard]] FOW_CONSTEXPR SharedPtr<T>& ptr() { return m_pData; }
+        [[nodiscard]] FOW_CONSTEXPR const SharedPtr<T>& ptr() const { return m_pData; }
+        [[nodiscard]] FOW_CONSTEXPR T& value() { return *m_pData.get(); }
+        [[nodiscard]] FOW_CONSTEXPR const T& value() const { return *m_pData.get(); }
 
-        [[nodiscard]] constexpr T* operator->() { return m_pData.get(); }
-        [[nodiscard]] constexpr const T* operator->() const { return m_pData.get(); }
+        [[nodiscard]] FOW_CONSTEXPR T* operator->() { return m_pData.get(); }
+        [[nodiscard]] FOW_CONSTEXPR const T* operator->() const { return m_pData.get(); }
     };
 
     namespace AssetLoaderFlags {

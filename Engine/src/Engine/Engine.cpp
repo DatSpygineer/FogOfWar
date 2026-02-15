@@ -2,13 +2,12 @@
 #include "fow/Engine/Convar.hpp"
 
 #include "fow/Renderer.hpp"
+#include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
 #include "SOIL2.h"
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <fow/Engine/ImGui.hpp>
 
 namespace fow {
     static void UpdateResolution(const CVarPtr& self);
@@ -65,7 +64,7 @@ namespace fow {
             s_game_class = std::move(game_class_ctor());
 
             Assets::Initialize(s_game_class->base_data_path(), s_game_class->game_data_archives(), s_game_class->mod_data_path());
-            Console::Initialize();
+            Debug::Assert(Console::Initialize());
 
             HashMap<String, Vector<String>> args;
             String current_arg = "";
@@ -77,7 +76,7 @@ namespace fow {
                     args.at(current_arg).emplace_back(argv[i]);
                 }
             }
-            LoadLanguageFiles();
+            Debug::Assert(LoadLanguageFiles());
 
             if (glfwInit() != GLFW_TRUE) {
                 const char* message;
@@ -171,6 +170,9 @@ namespace fow {
                 }
             }
 
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
             s_window = glfwCreateWindow(resolution.x, resolution.y, title.as_cstr(), monitor, nullptr);
 
             if (s_window == nullptr) {
@@ -182,15 +184,11 @@ namespace fow {
 
             s_window_title = title;
             glfwMakeContextCurrent(s_window);
-
-            if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-                const auto error = glGetError();
+            if (const auto result = Renderer::Initialize(s_base_path, reinterpret_cast<GLADloadproc>(glfwGetProcAddress)); !result.has_value()) {
                 glfwDestroyWindow(s_window);
                 glfwTerminate();
-                return Failure(std::format("Failed to initialize OpenGL: GL error {}", error));
+                return Failure(result.error());
             }
-
-            Debug::AssertFatal(Renderer::Initialize(s_base_path));
             Renderer::EnableBlend(true);
             Renderer::SetViewport(0.0f, 0.0f, resolution.x, resolution.y);
             glfwSetWindowSizeCallback(s_window, [](GLFWwindow* window, const int width, const int height) {
@@ -210,10 +208,6 @@ namespace fow {
             ImGui_ImplGlfw_InitForOpenGL(s_window, true);
             ImGui_ImplOpenGL3_Init("#version 330 core");
 
-            glEnable(GL_CULL_FACE);
-            glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_LESS);
-
             if ((GetResourcesPath() / "icon.png").exists()) {
                 int w, h;
                 const auto icon_data = SOIL_load_image((GetResourcesPath() / "icon.png").as_cstr(), &w, &h, nullptr, SOIL_LOAD_RGBA);
@@ -230,7 +224,7 @@ namespace fow {
 #endif
 
             if (const auto lang = cl_lang->as_string(); lang.has_value()) {
-                SetLanguage(lang.value());
+                Debug::Assert(SetLanguage(lang.value()));
             }
             s_initialized = true;
             return Success();
@@ -259,7 +253,6 @@ namespace fow {
                     s_game_class->on_update(time - last_time);
                 }
 
-
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
@@ -273,8 +266,7 @@ namespace fow {
                 ImGui::Render();
                 int display_w, display_h;
                 glfwGetFramebufferSize(s_window, &display_w, &display_h);
-                glClearColor(s_background_color.r, s_background_color.g, s_background_color.b, s_background_color.a);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                Renderer::Clear(s_background_color);
 
                 if (s_game_class != nullptr) {
                     s_game_class->on_render(time - last_time);

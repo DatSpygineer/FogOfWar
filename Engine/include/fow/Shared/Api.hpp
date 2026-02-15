@@ -1,6 +1,18 @@
 #ifndef FOW_API_HPP
 #define FOW_API_HPP
 
+#ifdef __cplusplus
+    #include <cstdint>
+#else
+    #include <stdint.h>
+#endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
+    #define FOW_CONSTEXPR inline
+#else
+    #define FOW_CONSTEXPR constexpr
+#endif
+
 #ifdef FogOfWarShared_EXPORTS
     #ifdef _WIN32
         #define FOW_SHARED_API __declspec(dllexport)
@@ -45,13 +57,16 @@
 
 #ifndef __GNUC__
     #ifdef _WIN64
-        using ssize_t = int64_t;
+        typedef int64_t ssize_t;
     #else
-        using ssize_t = int32_t;
+        typedef int32_t ssize_t;
     #endif
 #endif
 
-#define ABSTRACT(__x) virtual __x = 0;
+#ifdef __cplusplus
+    #define ABSTRACT(__x) virtual __x = 0;
+#endif
+
 #define DISCARD(__x) ((void)(__x))
 
 

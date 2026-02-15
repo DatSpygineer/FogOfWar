@@ -34,13 +34,13 @@ TEST(Path, PathManipulation) {
     EXPECT_STREQ(path.as_cstr(), fs::absolute("test").string().c_str());
 
     path = Path { "test" } / "another_test";
-    EXPECT_STREQ(path.as_cstr(), (fs::path("test") / "another_test").c_str());
+    EXPECT_EQ(path.as_std_str(), (fs::path("test") / "another_test").string());
     path.go_back();
     EXPECT_STREQ(path.as_cstr(), "test");
     path /= "another_test";
-    EXPECT_STREQ(path.as_cstr(), (fs::path("test") / "another_test").c_str());
+    EXPECT_EQ(path.as_std_str(), (fs::path("test") / "another_test").string());
     path += ".txt";
-    EXPECT_STREQ(path.as_cstr(), (fs::path("test") / "another_test.txt").c_str());
+    EXPECT_EQ(path.as_std_str(), (fs::path("test") / "another_test.txt").string());
 
     path = Path { "test/test" } + ".txt";
     EXPECT_STREQ(path.as_cstr(), "test" PATH_SEPARATOR "test.txt");

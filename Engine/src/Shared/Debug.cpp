@@ -15,6 +15,10 @@ namespace fow::Debug {
 ;
 
 #ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #include <Windows.h>
+    #include <WinUser.h>
+
     static HANDLE s_console_handle = INVALID_HANDLE_VALUE;
     static WORD s_default_color = 0;
 #endif
@@ -64,6 +68,7 @@ namespace fow::Debug {
                 case LogLevel::Warning: wColor = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY; break;
                 case LogLevel::Error:
                 case LogLevel::Fatal:   wColor = FOREGROUND_RED | FOREGROUND_INTENSITY; break;
+                default: wColor = s_default_color; break;
             }
             SetConsoleTextAttribute(s_console_handle, wColor);
         }
@@ -92,6 +97,9 @@ namespace fow::Debug {
             s_message_sent_callback(level, timestamp, message, location);
         }
         if (level == LogLevel::Fatal) {
+#ifdef _WIN32
+            MessageBoxA(nullptr, message.as_cstr(), "Fatal error!", MB_OK | MB_ICONERROR);
+#endif
             CrashGame(1);
         }
     }
@@ -101,6 +109,14 @@ namespace fow::Debug {
         }
         return !condition;
     }
+
+    bool AssertWarn(const bool condition, const String& fail_message, const std::source_location& location) {
+        if (!condition) {
+            Log(LogLevel::Warning, fail_message, location);
+        }
+        return !condition;
+    }
+
     bool AssertFatal(const bool condition, const String& fail_message, const std::source_location& location) {
         if (!condition) {
             Log(LogLevel::Fatal, fail_message, location);

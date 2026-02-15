@@ -1,6 +1,6 @@
 #include <fow/Core.hpp>
 
-#include "imgui.h"
+#include <fow/Engine/ImGui.hpp>
 
 using namespace fow;
 
@@ -86,11 +86,11 @@ public:
         test_model->draw(test_transform);
 
         for (auto& mat : light_model->materials()) {
-            mat->set_parameter("TextureColor", glm::vec4(m_light1.color, 1.0f));
+            Debug::AssertWarn(mat->set_parameter("TextureColor", glm::vec4(m_light1.color, 1.0f)));
         }
         light_model->draw(Transform { m_light1.position, glm::vec3 { 1.0f }, glm::quat() });
         for (auto& mat : light_model->materials()) {
-            mat->set_parameter("TextureColor", glm::vec4(m_light2.color, 1.0f));
+            Debug::AssertWarn(mat->set_parameter("TextureColor", glm::vec4(m_light2.color, 1.0f)));
         }
         light_model->draw(Transform { m_light2.position, glm::vec3 { 1.0f }, glm::quat() });
     }
@@ -107,7 +107,7 @@ public:
         return "Example";
     }
     [[nodiscard]] Vector<String> game_data_archives() const override {
-        return Vector<String> { "Data.fwpak" };
+        return Vector<String> { "Data.pak" };
     }
     [[nodiscard]] Path base_data_path() const override {
         return Engine::GetGameBasePath() / "data";

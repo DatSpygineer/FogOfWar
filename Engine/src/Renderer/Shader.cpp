@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include "fow/Renderer/Shader.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -698,16 +699,33 @@ namespace fow {
             return Failure(std::format("Uniform location {} is out of range", location));
         }
 
-        String name(1024);
-        GLenum type;
-        glGetActiveUniform(m_uProgram, location, 1024, nullptr, nullptr, &type, name.data());
-        name.recalculate_size();
+        if (!glIsProgram(m_uProgram)) {
+            return Failure(std::format("Shader with id {} is not a valid Shader program!", m_uProgram));
+        }
 
-        ShaderUniformInfo info;
-        info.name = name;
-        info.location = location;
-        info.type = static_cast<ShaderUniformType>(type);
-        return Success<ShaderUniformInfo>(info);
+        GLint uniform_count;
+        glGetProgramInterfaceiv(m_uProgram, GL_UNIFORM, GL_ACTIVE_RESOURCES, &uniform_count);
+
+
+        constexpr GLenum properties[] = { GL_LOCATION, GL_TYPE, GL_NAME_LENGTH };
+        for (size_t i = 0; i < uniform_count; i++) {
+            GLint results[3];
+            glGetProgramResourceiv(m_uProgram, GL_UNIFORM, i, 3, properties, 3, nullptr, results);
+            if (results[0] == location) {
+                String name(1024);
+                glGetProgramResourceName(m_uProgram, GL_UNIFORM, i, name.capacity(), nullptr, name.data());
+                name.recalculate_size();
+
+                ShaderUniformInfo info;
+                info.name = name;
+                info.location = location;
+                info.type = static_cast<ShaderUniformType>(results[1]);
+
+                return Success<ShaderUniformInfo>(info);
+            }
+        }
+
+        return Failure(std::format("Uniform at location {} not found!", location));
     }
 
     size_t Shader::get_uniform_count() const {
@@ -729,7 +747,7 @@ namespace fow {
         }
         const char* vertex_cstr = processed_vertex.value().as_cstr();
         glShaderSource(vid, 1, &vertex_cstr, nullptr);
-        glCompileShaderIncludeARB(vid, 0, nullptr, nullptr);
+        glCompileShader(vid);
         glGetShaderiv(vid, GL_COMPILE_STATUS, &status);
         if (!status) {
             String info_log(2048);
@@ -752,7 +770,7 @@ namespace fow {
         }
         const char* fragment_cstr = processed_fragment.value().as_cstr();
         glShaderSource(fid, 1, &fragment_cstr, nullptr);
-        glCompileShaderIncludeARB(fid, 0, nullptr, nullptr);
+        glCompileShader(fid);
         glGetShaderiv(fid, GL_COMPILE_STATUS, &status);
         if (!status) {
             String info_log(2048);
@@ -772,7 +790,7 @@ namespace fow {
         glAttachShader(id, vid);
         glAttachShader(id, fid);
         glLinkProgram(id);
-        glGetShaderiv(id, GL_LINK_STATUS, &status);
+        glGetProgramiv(id, GL_LINK_STATUS, &status);
         if (!status) {
             String info_log(2048);
             glGetProgramInfoLog(id, 2048, nullptr, info_log.data());
@@ -830,7 +848,7 @@ namespace fow {
         glAttachShader(id, ids[0]);
         glAttachShader(id, ids[1]);
         glLinkProgram(id);
-        glGetShaderiv(id, GL_LINK_STATUS, &status);
+        glGetProgramiv(id, GL_LINK_STATUS, &status);
         if (!status) {
             String info_log(2048);
             glGetProgramInfoLog(id, 2048, nullptr, info_log.data());

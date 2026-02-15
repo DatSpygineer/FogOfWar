@@ -19,31 +19,49 @@ namespace fow {
         }
     }
 
-    bool ZipArchive::has_entry(const Path& path) const {
-        auto fixed_path = path;
-        if (path.as_string().starts_with('/')) {
-            fixed_path = path.as_string().substr(1);
+    static String FixZipEntryPath(const Path& input) {
+        auto result = input.as_string();
+#ifdef _WIN32
+        result.replace_all('\\', '/');
+#endif
+        if (result.starts_with('/')) {
+            result = result.substr(1);
         }
-        if (const auto zip = zip_fopen(m_pZip, fixed_path.as_cstr(), 0); zip != nullptr) {
-            zip_fclose(zip);
-            return true;
+        return result;
+    }
+
+    bool ZipArchive::has_entry(const Path& path) const {
+        const auto assets = list_assets();
+        const auto fixed_path = FixZipEntryPath(path);
+        for (const auto& asset : assets) {
+            if (asset == fixed_path) {
+                return true;
+            }
         }
         return false;
     }
     Result<UniquePtr<ZipEntry>> ZipArchive::open_entry(const Path& path) const {
         try {
-            auto fixed_path = path;
-            if (path.as_string().starts_with('/')) {
-                fixed_path = path.as_string().substr(1);
-            }
-            return Success<UniquePtr<ZipEntry>>(std::make_unique<ZipEntry>(*this, fixed_path));
+            return Success<UniquePtr<ZipEntry>>(std::make_unique<ZipEntry>(*this, path.as_string()));
         } catch (const std::runtime_error& e) {
             return Failure(e.what());
         }
     }
 
-    ZipEntry::ZipEntry(const ZipArchive& archive, const Path& path) : m_refArchive(archive), m_sPath(path) {
-        m_pZipFile = zip_fopen(archive.m_pZip, path.as_cstr(), 0);
+    Vector<String> ZipArchive::list_assets() const {
+        Vector<String> names;
+        for (int64_t i = 0; i < entry_count(); ++i) {
+            names.emplace_back(zip_get_name(m_pZip, i, 0));
+        }
+        return names;
+    }
+
+    int64_t ZipArchive::entry_count() const {
+        return zip_get_num_entries(m_pZip, 0);
+    }
+
+    ZipEntry::ZipEntry(const ZipArchive& archive, const String& path) : m_sPath(FixZipEntryPath(path)), m_refArchive(archive) {
+        m_pZipFile = zip_fopen(archive.m_pZip, m_sPath.as_cstr(), 0);
         if (m_pZipFile == nullptr) {
             zip_error_t* error = zip_get_error(archive.m_pZip);
             auto e = std::runtime_error(std::format("Failed to open zip file entry \"{}\": {}", path, zip_error_strerror(error)));
