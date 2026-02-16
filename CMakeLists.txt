@@ -98,7 +98,7 @@ macro(add_game TARGET_NAME)
     )
 
     if (GAME_SHADERS)
-        set(SHADER_COMPILE_ARGS --game-shaders "${GAME_SHADERS}")
+        set(SHADER_COMPILE_ARGS ${SHADER_COMPILE_ARGS} --game-shaders "${GAME_SHADERS}")
     endif()
 
     add_custom_target(${TARGET_NAME}_ShaderLibGenerate ALL DEPENDS ${SHADERLIB_SRC})
@@ -165,7 +165,7 @@ macro(add_game TARGET_NAME)
                     ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/bz2d.dll
                     ${GAME_BASE_DIR}/bz2d.dll
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/assimp-vc143-mtd.dll
+                    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/assimp-vc143-mtd.dll # TODO: Search for the file instead of using a fixed name, to make sure copy works with different versions
                     ${GAME_BASE_DIR}/assimp-vc143-mtd.dll
             VERBATIM
         )
