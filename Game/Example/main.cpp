@@ -135,7 +135,7 @@ public:
         Input::CreateAction("move_up",       Input::Type::KeyboardKey, KeyCode::Space);
         Input::CreateAction("move_down",     Input::Type::KeyboardKey, KeyCode::LeftControl);
 
-        m_camera = Camera { glm::vec3 { 0.0f, 0.0f, -5.0f } };
+        m_camera = Camera { glm::vec3 { 0.0f, 0.0f, 5.0f } };
         m_pSkybox = std::make_shared<Skybox>(skybox_material.ptr());
     }
     void on_update(const double dt) override {
@@ -198,11 +198,8 @@ public:
     [[nodiscard]] Vector<String> game_data_archives() const override {
         return Vector<String> { "Data.pak" };
     }
-    [[nodiscard]] Path base_data_path() const override {
-        return Engine::GetGameBasePath() / "data";
-    }
-    [[nodiscard]] Option<Path> mod_data_path() const override {
-        return Engine::GetGameBasePath() / "mods";
+    [[nodiscard]] bool allow_mods() const override {
+        return FOW_MODS_ENABLED;
     }
     void on_update_imgui(double dt) override {
         ImGui::Begin("Shader test");

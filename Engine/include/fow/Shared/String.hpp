@@ -345,6 +345,7 @@ namespace fow {
         Path(const Path& path) = default;
         Path(Path&& path) noexcept = default;
         Path(const char* cstr) : Path(std::move(String(cstr))) { }                               // NOLINT: Intended conversion
+        explicit Path(const std::string& str) : Path(std::move(String(str))) { }                          // NOLINT: Intended conversion
         Path(const std::filesystem::path& path) : Path(std::move(String(path.string()))) { } // NOLINT: Intended conversion
         Path(const String& path);                                                                // NOLINT: Intended conversion
         Path(String&& path) noexcept;                                                            // NOLINT: Intended conversion
@@ -404,6 +405,9 @@ namespace fow {
         [[nodiscard]] bool is_directory() const;
         [[nodiscard]] bool is_absolute() const;
         [[nodiscard]] bool matches(const String& pattern) const;
+
+        bool remove() const;
+        bool remove_all() const;
 
         [[nodiscard]] Path operator+ (const String& other) const;
         [[nodiscard]] Path operator/ (const char* other) const;

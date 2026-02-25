@@ -24,8 +24,7 @@ namespace fow {
         ABSTRACT(void on_close());
         ABSTRACT(String title() const);
         ABSTRACT(Vector<String> game_data_archives() const);
-        ABSTRACT(Path base_data_path() const);
-        virtual Option<Path> mod_data_path() const { return None(); }
+        ABSTRACT(bool allow_mods() const);
         virtual void on_window_resized(const glm::ivec2& new_size) { }
         virtual void on_update_imgui(double dt) { }
     };

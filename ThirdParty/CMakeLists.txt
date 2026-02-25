@@ -8,3 +8,6 @@ add_subdirectory(glm)
 
 set(SOIL2_BUILD_TESTS OFF)
 add_subdirectory(SOIL2)
+
+add_subdirectory(lua)
+add_subdirectory(sol2)

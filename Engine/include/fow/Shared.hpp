@@ -12,5 +12,6 @@
 #include "fow/Shared/Version.hpp"
 #include "fow/Shared/Transform.hpp"
 #include "fow/Shared/Lang.hpp"
+#include "fow/Shared/Argparse.hpp"
 
 #endif

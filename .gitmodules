@@ -19,3 +19,9 @@
 [submodule "ThirdParty/googletest"]
 	path = ThirdParty/googletest
 	url = https://github.com/google/googletest.git
+[submodule "ThirdParty/lua"]
+	path = ThirdParty/lua
+	url = https://github.com/walterschell/Lua.git
+[submodule "ThirdParty/sol2"]
+	path = ThirdParty/sol2
+	url = https://github.com/ThePhD/sol2.git

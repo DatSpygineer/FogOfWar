@@ -108,15 +108,19 @@ namespace fow {
         static Vector<String> s_archive_names;
         static HashMap<Path, std::any> s_asset_cache;
 
-        bool Initialize(const Path& asset_base_dir, const Vector<String>& archive_names, const Option<Path>& mod_base_dir) {
+        Result<> Initialize(const Path& asset_base_dir, const Vector<String>& archive_names, const Option<Path>& mod_base_dir) {
             if (!s_asset_base_path.is_empty()) {
-                return false;
+                return Failure("Asset handler already initialized!");
+            }
+
+            if (archive_names.empty()) {
+                return Failure("No asset packs were defined!");
             }
 
             s_asset_base_path = asset_base_dir;
             s_mod_base_path = mod_base_dir;
             s_archive_names = archive_names;
-            return true;
+            return Success();
         }
         Path GetBaseDataPath() {
             return s_asset_base_path;
@@ -184,6 +188,21 @@ namespace fow {
                     }
                 }
             } catch (const std::exception& e) {
+            }
+            return result;
+        }
+
+        Vector<String> ListAssets(const String& archive_name, bool is_mod) {
+            const auto archive_path = GetBaseDataPath() / (is_mod ? "mods" : "data") / archive_name;
+            Vector<String> result;
+            if (archive_path.exists()) {
+                if (zip_t* zip = zip_open(archive_path.as_cstr(), 0, nullptr); zip != nullptr) {
+                    const int64_t count = zip_get_num_entries(zip, 0);
+                    for (auto i = 0; i < count; ++i) {
+                        result.emplace_back(zip_get_name(zip, i, 0));
+                    }
+                    zip_close(zip);
+                }
             }
             return result;
         }

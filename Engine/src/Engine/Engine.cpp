@@ -9,6 +9,8 @@
 
 #include <fow/Engine/ImGui.hpp>
 
+#include "rfl/json/write.hpp"
+
 namespace fow {
     static void UpdateResolution(const CVarPtr& self);
     static void UpdateWindowMode(const CVarPtr& self);
@@ -62,6 +64,11 @@ namespace fow {
             return s_background_color;
         }
 
+        struct GameSettingsInternal {
+            std::vector<std::string> GameDataPacks;
+            bool AllowMods;
+        };
+
         Result<> Initialize(int argc, char** argv, const String& title, const std::function<std::shared_ptr<Game>()>& game_class_ctor) {
             if (s_initialized) {
                 return Failure("Engine is already initialized!");
@@ -73,19 +80,10 @@ namespace fow {
 
             Path::CurrentDir(s_base_path);
 
-            Assets::Initialize(s_game_class->base_data_path(), s_game_class->game_data_archives(), s_game_class->mod_data_path());
+            Debug::AssertFatal(Assets::Initialize(s_base_path / "data", s_game_class->game_data_archives(), s_game_class->allow_mods() ? Some(s_base_path / "mods") : None()));
             Debug::Assert(Console::Initialize());
 
-            HashMap<String, Vector<String>> args;
-            String current_arg = "";
-            for (int i = 1; i < argc; ++i) {
-                if (argv[i][0] == '-') {
-                    current_arg = argv[i];
-                    args.emplace(current_arg, Vector<String> { });
-                } else if (!current_arg.is_empty()) {
-                    args.at(current_arg).emplace_back(argv[i]);
-                }
-            }
+            HashMap<String, Vector<String>> args = ParseArgs(argc, argv);
             Debug::Assert(LoadLanguageFiles());
 
             if (glfwInit() != GLFW_TRUE) {
@@ -378,16 +376,29 @@ namespace fow {
         if (Engine::s_window == nullptr) {
             return;
         }
+
+        if (const auto mode = rfl::string_to_enum<WindowMode>(self->as_string()->as_std_str()); mode.has_value()) {
+            switch (mode.value()) {
+                case WindowMode::Windowed: {
+
+                } break;
+                case WindowMode::Fullscreen: {
+
+                } break;
+            }
+        }
     }
     static void UpdateMonitorIndex(const CVarPtr& self) {
         if (Engine::s_window == nullptr) {
             return;
         }
+        // TODO
     }
     static void UpdateVSync(const CVarPtr& self) {
         if (Engine::s_window == nullptr) {
             return;
         }
+        // TODO
     }
 
     void UpdateMSAA(const CVarPtr& self) {

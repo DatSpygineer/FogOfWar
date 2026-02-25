@@ -93,11 +93,12 @@ namespace fow {
     }
 
     namespace Assets {
-        FOW_SHARED_API bool Initialize(const Path& asset_base_dir, const Vector<String>& archive_names, const Option<Path>& mod_base_dir = None());
+        FOW_SHARED_API Result<> Initialize(const Path& asset_base_dir, const Vector<String>& archive_names, const Option<Path>& mod_base_dir = None());
         FOW_SHARED_API Path GetBaseDataPath();
         FOW_SHARED_API Option<Path> GetBaseModPath();
         FOW_SHARED_API const Vector<String>& GetMainArchiveNames();
         FOW_SHARED_API HashMap<String, Vector<String>> ListAssets();
+        FOW_SHARED_API Vector<String> ListAssets(const String& archive_name, bool is_mod);
         FOW_SHARED_API Vector<String> GetModLoadOrder();
 
         FOW_SHARED_API const std::any& CacheAsset(const Path& path, std::any&& asset);

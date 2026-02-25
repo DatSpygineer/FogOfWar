@@ -32,7 +32,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 macro(add_game TARGET_NAME)
     set(options "")
-    set(oneValueArgs BASE_DIR RESOURCES_DIR SHADERS)
+    set(oneValueArgs BASE_DIR RESOURCES_DIR SHADERS ENABLE_MODS)
     set(multiValueArgs ASSETS SOURCES)
 
     cmake_parse_arguments(
@@ -173,6 +173,8 @@ macro(add_game TARGET_NAME)
         add_dependencies(${TARGET_NAME} ${TARGET_NAME}_CopyLibs)
     endif()
 
+    set(PACKAGES)
+
     math(EXPR PAIR_COUNT "${ASSET_COUNT} / 2")
     if (${PAIR_COUNT} GREATER 0)
         add_custom_target(${TARGET_NAME}_RebuildAssets)
@@ -186,13 +188,9 @@ macro(add_game TARGET_NAME)
             if (NOT IS_ABSOLUTE ${INPUT})
                 set(INPUT "${GAME_BASE_DIR}/${INPUT}")
             endif()
-            if (NOT IS_ABSOLUTE ${OUTPUT})
-                cmake_path(ABSOLUTE_PATH OUTPUT
-                    BASE_DIRECTORY ${GAME_BASE_DIR}
-                    NORMALIZE
-                    OUTPUT_VARIABLE OUTPUT
-                )
-            endif()
+
+            list(APPEND PACKAGES ${OUTPUT})
+            set(PKG_OUTPUT "${GAME_BASE_DIR}/data/${OUTPUT}")
 
             add_custom_command(
                 TARGET ${TARGET_NAME}_RebuildAssets
@@ -200,14 +198,35 @@ macro(add_game TARGET_NAME)
                 COMMAND "${Python3_EXECUTABLE}"
                     "${FOW_SCRIPTS_DIRECTORY}/package_assets.py"
                     --input  "${INPUT}"
-                    --output "${OUTPUT}"
+                    --output "${PKG_OUTPUT}"
                 VERBATIM
             )
         endforeach()
         add_dependencies(${TARGET_NAME} ${TARGET_NAME}_RebuildAssets)
     else()
-        message(WARNING "No game assets path specified!")
+        message(FATAL_ERROR "No game assets path specified! Please add 'ASSETS <source folder> <package name>' to add_game")
     endif()
+
+    file(WRITE "${GAME_BASE_DIR}/.editor" "{\"GameDataPacks\": [")
+    list(LENGTH PACKAGES PACKAGE_COUNT)
+
+    foreach(i RANGE 0 ${PACKAGE_COUNT} - 1)
+        list(GET PACKAGES ${i} PACKAGE)
+        if (i GREATER 0)
+            file(APPEND "${GAME_BASE_DIR}/.editor" ",")
+        endif()
+        file(APPEND "${GAME_BASE_DIR}/.editor" "\"${PACKAGE}\"")
+    endforeach()
+    file(APPEND "${GAME_BASE_DIR}/.editor" "],\"AllowMods\":")
+
+    if (ENABLE_MODS)
+        file(APPEND "${GAME_BASE_DIR}/.editor" "true")
+        target_compile_definitions(${TARGET_NAME} PUBLIC -DFOW_MODS_ENABLED=true)
+    else()
+        file(APPEND "${GAME_BASE_DIR}/.editor" "false")
+        target_compile_definitions(${TARGET_NAME} PUBLIC -DFOW_MODS_ENABLED=false)
+    endif()
+    file(APPEND "${GAME_BASE_DIR}/.editor" "}")
 endmacro()
 
 add_subdirectory(ThirdParty)

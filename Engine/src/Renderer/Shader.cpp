@@ -910,9 +910,11 @@ namespace fow {
         const auto result = Compile(FOW_SHADER_PLACEHOLDER_NAME,
                 "#version 330 core\n"
                 "layout (location = 0) in vec3 VERTEX_POSITION;\n"
-                "uniform mat4 MATRIX_PVM;\n"
+                "uniform mat4 MATRIX_PROJECTION;\n"
+                "uniform mat4 MATRIX_VIEW;\n"
+                "uniform mat4 MATRIX_MODEL;\n"
                 "void main() {\n"
-                "\tgl_Position = MATRIX_PVM * vec4(VERTEX_POSITION, 1.0);\n"
+                "\tgl_Position = MATRIX_PROJECTION * MATRIX_VIEW * MATRIX_MODEL * vec4(VERTEX_POSITION, 1.0);\n"
                 "}",
                 "#version 330 core\n"
                 "out vec4 FRAGMENT_COLOR;\n"

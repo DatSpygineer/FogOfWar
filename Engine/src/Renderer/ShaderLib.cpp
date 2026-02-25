@@ -13,16 +13,19 @@ const fow::Dylib* s_shaderlib = nullptr;
 
 namespace fow::ShaderLib {
     Result<> Load(const Path& base_path) {
-        s_shaderlib = new Dylib(base_path / SHADERLIB_FILENAME);
-        if (!s_shaderlib->is_valid()) {
-            return Failure("Failed to load shader library!");
-        }
+        if (s_shaderlib == nullptr) {
+            s_shaderlib = new Dylib(base_path / SHADERLIB_FILENAME);
+            if (!s_shaderlib->is_valid()) {
+                return Failure("Failed to load shader library!");
+            }
 
-        if (const auto shaderlib_init = s_shaderlib->symbol<void(*)()>("ShaderLibInitialize"); shaderlib_init != nullptr) {
-            shaderlib_init();
-            return Success();
+            if (const auto shaderlib_init = s_shaderlib->symbol<void(*)()>("ShaderLibInitialize"); shaderlib_init != nullptr) {
+                shaderlib_init();
+                return Success();
+            }
+            return Failure("Failed to initialize shader library!");
         }
-        return Failure("Failed to initialize shader library!");
+        return Success();
     }
 
     Result<ShaderSources> GetSourcesForShader(const String& name) {

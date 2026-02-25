@@ -805,6 +805,13 @@ namespace fow {
 #endif
     }
 
+    bool Path::remove() const {
+        return std::filesystem::remove(m_sPath.as_std_str());
+    }
+    bool Path::remove_all() const {
+        return std::filesystem::remove_all(m_sPath.as_std_str());
+    }
+
     Path Path::operator+ (const String& other) const {
         return Path { m_sPath + other };
     }

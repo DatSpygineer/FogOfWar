@@ -12,23 +12,15 @@ namespace fow {
         static Path s_base_path = Path::CurrentDir();
         static bool s_initialized = false;
 
-        Result<> Initialize(const Path& app_base_path, int msaa, void* (*loader)(const char*)) {
+        static Result<> InitializeShared(const Path& app_base_path, const int msaa, const std::function<Result<>()>& loader) {
             if (s_initialized) {
                 return Failure("Failed to initialize renderer: already initialized");
             }
 
             s_base_path = app_base_path;
-#ifdef _WIN32
-            if (const auto err = glewInit(); err != GLEW_OK) {
-                return Failure(std::format("Failed to initialize OpenGL: GL Error {}", reinterpret_cast<const char*>(glewGetErrorString(err))));
+            if (const auto result = loader(); !result.has_value()) {
+                return result;
             }
-#else
-            if (loader != nullptr) {
-                if (!gladLoadGLLoader(loader)) {
-                    return Failure(std::format("Failed to initialize OpenGL: GL Error {}", glGetError()));
-                }
-            }
-#endif
             if (const auto result = ShaderLib::Load(s_base_path); !result.has_value()) {
                 return result;
             }
@@ -49,6 +41,39 @@ namespace fow {
 
             return Success();
         }
+
+        Result<> Initialize(const Path& app_base_path, const int msaa, void* (*loader)(const char*)) {
+            return InitializeShared(app_base_path, msaa, [&loader]() -> Result<> {
+#ifdef _WIN32
+                if (const auto err = glewInit(); err != GLEW_OK) {
+                    return Failure(std::format("Failed to initialize OpenGL: GL Error {}", reinterpret_cast<const char*>(glewGetErrorString(err))));
+                }
+#else
+                if (loader != nullptr) {
+                    if (!gladLoadGLLoader(loader)) {
+                        return Failure("Failed to initialize OpenGL!");
+                    }
+                }
+#endif
+                return Success();
+            });
+        }
+
+        Result<> InitializeForEditor(const Path& app_base_path, const int msaa) {
+            return InitializeShared(app_base_path, msaa, []() -> Result<> {
+#ifdef _WIN32
+                if (const auto err = glewInit(); err != GLEW_OK) {
+                    return Failure(std::format("Failed to initialize OpenGL: GL Error {}", reinterpret_cast<const char*>(glewGetErrorString(err))));
+                }
+#else
+                if (!gladLoadGL()) {
+                        return Failure("Failed to initialize OpenGL!");
+                }
+#endif
+                return Success();
+            });
+        }
+
         void Terminate() {
             ShaderLib::Unload();
         }
