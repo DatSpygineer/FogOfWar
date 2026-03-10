@@ -4,7 +4,7 @@
 #include <QDir>
 #include <QMessageBox>
 
-#include "GameSettings.hpp"
+#include "../util/GameSettings.hpp"
 
 
 namespace fow {
@@ -21,7 +21,7 @@ namespace fow {
                 size_t i = 0;
                 for (const auto& [position, color, intensity] : m_lights) {
                     material->set_parameter(std::format("Lights[{}].Position", i), position);
-                    material->set_parameter(std::format("Lights[{}].Color", i), glm::vec4 { color, intensity });
+                    material->set_parameter(std::format("Lights[{}].Color", i), Vector4 { color, intensity });
                     i++;
                 }
             }
@@ -47,7 +47,7 @@ namespace fow {
     }
     void GLView::resizeGL(const int width, const int height) {
         Renderer::SetViewport(0, 0, width, height);
-        Renderer::UpdateCameraProjectionPerspective(60.0f, glm::vec2 { width, height }, 0.1f, 1000.0f);
+        Renderer::UpdateCameraProjectionPerspective(60.0f, Vector2 { width, height }, 0.1f, 1000.0f);
     }
     void GLView::paintGL() {
         if (!isEnabled()) {
@@ -64,8 +64,8 @@ namespace fow {
     }
 
     void GLView::updateView() {
-        Renderer::UpdateCameraProjectionPerspective(60.0f, glm::vec2 { width(), height() }, 0.1f, 1000.0f);
-        Renderer::UpdateCameraPosition(glm::vec3 { 0.0, 1.0, -5.0 }, glm::vec3 { 0.0, 1.0, -5.0 } + glm::vec3 { 0.0, 0.0, 1.0 }, glm::vec3 { 0.0, 1.0, 0.0 });
+        Renderer::UpdateCameraProjectionPerspective(60.0f, Vector2 { width(), height() }, 0.1f, 1000.0f);
+        Renderer::UpdateCameraPosition(Vector3 { 0.0, 1.0, -5.0 }, Vector3 { 0.0, 1.0, -5.0 } + Vector3 { 0.0, 0.0, 1.0 }, Vector3 { 0.0, 1.0, 0.0 });
     }
 
     void GLView::setDrawWireframe(const bool drawWireframe) {

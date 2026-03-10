@@ -23,7 +23,7 @@ namespace fow {
     static Result<> RemoveActionCommand(const Vector<String>& args);
     static Result<> ToggleConsoleCommand(const Vector<String>& args);
 
-    const auto vid_resolution  = CVar::Create("vid_resolution",  glm::vec2(1280, 720),  CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
+    const auto vid_resolution  = CVar::Create("vid_resolution",  Vector2(1280, 720),  CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
     const auto vid_window_mode = CVar::Create("vid_window_mode", "Windowed",            CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateWindowMode);
     const auto vid_monitor_idx = CVar::Create("vid_monitor_idx", 0,                     CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMonitorIndex);
     const auto vid_vsync       = CVar::Create("vid_vsync",       false,                 CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateVSync);
@@ -69,7 +69,7 @@ namespace fow {
             bool AllowMods;
         };
 
-        Result<> Initialize(int argc, char** argv, const String& title, const std::function<std::shared_ptr<Game>()>& game_class_ctor) {
+        Result<> Initialize(int argc, char** argv, const String& title, const Function<std::shared_ptr<Game>()>& game_class_ctor) {
             if (s_initialized) {
                 return Failure("Engine is already initialized!");
             }
@@ -92,7 +92,7 @@ namespace fow {
                 return Failure(std::format("Failed to initialize GLFW: \"{}\" (code {})", message, code));
             }
 
-            glm::vec2 resolution   = vid_resolution->as_vec2().value_or(glm::vec2 { 1280, 720 });
+            Vector2 resolution   = vid_resolution->as_vec2().value_or(Vector2 { 1280, 720 });
             WindowMode window_mode = rfl::string_to_enum<WindowMode>(vid_window_mode->as_string().value_or("Windowed").as_std_str())
                                         .value_or(WindowMode::Windowed);
             bool vsync_enabled     = vid_vsync->as_bool().value_or(false);
@@ -107,7 +107,7 @@ namespace fow {
                     } else if (!h.has_value()) {
                         Debug::LogError("Failed to parse argument \"-resolution\": Height has invalid format!");
                     } else {
-                        resolution = glm::ivec2(w.value(), h.value());
+                        resolution = Vector2i(w.value(), h.value());
                     }
                 } else {
                     Debug::LogError("Failed to parse argument \"-resolution\": Expected 2 values!");
@@ -208,7 +208,7 @@ namespace fow {
                 DISCARD(window);
                 Renderer::SetViewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height));
                 if (s_game_class != nullptr) {
-                    s_game_class->on_window_resized(glm::ivec2 { width, height });
+                    s_game_class->on_window_resized(Vector2i { width, height });
                 }
             });
 
@@ -338,22 +338,22 @@ namespace fow {
             glfwSetWindowTitle(s_window, title.as_cstr());
 #endif
         }
-        void SetWindowPosition(const glm::ivec2& value) {
+        void SetWindowPosition(const Vector2i& value) {
             glfwSetWindowPos(s_window, value.x, value.y);
         }
-        void SetWindowSize(const glm::ivec2& value) {
+        void SetWindowSize(const Vector2i& value) {
             glfwSetWindowSize(s_window, value.x, value.y);
         }
         String GetWindowTitle() {
             return s_window_title;
         }
-        glm::ivec2 GetWindowPosition() {
-            glm::ivec2 result;
+        Vector2i GetWindowPosition() {
+            Vector2i result;
             glfwGetWindowPos(s_window, &result.x, &result.y);
             return result;
         }
-        glm::ivec2 GetWindowSize() {
-            glm::ivec2 result;
+        Vector2i GetWindowSize() {
+            Vector2i result;
             glfwGetWindowSize(s_window, &result.x, &result.y);
             return result;
         }
@@ -920,10 +920,10 @@ namespace fow {
             return s_mouse_btn_state.at(static_cast<int>(button)) == State::Released || s_mouse_btn_state.at(static_cast<int>(button)) == State::Up;
         }
 
-        glm::vec2 MousePosition() {
+        Vector2 MousePosition() {
             return s_mouse_position;
         }
-        glm::vec2 MouseMovement() {
+        Vector2 MouseMovement() {
             return s_mouse_position_delta;
         }
     }

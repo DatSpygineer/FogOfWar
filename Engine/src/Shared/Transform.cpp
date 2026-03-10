@@ -14,29 +14,29 @@ namespace fow {
     void Transform::set_parent(Transform* parent) {
         m_pParent = parent;
     }
-    void Transform::set_local_position(const glm::vec3& position) {
+    void Transform::set_local_position(const Vector3& position) {
         m_position = position;
     }
-    void Transform::set_local_scale(const glm::vec3& scale) {
+    void Transform::set_local_scale(const Vector3& scale) {
         m_scale = scale;
     }
-    void Transform::set_local_rotation(const glm::vec3& euler_rotation) {
+    void Transform::set_local_rotation(const Vector3& euler_rotation) {
         m_rotation = glm::quat(euler_rotation);
     }
-    void Transform::set_local_rotation(const glm::vec3& axis, const float angle) {
+    void Transform::set_local_rotation(const Vector3& axis, const float angle) {
         m_rotation = glm::angleAxis(angle, axis);
     }
     void Transform::set_local_rotation(const glm::quat& rotation) {
         m_rotation = rotation;
     }
 
-    void Transform::set_position(const glm::vec3& position) {
+    void Transform::set_position(const Vector3& position) {
         m_position = position;
         if (m_pParent != nullptr) {
             m_position -= m_pParent->get_position();
         }
     }
-    void Transform::set_scale(const glm::vec3& scale) {
+    void Transform::set_scale(const Vector3& scale) {
         m_scale = scale;
         if (m_pParent != nullptr) {
             m_scale -= m_pParent->get_scale();

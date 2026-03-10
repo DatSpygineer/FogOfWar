@@ -4,6 +4,7 @@
 #include <string>
 #include <optional>
 #include <memory>
+#include <vector>
 #include <unordered_map>
 
 #ifdef SHADER_LIB_EXPORTS
@@ -28,6 +29,7 @@ extern "C" {
     SHADER_LIB_API void ShaderLibInitialize();
     SHADER_LIB_API const char* ShaderLibGetSource(const char* name);
     SHADER_LIB_API bool ShaderLibGetRequiredSources(const char* name, ShaderSources* sources);
+    SHADER_LIB_API void ShaderLibGetShaders(std::vector<std::string>* shaders);
 }
 
 #endif

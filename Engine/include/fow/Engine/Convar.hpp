@@ -28,10 +28,10 @@ namespace fow {
 
     class CVar;
     using CVarPtr = std::shared_ptr<CVar>;
-    using ConsoleCommand  = std::function<Result<>(const Vector<String>&)>;
-    using CVarSetCallback = std::function<void(const CVarPtr&)>;
+    using ConsoleCommand  = Function<Result<>(const Vector<String>&)>;
+    using CVarSetCallback = Function<void(const CVarPtr&)>;
 
-    using CVarValue = std::variant<bool, int, float, String, glm::vec2, glm::vec3, glm::vec4, ConsoleCommand>;
+    using CVarValue = std::variant<bool, int, float, String, Vector2, Vector3, Vector4, ConsoleCommand>;
     enum class CVarValueType {
         Bool,
         Int,
@@ -166,18 +166,18 @@ namespace fow {
             }
             return Failure(std::format("Cannot convert type \"{}\" to string", rfl::enum_to_string<CVarValueType>(value_type())));
         }
-        FOW_CONSTEXPR Result<glm::vec2> as_vec2() const {
+        FOW_CONSTEXPR Result<Vector2> as_vec2() const {
             if (value_type() == CVarValueType::Vec2) {
-                return std::get<glm::vec2>(m_vValue);
+                return std::get<Vector2>(m_vValue);
             }
             if (value_type() == CVarValueType::String) {
                 return StringToVec2(std::get<String>(m_vValue));
             }
             return Failure(std::format("Cannot convert type \"{}\" to vec2", rfl::enum_to_string<CVarValueType>(value_type())));
         }
-        FOW_CONSTEXPR Result<glm::vec3> as_vec3() const {
+        FOW_CONSTEXPR Result<Vector3> as_vec3() const {
             if (value_type() == CVarValueType::Vec3) {
-                return std::get<glm::vec3>(m_vValue);
+                return std::get<Vector3>(m_vValue);
             }
             if (value_type() == CVarValueType::String) {
                 return StringToVec3(std::get<String>(m_vValue));
@@ -186,7 +186,7 @@ namespace fow {
         }
         FOW_CONSTEXPR Result<glm::vec<4, float>> as_vec4() const {
             if (value_type() == CVarValueType::Vec4) {
-                return std::get<glm::vec4>(m_vValue);
+                return std::get<Vector4>(m_vValue);
             }
             if (value_type() == CVarValueType::String) {
                 return StringToVec4(std::get<String>(m_vValue));
@@ -266,9 +266,9 @@ struct std::formatter<fow::CVarValue> : std::formatter<std::string> {
             case 1: result = std::to_string(std::get<int>(value)); break;
             case 2: result = std::to_string(std::get<float>(value)); break;
             case 3: result = std::get<fow::String>(value).as_std_str(); break;
-            case 4: result = std::format("{}", std::get<glm::vec2>(value)); break;
-            case 5: result = std::format("{}", std::get<glm::vec3>(value)); break;
-            case 6: result = std::format("{}", std::get<glm::vec4>(value)); break;
+            case 4: result = std::format("{}", std::get<fow::Vector2>(value)); break;
+            case 5: result = std::format("{}", std::get<fow::Vector3>(value)); break;
+            case 6: result = std::format("{}", std::get<fow::Vector4>(value)); break;
             default: result = "<callable>"; break;
         }
         return std::formatter<std::string>::format(result, ctx);

@@ -10,7 +10,7 @@ namespace fow {
             Shader::FromCache("UnlitGeneric"),
             HashMap<String, MaterialParameterValue> {
                 { "MainTexture", Texture::DefaultWhite() },
-                { "ColorTint", glm::vec4(1.0) }
+                { "ColorTint", Vector4(1.0) }
             }
         );
     }
@@ -23,7 +23,7 @@ namespace fow {
                 for (uint32_t i = 0; i < static_cast<uint32_t>((m_GridSize.x + 1) * (m_GridSize.y + 1)); i++) {
                     const auto x = i % m_GridSize.x;
                     const auto y = i / m_GridSize.x;
-                    mb.append(glm::vec3 { x, 0.01, y }, glm::vec3 { 0.0, 1.0, 0.0 }, glm::vec3 { 0.0, 1.0, 0.0 }, glm::vec3 { 0.0, 1.0, 0.0 }, glm::vec2 { x % 2, y % 2 });
+                    mb.append(Vector3 { x, 0.01, y }, Vector3 { 0.0, 1.0, 0.0 }, Vector3 { 0.0, 1.0, 0.0 }, Vector3 { 0.0, 1.0, 0.0 }, Vector2 { x % 2, y % 2 });
                 }
 
                 const auto result = mb.create_mesh(MeshDrawMode::StaticDraw);

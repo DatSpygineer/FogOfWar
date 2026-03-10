@@ -6,8 +6,8 @@
 #include <QDockWidget>
 #include <QToolBar>
 
-#include "ResourceHelper.hpp"
-#include "assetEditor/AssetPackEditor.hpp"
+#include "util/ResourceHelper.hpp"
+#include "dialogs/AssetPackEditor.hpp"
 
 namespace fow {
     extern Path EditorBaseDir;
@@ -127,16 +127,16 @@ namespace fow {
         m_pToolsDockWidget->setFeatures(QDockWidget::NoDockWidgetFeatures);
         m_pToolsDockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 
-        m_pToolsTabWidget = new QTabWidget();
-
-        m_pToolBoxObjects = new QToolBox();
-        m_pToolBoxObjects->addItem(new QWidget(), "Category 1");
-        m_pToolBoxObjects->addItem(new QWidget(), "Category 2");
-        m_pToolBoxObjects->addItem(new QWidget(), "Category 3");
-        m_pToolsTabWidget->addTab(m_pToolBoxObjects, "Objects");
-        m_pToolsTabWidget->addTab(new QWidget(), "Terrain");
-        m_pToolsTabWidget->addTab(new QWidget(), "Mask");
-        m_pToolsTabWidget->addTab(new QWidget(), "Triggers");
+        m_pToolsTabWidget = new QTabWidget;
+        m_pObjectsTabObjects = new QTabWidget;
+        m_pObjectsTabObjects->setTabPosition(QTabWidget::West);
+        m_pObjectsTabObjects->addTab(new QWidget, "Category 1");
+        m_pObjectsTabObjects->addTab(new QWidget, "Category 2");
+        m_pObjectsTabObjects->addTab(new QWidget, "Category 3");
+        m_pToolsTabWidget->addTab(m_pObjectsTabObjects, "Objects");
+        m_pToolsTabWidget->addTab(new QWidget, "Terrain");
+        m_pToolsTabWidget->addTab(new QWidget, "Mask");
+        m_pToolsTabWidget->addTab(new QWidget, "Triggers");
         m_pToolsDockWidget->setWidget(m_pToolsTabWidget);
 
         addDockWidget(Qt::RightDockWidgetArea, m_pToolsDockWidget);

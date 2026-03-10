@@ -6,8 +6,8 @@
 
 namespace fow {
     struct Light {
-        glm::vec3 position;
-        glm::vec3 color;
+        Vector3 position;
+        Vector3 color;
         float intensity;
     };
     struct ModelObject {
@@ -24,13 +24,13 @@ namespace fow {
 
         void addModel(const ModelPtr& model, const Transform& transform);
         inline void addModel(const ModelPtr& model) {
-            addModel(model, Transform { glm::vec3 { 0.0 }, glm::vec3 { 1.0 }, glm::quat { } });
+            addModel(model, Transform { Vector3 { 0.0 }, Vector3 { 1.0 }, glm::quat { } });
         }
         void addLight(const Light& light);
-        inline void addLight(const glm::vec3& pos, const glm::vec4& color) {
+        inline void addLight(const Vector3& pos, const Vector4& color) {
             addLight(pos, xyz(color), color.w);
         }
-        inline void addLight(const glm::vec3& pos, const glm::vec3& color, float intensity) {
+        inline void addLight(const Vector3& pos, const Vector3& color, float intensity) {
             addLight(Light { pos, color, intensity });
         }
         inline void setBackgroundColor(const Color& color) {

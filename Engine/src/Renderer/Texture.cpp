@@ -1,6 +1,6 @@
 #include "fow/Renderer/GL.hpp"
 #include "fow/Renderer/Texture.hpp"
-#include "fow/Shared/StringConvertion.hpp"
+#include "fow/Shared/StringConversion.hpp"
 
 #include "SOIL2.h"
 
@@ -260,6 +260,7 @@ namespace fow {
 
     static TexturePtr s_placeholder_texture = nullptr;
     static TexturePtr s_white_texture = nullptr;
+    static TexturePtr s_gray_texture = nullptr;
     static TexturePtr s_black_texture = nullptr;
     static TexturePtr s_normal_texture = nullptr;
 
@@ -321,6 +322,34 @@ namespace fow {
         s_white_texture = std::make_shared<Texture2D>(std::move(Texture2D { id }));
         return s_white_texture;
     }
+
+    TexturePtr Texture::DefaultGray() {
+        if (s_gray_texture != nullptr) {
+            return s_gray_texture;
+        }
+        Vector<uint32_t> data;
+        data.reserve(FOW_TEXTURE_PLACEHOLDER_SIZE * FOW_TEXTURE_PLACEHOLDER_SIZE);
+        for (int i = 0; i < FOW_TEXTURE_PLACEHOLDER_SIZE * FOW_TEXTURE_PLACEHOLDER_SIZE; ++i) {
+            data.emplace_back(0x7F7F7FFF);
+        }
+
+        GLuint id;
+        glGenTextures(1, &id);
+        if (id == 0) {
+            throw std::runtime_error(std::format("Failed to generate default white texture: GL error {}", glGetError()));
+        }
+
+        glBindTexture(GL_TEXTURE_2D, id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FOW_TEXTURE_PLACEHOLDER_SIZE, FOW_TEXTURE_PLACEHOLDER_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+        glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        s_gray_texture = std::make_shared<Texture2D>(std::move(Texture2D { id }));
+        return s_gray_texture;
+    }
+
     TexturePtr Texture::DefaultBlack() {
         if (s_black_texture != nullptr) {
             return s_black_texture;

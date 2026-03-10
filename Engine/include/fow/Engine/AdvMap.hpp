@@ -23,7 +23,36 @@ namespace fow {
         [[nodiscard]] Vector<AdvMapTilePtr>& tiles() { return m_tiles; }
 
         static Result<AdvMapPtr> LoadMap(const String& name);
-        static Result<AdvMapPtr> LoadFromMemory(const Vector<uint8_t>& data);
+
+        bool destroy_object_at(const Vector2i& position);
+    };
+
+    class FOW_ENGINE_API AdvMapTile {
+        AdvMapPtr m_pMap;
+    public:
+        explicit AdvMapTile(const AdvMapPtr& map) : m_pMap(map) { }
+        explicit AdvMapTile(AdvMapPtr&& map)      : m_pMap(std::move(map)) { }
+    };
+
+    class FOW_ENGINE_API AdvMapObject {
+        Vector3i m_Position;
+        uint16_t m_uAngle;
+        uint8_t m_uOwnerPlayerId;
+        AdvMapPtr m_pMap;
+    public:
+        AdvMapObject(const AdvMapPtr& map, const Vector3i& position, const uint16_t angle, const uint8_t ownerPlayerId = 0) :
+            m_Position(position), m_uAngle(angle), m_uOwnerPlayerId(ownerPlayerId), m_pMap(map) { }
+        AdvMapObject(AdvMapPtr&& map, const Vector3i& position, const uint16_t angle, const uint8_t ownerPlayerId = 0) :
+            m_Position(position), m_uAngle(angle), m_uOwnerPlayerId(ownerPlayerId), m_pMap(std::move(map)) { }
+        virtual ~AdvMapObject() = default;
+
+        virtual void set_param(const String& name, const String& value) { }
+        virtual void set_owner(const uint8_t playerId) { m_uOwnerPlayerId = playerId; }
+        [[nodiscard]] FOW_CONSTEXPR uint8_t get_owner() const { return m_uOwnerPlayerId; }
+        [[nodiscard]] FOW_CONSTEXPR const Vector3i& get_position() const { return m_Position; }
+        [[nodiscard]] FOW_CONSTEXPR uint16_t get_angle() const { return m_uAngle; }
+
+        void destroy();
     };
 }
 

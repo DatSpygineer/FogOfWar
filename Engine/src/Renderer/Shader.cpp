@@ -3,7 +3,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include "fow/Shared/StringConvertion.hpp"
+#include "fow/Shared/StringConversion.hpp"
 
 namespace fow {
     Shader::~Shader() {
@@ -56,7 +56,7 @@ namespace fow {
         glUniform1d(loc, value);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::bvec2& value) const {
+    bool Shader::set_uniform(const String& name, const Vector2b& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -64,7 +64,7 @@ namespace fow {
         glUniform2ui(loc, value.x ? 1 : 0, value.y ? 1 : 0);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::bvec3& value) const {
+    bool Shader::set_uniform(const String& name, const Vector3b& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -72,7 +72,7 @@ namespace fow {
         glUniform3ui(loc, value.x ? 1 : 0, value.y ? 1 : 0, value.z ? 1 : 0);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::bvec4& value) const {
+    bool Shader::set_uniform(const String& name, const Vector4b& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -80,7 +80,7 @@ namespace fow {
         glUniform4ui(loc, value.x ? 1 : 0, value.y ? 1 : 0, value.z ? 1 : 0, value.w ? 1 : 0);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::ivec2& value) const {
+    bool Shader::set_uniform(const String& name, const Vector2i& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -88,7 +88,7 @@ namespace fow {
         glUniform2i(loc, value.x, value.y);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::ivec3& value) const {
+    bool Shader::set_uniform(const String& name, const Vector3i& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -96,7 +96,7 @@ namespace fow {
         glUniform3i(loc, value.x, value.y, value.z);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::ivec4& value) const {
+    bool Shader::set_uniform(const String& name, const Vector4i& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -104,7 +104,7 @@ namespace fow {
         glUniform4i(loc, value.x, value.y, value.z, value.w);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::uvec2& value) const {
+    bool Shader::set_uniform(const String& name, const Vector2u& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -112,7 +112,7 @@ namespace fow {
         glUniform2ui(loc, value.x, value.y);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::uvec3& value) const {
+    bool Shader::set_uniform(const String& name, const Vector3u& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -120,7 +120,7 @@ namespace fow {
         glUniform3ui(loc, value.x, value.y, value.z);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::uvec4& value) const {
+    bool Shader::set_uniform(const String& name, const Vector4u& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -128,7 +128,7 @@ namespace fow {
         glUniform4ui(loc, value.x, value.y, value.z, value.w);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::vec2& value) const {
+    bool Shader::set_uniform(const String& name, const Vector2& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -136,7 +136,7 @@ namespace fow {
         glUniform2f(loc, value.x, value.y);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::vec3& value) const {
+    bool Shader::set_uniform(const String& name, const Vector3& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -144,7 +144,7 @@ namespace fow {
         glUniform3f(loc, value.x, value.y, value.z);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::vec4& value) const {
+    bool Shader::set_uniform(const String& name, const Vector4& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -176,7 +176,7 @@ namespace fow {
         glUniform4d(loc, value.x, value.y, value.z, value.w);
         return true;
     }
-    bool Shader::set_uniform(const String& name, const glm::mat4& value) const {
+    bool Shader::set_uniform(const String& name, const Matrix4& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -225,7 +225,7 @@ namespace fow {
         glUniform1dv(loc, values.size(), values.data());
         return true;
     }
-    bool Shader::set_uniform(const String& name, const Vector<glm::ivec2>& values) const {
+    bool Shader::set_uniform(const String& name, const Vector<Vector2i>& values) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -233,7 +233,7 @@ namespace fow {
         glUniform2iv(loc, values.size(), reinterpret_cast<const GLint*>(values.data()));
         return true;
     }
-    bool Shader::set_uniform(const String& name, const Vector<glm::ivec3>& values) const {
+    bool Shader::set_uniform(const String& name, const Vector<Vector3i>& values) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -241,7 +241,7 @@ namespace fow {
         glUniform3iv(loc, values.size(), reinterpret_cast<const GLint*>(values.data()));
         return true;
     }
-    bool Shader::set_uniform(const String& name, const Vector<glm::ivec4>& values) const {
+    bool Shader::set_uniform(const String& name, const Vector<Vector4i>& values) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -249,7 +249,7 @@ namespace fow {
         glUniform4iv(loc, values.size(), reinterpret_cast<const GLint*>(values.data()));
         return true;
     }
-    bool Shader::set_uniform(const String& name, const Vector<glm::uvec2>& values) const {
+    bool Shader::set_uniform(const String& name, const Vector<Vector2u>& values) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -257,7 +257,7 @@ namespace fow {
         glUniform2uiv(loc, values.size(), reinterpret_cast<const GLuint*>(values.data()));
         return true;
     }
-    bool Shader::set_uniform(const String& name, const Vector<glm::uvec3>& values) const {
+    bool Shader::set_uniform(const String& name, const Vector<Vector3u>& values) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -265,7 +265,7 @@ namespace fow {
         glUniform3uiv(loc, values.size(), reinterpret_cast<const GLuint*>(values.data()));
         return true;
     }
-    bool Shader::set_uniform(const String& name, const Vector<glm::uvec4>& values) const {
+    bool Shader::set_uniform(const String& name, const Vector<Vector4u>& values) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -273,7 +273,7 @@ namespace fow {
         glUniform4uiv(loc, values.size(), reinterpret_cast<const GLuint*>(values.data()));
         return true;
     }
-    bool Shader::set_uniform(const String& name, const Vector<glm::vec2>& values) const {
+    bool Shader::set_uniform(const String& name, const Vector<Vector2>& values) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -281,7 +281,7 @@ namespace fow {
         glUniform2fv(loc, values.size(), reinterpret_cast<const GLfloat*>(values.data()));
         return true;
     }
-    bool Shader::set_uniform(const String& name, const Vector<glm::vec3>& values) const {
+    bool Shader::set_uniform(const String& name, const Vector<Vector3>& values) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -289,7 +289,7 @@ namespace fow {
         glUniform3fv(loc, values.size(), reinterpret_cast<const GLfloat*>(values.data()));
         return true;
     }
-    bool Shader::set_uniform(const String& name, const Vector<glm::vec4>& values) const {
+    bool Shader::set_uniform(const String& name, const Vector<Vector4>& values) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -321,7 +321,7 @@ namespace fow {
         glUniform4dv(loc, values.size(), reinterpret_cast<const GLdouble*>(values.data()));
         return true;
     }
-    bool Shader::set_uniform(const String& name, const Vector<glm::mat4>& values) const {
+    bool Shader::set_uniform(const String& name, const Vector<Matrix4>& values) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -354,40 +354,40 @@ namespace fow {
     void Shader::set_uniform(const GLint location, const GLdouble value) const {
         glUniform1d(location, value);
     }
-    void Shader::set_uniform(const GLint location, const glm::bvec2& value) const {
+    void Shader::set_uniform(const GLint location, const Vector2b& value) const {
         glUniform2ui(location, value.x ? 1 : 0, value.y ? 1 : 0);
     }
-    void Shader::set_uniform(const GLint location, const glm::bvec3& value) const {
+    void Shader::set_uniform(const GLint location, const Vector3b& value) const {
         glUniform3ui(location, value.x ? 1 : 0, value.y ? 1 : 0, value.z ? 1 : 0);
     }
-    void Shader::set_uniform(const GLint location, const glm::bvec4& value) const {
+    void Shader::set_uniform(const GLint location, const Vector4b& value) const {
         glUniform4ui(location, value.x ? 1 : 0, value.y ? 1 : 0, value.z ? 1 : 0, value.w ? 1 : 0);
     }
-    void Shader::set_uniform(const GLint location, const glm::ivec2& value) const {
+    void Shader::set_uniform(const GLint location, const Vector2i& value) const {
         glUniform2i(location, value.x, value.y);
     }
-    void Shader::set_uniform(const GLint location, const glm::ivec3& value) const {
+    void Shader::set_uniform(const GLint location, const Vector3i& value) const {
         glUniform3i(location, value.x, value.y, value.z);
     }
-    void Shader::set_uniform(const GLint location, const glm::ivec4& value) const {
+    void Shader::set_uniform(const GLint location, const Vector4i& value) const {
         glUniform4i(location, value.x, value.y, value.z, value.w);
     }
-    void Shader::set_uniform(const GLint location, const glm::uvec2& value) const {
+    void Shader::set_uniform(const GLint location, const Vector2u& value) const {
         glUniform2ui(location, value.x, value.y);
     }
-    void Shader::set_uniform(const GLint location, const glm::uvec3& value) const {
+    void Shader::set_uniform(const GLint location, const Vector3u& value) const {
         glUniform3ui(location, value.x, value.y, value.z);
     }
-    void Shader::set_uniform(const GLint location, const glm::uvec4& value) const {
+    void Shader::set_uniform(const GLint location, const Vector4u& value) const {
         glUniform4ui(location, value.x, value.y, value.z, value.w);
     }
-    void Shader::set_uniform(const GLint location, const glm::vec2& value) const {
+    void Shader::set_uniform(const GLint location, const Vector2& value) const {
         glUniform2f(location, value.x, value.y);
     }
-    void Shader::set_uniform(const GLint location, const glm::vec3& value) const {
+    void Shader::set_uniform(const GLint location, const Vector3& value) const {
         glUniform3f(location, value.x, value.y, value.z);
     }
-    void Shader::set_uniform(const GLint location, const glm::vec4& value) const {
+    void Shader::set_uniform(const GLint location, const Vector4& value) const {
         glUniform4f(location, value.x, value.y, value.z, value.w);
     }
     void Shader::set_uniform(const GLint location, const glm::dvec2& value) const {
@@ -399,7 +399,7 @@ namespace fow {
     void Shader::set_uniform(const GLint location, const glm::dvec4& value) const {
         glUniform4d(location, value.x, value.y, value.z, value.w);
     }
-    void Shader::set_uniform(const GLint location, const glm::mat4& value) const {
+    void Shader::set_uniform(const GLint location, const Matrix4& value) const {
         glUniformMatrix4fv(location, 16, GL_TRUE, &value[0][0]);
     }
 
@@ -423,31 +423,31 @@ namespace fow {
     void Shader::set_uniform(const GLint location, const Vector<GLdouble>& values) const {
         glUniform1dv(location, values.size(), values.data());
     }
-    void Shader::set_uniform(const GLint location, const Vector<glm::ivec2>& values) const {
+    void Shader::set_uniform(const GLint location, const Vector<Vector2i>& values) const {
         glUniform2iv(location, values.size(), reinterpret_cast<const GLint*>(values.data()));
     }
-    void Shader::set_uniform(const GLint location, const Vector<glm::ivec3>& values) const {
+    void Shader::set_uniform(const GLint location, const Vector<Vector3i>& values) const {
         glUniform3iv(location, values.size(), reinterpret_cast<const GLint*>(values.data()));
     }
-    void Shader::set_uniform(const GLint location, const Vector<glm::ivec4>& values) const {
+    void Shader::set_uniform(const GLint location, const Vector<Vector4i>& values) const {
         glUniform4iv(location, values.size(), reinterpret_cast<const GLint*>(values.data()));
     }
-    void Shader::set_uniform(const GLint location, const Vector<glm::uvec2>& values) const {
+    void Shader::set_uniform(const GLint location, const Vector<Vector2u>& values) const {
         glUniform2uiv(location, values.size(), reinterpret_cast<const GLuint*>(values.data()));
     }
-    void Shader::set_uniform(const GLint location, const Vector<glm::uvec3>& values) const {
+    void Shader::set_uniform(const GLint location, const Vector<Vector3u>& values) const {
         glUniform3uiv(location, values.size(), reinterpret_cast<const GLuint*>(values.data()));
     }
-    void Shader::set_uniform(const GLint location, const Vector<glm::uvec4>& values) const {
+    void Shader::set_uniform(const GLint location, const Vector<Vector4u>& values) const {
         glUniform4uiv(location, values.size(), reinterpret_cast<const GLuint*>(values.data()));
     }
-    void Shader::set_uniform(const GLint location, const Vector<glm::vec2>& values) const {
+    void Shader::set_uniform(const GLint location, const Vector<Vector2>& values) const {
         glUniform2fv(location, values.size(), reinterpret_cast<const GLfloat*>(values.data()));
     }
-    void Shader::set_uniform(const GLint location, const Vector<glm::vec3>& values) const {
+    void Shader::set_uniform(const GLint location, const Vector<Vector3>& values) const {
         glUniform3fv(location, values.size(), reinterpret_cast<const GLfloat*>(values.data()));
     }
-    void Shader::set_uniform(const GLint location, const Vector<glm::vec4>& values) const {
+    void Shader::set_uniform(const GLint location, const Vector<Vector4>& values) const {
         glUniform4fv(location, values.size(), reinterpret_cast<const GLfloat*>(values.data()));
     }
     void Shader::set_uniform(const GLint location, const Vector<glm::dvec2>& values) const {
@@ -459,7 +459,7 @@ namespace fow {
     void Shader::set_uniform(const GLint location, const Vector<glm::dvec4>& values) const {
         glUniform4dv(location, values.size(), reinterpret_cast<const GLdouble*>(values.data()));
     }
-    void Shader::set_uniform(const GLint location, const Vector<glm::mat4>& values) const {
+    void Shader::set_uniform(const GLint location, const Vector<Matrix4>& values) const {
         Vector<GLfloat> float_data(values.size() * 16);
         for (const auto& value : values) {
             const auto& p = glm::value_ptr(value);
@@ -513,37 +513,37 @@ namespace fow {
         glGetUniformdv(m_uProgram, loc, &value);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::bvec2& value) const {
+    bool Shader::get_uniform(const String& name, Vector2b& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
         }
         GLuint items[2] = { 0u };
         glGetUniformuiv(m_uProgram, loc, items);
-        value = glm::bvec2(items[0] != 0, items[1] != 0);
+        value = Vector2b(items[0] != 0, items[1] != 0);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::bvec3& value) const {
+    bool Shader::get_uniform(const String& name, Vector3b& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
         }
         GLuint items[3] = { 0u };
         glGetUniformuiv(m_uProgram, loc, items);
-        value = glm::bvec3(items[0] != 0, items[1] != 0, items[2] != 0);
+        value = Vector3b(items[0] != 0, items[1] != 0, items[2] != 0);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::bvec4& value) const {
+    bool Shader::get_uniform(const String& name, Vector4b& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
         }
         GLuint items[4] = { 0u };
         glGetUniformuiv(m_uProgram, loc, items);
-        value = glm::bvec4(items[0] != 0, items[1] != 0, items[2] != 0, items[3] != 0);
+        value = Vector4b(items[0] != 0, items[1] != 0, items[2] != 0, items[3] != 0);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::ivec2& value) const {
+    bool Shader::get_uniform(const String& name, Vector2i& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -551,7 +551,7 @@ namespace fow {
         glGetUniformiv(m_uProgram, loc, &value[0]);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::ivec3& value) const {
+    bool Shader::get_uniform(const String& name, Vector3i& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -559,7 +559,7 @@ namespace fow {
         glGetUniformiv(m_uProgram, loc, &value[0]);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::ivec4& value) const {
+    bool Shader::get_uniform(const String& name, Vector4i& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -567,7 +567,7 @@ namespace fow {
         glGetUniformiv(m_uProgram, loc, &value[0]);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::uvec2& value) const {
+    bool Shader::get_uniform(const String& name, Vector2u& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -575,7 +575,7 @@ namespace fow {
         glGetUniformuiv(m_uProgram, loc, &value[0]);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::uvec3& value) const {
+    bool Shader::get_uniform(const String& name, Vector3u& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -583,7 +583,7 @@ namespace fow {
         glGetUniformuiv(m_uProgram, loc, &value[0]);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::uvec4& value) const {
+    bool Shader::get_uniform(const String& name, Vector4u& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -591,7 +591,7 @@ namespace fow {
         glGetUniformuiv(m_uProgram, loc, &value[0]);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::vec2& value) const {
+    bool Shader::get_uniform(const String& name, Vector2& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -599,7 +599,7 @@ namespace fow {
         glGetUniformfv(m_uProgram, loc, &value[0]);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::vec3& value) const {
+    bool Shader::get_uniform(const String& name, Vector3& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -607,7 +607,7 @@ namespace fow {
         glGetUniformfv(m_uProgram, loc, &value[0]);
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::vec4& value) const {
+    bool Shader::get_uniform(const String& name, Vector4& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;
@@ -638,7 +638,7 @@ namespace fow {
         }
         return true;
     }
-    bool Shader::get_uniform(const String& name, glm::mat4& value) const {
+    bool Shader::get_uniform(const String& name, Matrix4& value) const {
         const GLint loc = glGetUniformLocation(m_uProgram, name.as_cstr());
         if (loc < 0) {
             return false;

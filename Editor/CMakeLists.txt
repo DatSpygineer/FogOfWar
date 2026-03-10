@@ -4,7 +4,7 @@ set(CMAKE_AUTOMOC ON)
 
 set(FOW_EDITOR_DIRECTORY ${FOW_BUILD_DIRECTORY}/Editor)
 
-file(GLOB_RECURSE FOW_EDITOR_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/*.hpp ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp)
+file(GLOB_RECURSE FOW_EDITOR_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets OpenGL OpenGLWidgets)
 
@@ -17,6 +17,8 @@ target_link_libraries(FogOfWarEditor PRIVATE
     Qt6::OpenGL
     Qt6::OpenGLWidgets
     FogOfWar::Renderer
+    lua_static
+    sol2::sol2
 )
 target_include_directories(FogOfWarEditor PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
 set_target_properties(FogOfWarEditor PROPERTIES

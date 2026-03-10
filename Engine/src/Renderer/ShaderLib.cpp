@@ -55,6 +55,19 @@ namespace fow::ShaderLib {
         return Failure(std::format("Failed to get shader source \"{}\": Could not load function \"ShaderLibGetSource\"", name));
     }
 
+    Vector<String> GetShaders() {
+        if (s_shaderlib != nullptr) {
+            if (const auto fn = s_shaderlib->symbol("ShaderLibGetShaders"); fn != nullptr) {
+                std::vector<std::string> shaders;
+                reinterpret_cast<void(*)(std::vector<std::string>*)>(fn)(&shaders);
+                Vector<String> result;
+                std::ranges::transform(shaders, std::back_inserter(result), [](const std::string& value) { return String(value); });
+                return result;
+            }
+        }
+        return { };
+    }
+
     void Unload() {
         if (s_shaderlib != nullptr) {
             delete s_shaderlib;

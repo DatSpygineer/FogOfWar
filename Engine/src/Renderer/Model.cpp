@@ -51,11 +51,11 @@ namespace fow {
                     }
                     indices.emplace_back(vertices.size());
                     vertices.emplace_back(
-                        glm::vec3 { pos.x, pos.y, pos.z },
-                        glm::vec3 { norm.x, norm.y, norm.z },
-                        glm::vec3 { tang.x, tang.y, tang.z },
-                        glm::vec3 { bitang.x, bitang.y, bitang.z },
-                        glm::vec2 { uv.x, 1.0f - uv.y }
+                        Vector3 { pos.x, pos.y, pos.z },
+                        Vector3 { norm.x, norm.y, norm.z },
+                        Vector3 { tang.x, tang.y, tang.z },
+                        Vector3 { bitang.x, bitang.y, bitang.z },
+                        Vector2 { uv.x, 1.0f - uv.y }
                     );
                 }
                 if (mesh->mMaterialIndex < materials.size()) {

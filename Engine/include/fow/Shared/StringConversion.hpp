@@ -17,22 +17,23 @@ namespace fow {
     Result<T> StringToFloat(const String& str);
     FOW_SHARED_API Result<bool> StringToBool(const String& str);
 
-    FOW_SHARED_API Result<glm::vec2>  StringToVec2 (const String& str);
-    FOW_SHARED_API Result<glm::vec3>  StringToVec3 (const String& str);
-    FOW_SHARED_API Result<glm::vec4>  StringToVec4 (const String& str);
-    FOW_SHARED_API Result<glm::bvec2> StringToBVec2(const String& str);
-    FOW_SHARED_API Result<glm::bvec3> StringToBVec3(const String& str);
-    FOW_SHARED_API Result<glm::bvec4> StringToBVec4(const String& str);
-    FOW_SHARED_API Result<glm::uvec2> StringToUVec2(const String& str);
-    FOW_SHARED_API Result<glm::uvec3> StringToUVec3(const String& str);
-    FOW_SHARED_API Result<glm::uvec4> StringToUVec4(const String& str);
-    FOW_SHARED_API Result<glm::ivec2> StringToIVec2(const String& str);
-    FOW_SHARED_API Result<glm::ivec3> StringToIVec3(const String& str);
-    FOW_SHARED_API Result<glm::ivec4> StringToIVec4(const String& str);
+    FOW_SHARED_API Result<Vector2>  StringToVec2 (const String& str);
+    FOW_SHARED_API Result<Vector3>  StringToVec3 (const String& str);
+    FOW_SHARED_API Result<Vector4>  StringToVec4 (const String& str);
+    FOW_SHARED_API Result<Vector2b> StringToBVec2(const String& str);
+    FOW_SHARED_API Result<Vector3b> StringToBVec3(const String& str);
+    FOW_SHARED_API Result<Vector4b> StringToBVec4(const String& str);
+    FOW_SHARED_API Result<Vector2u> StringToUVec2(const String& str);
+    FOW_SHARED_API Result<Vector3u> StringToUVec3(const String& str);
+    FOW_SHARED_API Result<Vector4u> StringToUVec4(const String& str);
+    FOW_SHARED_API Result<Vector2i> StringToIVec2(const String& str);
+    FOW_SHARED_API Result<Vector3i> StringToIVec3(const String& str);
+    FOW_SHARED_API Result<Vector4i> StringToIVec4(const String& str);
     FOW_SHARED_API Result<glm::dvec2> StringToDVec2(const String& str);
     FOW_SHARED_API Result<glm::dvec3> StringToDVec3(const String& str);
     FOW_SHARED_API Result<glm::dvec4> StringToDVec4(const String& str);
-    FOW_SHARED_API Result<glm::mat4>  StringToMat4 (const String& str);
+    FOW_SHARED_API Result<Matrix4>  StringToMat4 (const String& str);
+    FOW_SHARED_API Result<Color>      StringToColor(const String& str);
 
     template<IntegerType T>
     inline Result<T> StringToInt(const String& str, int radix)  {
@@ -82,6 +83,16 @@ namespace fow {
         } else {
             return Failure(result.error().what());
         }
+    }
+
+    namespace Files {
+        Result<String> ReadAllText(const Path& path);
+        Result<Vector<String>> ReadAllLines(const Path& path);
+        Result<Vector<uint8_t>> ReadAllBytes(const Path& path);
+
+        Result<> WriteAllText(const Path& path, const String& text);
+        Result<> WriteAllLines(const Path& path, const Vector<String>& lines);
+        Result<> WriteAllBytes(const Path& path, const Vector<uint8_t>& lines);
     }
 }
 

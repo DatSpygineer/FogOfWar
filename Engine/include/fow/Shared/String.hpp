@@ -123,9 +123,16 @@ namespace fow {
         [[nodiscard]] String clone_trimmed(const String& chars = " \t\n\r") const;
         [[nodiscard]] String clone_lowercase() const;
         [[nodiscard]] String clone_uppercase() const;
+        [[nodiscard]] String clone_and_replace(size_t idx, size_t original_length, const String& replacement) const;
+        [[nodiscard]] String clone_and_replace(char original, char replacement, size_t offset = 0) const;
+        [[nodiscard]] String clone_and_replace(const String& original, const String& replacement, size_t offset = 0) const;
+        [[nodiscard]] String clone_and_replace_all(char original, char replacement, size_t offset = 0) const;
+        [[nodiscard]] String clone_and_replace_all(const String& original, const String& replacement, size_t offset = 0) const;
         [[nodiscard]] Vector<String> split() const;
         [[nodiscard]] Vector<String> split(char c) const;
 
+        static String CreateLowercase(const std::string& str);
+        static String CreateUppercase(const std::string& str);
         static String Join(const Vector<String>& tokens, char delim);
         static String Join(const Vector<String>& tokens, const String& delim);
 
@@ -186,10 +193,6 @@ namespace fow {
 
         static const size_t NotFound;
     };
-
-    inline String operator""_s(const char* cstr, const size_t len) {
-        return String { cstr, len };
-    }
 
     class FOW_SHARED_API StringIterator {
         String& m_object;
@@ -438,10 +441,13 @@ namespace fow {
             return is;
         }
     };
+}
 
-    inline Path operator""_p(const char* cstr, const size_t len) {
-        return Path { std::move(String { cstr, len }) };
-    }
+inline fow::String operator""_s(const char* cstr, const size_t len) {
+    return fow::String { cstr, len };
+}
+inline fow::Path operator""_p(const char* cstr, const size_t len) {
+    return fow::Path { std::move(fow::String { cstr, len }) };
 }
 
 template<>
@@ -471,39 +477,39 @@ struct std::hash<fow::Path> {
 };
 
 template<>
-struct std::formatter<glm::vec2> {
+struct std::formatter<fow::Vector2> {
     FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         return ctx.end();
     }
-    inline auto format(const glm::vec2& value, std::format_context& ctx) const {
+    inline auto format(const fow::Vector2& value, std::format_context& ctx) const {
         return std::format_to(ctx.out(), "{}, {}", value.x, value.y);
     }
 };
 template<>
-struct std::formatter<glm::vec3> {
+struct std::formatter<fow::Vector3> {
     FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         return ctx.end();
     }
-    inline auto format(const glm::vec3& value, std::format_context& ctx) const {
+    inline auto format(const fow::Vector3& value, std::format_context& ctx) const {
         return std::format_to(ctx.out(), "{}, {}, {}", value.x, value.y, value.z);
     }
 };
 template<>
-struct std::formatter<glm::vec4> {
+struct std::formatter<fow::Vector4> {
     FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         return ctx.end();
     }
-    inline auto format(const glm::vec4& value, std::format_context& ctx) const {
+    inline auto format(const fow::Vector4& value, std::format_context& ctx) const {
         return std::format_to(ctx.out(), "{}, {}, {}, {}", value.x, value.y, value.z, value.w);
     }
 };
 template<>
-struct std::formatter<glm::quat> : std::formatter<glm::vec4> {
+struct std::formatter<glm::quat> : std::formatter<fow::Vector4> {
     FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         return ctx.end();
     }
     inline auto format(const glm::quat& value, std::format_context& ctx) const {
-        return std::formatter<glm::vec4>::format(glm::vec4(value.x, value.y, value.z, value.w), ctx);
+        return std::formatter<fow::Vector4>::format(fow::Vector4(value.x, value.y, value.z, value.w), ctx);
     }
 };
 

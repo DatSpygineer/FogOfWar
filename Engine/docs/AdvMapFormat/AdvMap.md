@@ -157,19 +157,7 @@ Each entry has the following entries:
 
 User defined parameter list is followed by the header table, each contains the following entries:
 
-| Entry name     | Data size | Description                                          |
-|----------------|-----------|------------------------------------------------------|
-| Parameter name | x bytes   | Null terminated string, used for the parameter name. |
-| Parameter type | 1 byte    | Type of the parameter value.                         |
-
-Parameter value size varies depending on its type:
-
-- bool (0), size: 1 byte
-- int (1), size: 4 bytes
-- uint (2), size: 4 bytes
-- float (3), size: 4 bytes
-- vec2 (4), size: 8 bytes (2 float values)
-- vec3 (5), size: 12 bytes (3 float values)
-- vec4 (6), size: 16 bytes (4 float values)
-- string (7), null terminated string
-- asset (8), two null terminated strings, first one used for class name, second is the asset path.
+| Entry name     | Data size | Description                                           |
+|----------------|-----------|-------------------------------------------------------|
+| Parameter name | x bytes   | Null terminated string, used for the parameter name.  |
+| Parameter type | x bytes   | Null terminated string, used for the parameter value. |

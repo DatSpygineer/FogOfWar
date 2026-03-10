@@ -4,11 +4,13 @@
 #include <QMainWindow>
 #include <QToolBox>
 
-#include "EditorViewport.hpp"
-#include "GLView.hpp"
+#include "widgets/EditorViewport.hpp"
+#include "widgets/GLView.hpp"
 
 namespace fow {
     class MainWindow : public QMainWindow {
+        Q_OBJECT
+
         QMenu* m_pFileMenu;
         QAction* m_pFileMenuNew;
         QAction* m_pFileMenuOpen;
@@ -54,7 +56,7 @@ namespace fow {
         EditorViewport* m_pViewport;
         QDockWidget* m_pToolsDockWidget;
         QTabWidget* m_pToolsTabWidget;
-        QToolBox* m_pToolBoxObjects;
+        QTabWidget* m_pObjectsTabObjects;
     public:
         MainWindow();
 

@@ -29,6 +29,11 @@ bool ShaderLibGetRequiredSources(const char* name, ShaderSources* sources) {
     }
     return false;
 }
+void ShaderLibGetShaders(std::vector<std::string>* shaders) {
+    for (const auto& name: s_shaders | std::views::keys) {
+        shaders->emplace_back(name);
+    }
+}
 """
 
 def parse_args():

@@ -89,7 +89,7 @@ namespace fow {
         glBindVertexArray(m_uVao);
 
         auto view = Renderer::GetViewMatrix();
-        view[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // Clear translation
+        view[3] = Vector4(0.0f, 0.0f, 0.0f, 1.0f); // Clear translation
 
         Debug::Assert(m_pMaterial->apply());
         Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");

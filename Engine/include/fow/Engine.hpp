@@ -25,7 +25,7 @@ namespace fow {
         ABSTRACT(String title() const);
         ABSTRACT(Vector<String> game_data_archives() const);
         ABSTRACT(bool allow_mods() const);
-        virtual void on_window_resized(const glm::ivec2& new_size) { }
+        virtual void on_window_resized(const Vector2i& new_size) { }
         virtual void on_update_imgui(double dt) { }
     };
 
@@ -35,14 +35,14 @@ namespace fow {
         FOW_ENGINE_API void SetBackgroundColor(const Color& color);
         FOW_ENGINE_API void SetBackgroundColor(Color&& color) noexcept;
         FOW_ENGINE_API Color GetBackgroundColor();
-        FOW_ENGINE_API Result<> Initialize(int argc, char** argv, const String& title, const std::function<std::shared_ptr<Game>()>& game_class_ctor);
+        FOW_ENGINE_API Result<> Initialize(int argc, char** argv, const String& title, const Function<std::shared_ptr<Game>()>& game_class_ctor);
         FOW_ENGINE_API void Run();
         FOW_ENGINE_API void SetWindowTitle(const String& title);
-        FOW_ENGINE_API void SetWindowPosition(const glm::ivec2& value);
-        FOW_ENGINE_API void SetWindowSize(const glm::ivec2& value);
+        FOW_ENGINE_API void SetWindowPosition(const Vector2i& value);
+        FOW_ENGINE_API void SetWindowSize(const Vector2i& value);
         FOW_ENGINE_API String GetWindowTitle();
-        FOW_ENGINE_API glm::ivec2 GetWindowPosition();
-        FOW_ENGINE_API glm::ivec2 GetWindowSize();
+        FOW_ENGINE_API Vector2i GetWindowPosition();
+        FOW_ENGINE_API Vector2i GetWindowSize();
         FOW_ENGINE_API const Version& GetVersion();
     }
 
@@ -100,12 +100,12 @@ namespace fow {
 
         FOW_ENGINE_API float GetAxis(const String& positive_action, const String& negative_action, float multiplier = 1.0f);
         FOW_ENGINE_API float GetAxis(const String& action, float multiplier = 1.0f);
-        inline glm::vec2 GetAxis2D(
+        inline Vector2 GetAxis2D(
             const String& x_positive, const String& x_negative,
             const String& y_positive, const String& y_negative,
-            const glm::vec2& multiplier = glm::vec2 { 1.0f }
+            const Vector2& multiplier = Vector2 { 1.0f }
         ) {
-            return glm::vec2 {
+            return Vector2 {
                 GetAxis(x_positive, x_negative, multiplier.x),
                 GetAxis(y_positive, y_negative, multiplier.y)
             };
@@ -121,8 +121,8 @@ namespace fow {
         FOW_ENGINE_API bool MouseIsReleased(MouseButton button);
         FOW_ENGINE_API bool MouseIsUp(MouseButton button);
 
-        FOW_ENGINE_API glm::vec2 MousePosition();
-        FOW_ENGINE_API glm::vec2 MouseMovement();
+        FOW_ENGINE_API Vector2 MousePosition();
+        FOW_ENGINE_API Vector2 MouseMovement();
     }
 }
 

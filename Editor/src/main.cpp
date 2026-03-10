@@ -6,7 +6,7 @@
 #include <QMessageBox>
 #include <QSurfaceFormat>
 
-#include "GameSettings.hpp"
+#include "util/GameSettings.hpp"
 
 fow::Path EditorBaseDir;
 bool DevMode = false;

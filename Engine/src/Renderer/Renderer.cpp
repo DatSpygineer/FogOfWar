@@ -7,12 +7,12 @@
 namespace fow {
     namespace Renderer {
         static auto s_viewport = Rectangle { 0.0f, 0.0f, 1280.0f, 720.0f };
-        static auto s_view_matrix = glm::mat4 { 1.0f };
-        static auto s_proj_matrix = glm::mat4 { 1.0f };
+        static auto s_view_matrix = Matrix4 { 1.0f };
+        static auto s_proj_matrix = Matrix4 { 1.0f };
         static Path s_base_path = Path::CurrentDir();
         static bool s_initialized = false;
 
-        static Result<> InitializeShared(const Path& app_base_path, const int msaa, const std::function<Result<>()>& loader) {
+        static Result<> InitializeShared(const Path& app_base_path, const int msaa, const Function<Result<>()>& loader) {
             if (s_initialized) {
                 return Failure("Failed to initialize renderer: already initialized");
             }
@@ -91,7 +91,7 @@ namespace fow {
             }
         }
 
-        void UpdateCameraProjectionMatrix(const glm::mat4& matrix) {
+        void UpdateCameraProjectionMatrix(const Matrix4& matrix) {
             s_proj_matrix = matrix;
         }
         void UpdateCameraProjectionOrtho(const float x, const float y, const float width, const float height, const float near, const float far) {
@@ -109,28 +109,28 @@ namespace fow {
         void UpdateCameraProjectionPerspective(const float fov, const float width, const float height, const float near, const float far) {
             s_proj_matrix = glm::perspective(glm::radians(fov), width / height, near, far);
         }
-        void UpdateCameraProjectionPerspective(const float fov, const glm::vec2& size, const float near, const float far) {
+        void UpdateCameraProjectionPerspective(const float fov, const Vector2& size, const float near, const float far) {
             s_proj_matrix = glm::perspective(glm::radians(fov), size.x / size.y, near, far);
         }
 
-        void UpdateCameraViewMatrix(const glm::mat4& matrix) {
+        void UpdateCameraViewMatrix(const Matrix4& matrix) {
             s_view_matrix = matrix;
         }
 
-        void UpdateCameraPositionSimple(const glm::vec3& position) {
+        void UpdateCameraPositionSimple(const Vector3& position) {
             s_view_matrix = glm::translate(s_view_matrix, position);
         }
-        void UpdateCameraPosition(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up) {
+        void UpdateCameraPosition(const Vector3& position, const Vector3& target, const Vector3& up) {
             s_view_matrix = glm::lookAt(position, target, up);
         }
-        void UpdateCameraPosition(const glm::vec3& position, const glm::vec3& forward, const glm::vec3& up, const glm::quat& rotation) {
+        void UpdateCameraPosition(const Vector3& position, const Vector3& forward, const Vector3& up, const glm::quat& rotation) {
             s_view_matrix = glm::lookAt(position, position + glm::rotate(rotation, forward), up);
         }
 
-        glm::mat4 GetViewMatrix() {
+        Matrix4 GetViewMatrix() {
             return s_view_matrix;
         }
-        glm::mat4 GetProjectionMatrix() {
+        Matrix4 GetProjectionMatrix() {
             return s_proj_matrix;
         }
         void SetViewport(const Rectangle& rect) {
