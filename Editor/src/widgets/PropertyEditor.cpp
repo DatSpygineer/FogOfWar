@@ -151,9 +151,6 @@ namespace fow {
 
     bool BooleanPropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (!m_bEntryCreated) {
-            if (m_pCheckBox == nullptr) {
-                m_pCheckBox = new QCheckBox;
-            }
             layout->addWidget(m_pCheckBox, 4);
             connect(m_pCheckBox, &QCheckBox::checkStateChanged, this, &BooleanPropertyEditorEntry::onEditorValueChanged);
         }
@@ -176,9 +173,6 @@ namespace fow {
 
     bool IntPropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (!m_bEntryCreated) {
-            if (m_pSpinBox == nullptr) {
-                m_pSpinBox = new QSpinBox;
-            }
             layout->addWidget(m_pSpinBox, 4);
             connect(m_pSpinBox, &QSpinBox::valueChanged, this, &IntPropertyEditorEntry::onEditorValueChanged);
         }
@@ -216,9 +210,6 @@ namespace fow {
 
     bool FloatPropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (m_bEntryCreated) {
-            if (m_pSpinBox == nullptr) {
-                m_pSpinBox = new QDoubleSpinBox;
-            }
             layout->addWidget(m_pSpinBox, 4);
             connect(m_pSpinBox, &QDoubleSpinBox::valueChanged, this, &FloatPropertyEditorEntry::onEditorValueChanged);
         }
@@ -253,9 +244,6 @@ namespace fow {
 
     bool StringPropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (!m_bEntryCreated) {
-            if (m_pLineEdit == nullptr) {
-                m_pLineEdit = new QLineEdit;
-            }
             layout->addWidget(m_pLineEdit, 4);
             connect(m_pLineEdit, &QLineEdit::textChanged, this, &StringPropertyEditorEntry::onEditorValueChanged);
         }
@@ -279,9 +267,6 @@ namespace fow {
 
     bool ChoicesPropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (!m_bEntryCreated) {
-            if (m_pComboBox == nullptr) {
-                m_pComboBox = new QComboBox;
-            }
             layout->addWidget(m_pComboBox, 4);
             connect(m_pComboBox, &QComboBox::currentTextChanged, this, &ChoicesPropertyEditorEntry::onEditorValueChanged);
         }
@@ -313,12 +298,6 @@ namespace fow {
 
     bool Vector2PropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (!m_bEntryCreated) {
-            if (m_pSpinBoxX == nullptr) {
-                m_pSpinBoxX = new QDoubleSpinBox;
-            }
-            if (m_pSpinBoxY == nullptr) {
-                m_pSpinBoxY = new QDoubleSpinBox;
-            }
             layout->addWidget(m_pSpinBoxX, 2);
             layout->addWidget(m_pSpinBoxY, 2);
             connect(m_pSpinBoxX, &QDoubleSpinBox::valueChanged, this, &Vector2PropertyEditorEntry::onEditorValueChanged);
@@ -366,15 +345,6 @@ namespace fow {
 
     bool Vector3PropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (!m_bEntryCreated) {
-            if (m_pSpinBoxX == nullptr) {
-                m_pSpinBoxX = new QDoubleSpinBox;
-            }
-            if (m_pSpinBoxY == nullptr) {
-                m_pSpinBoxY = new QDoubleSpinBox;
-            }
-            if (m_pSpinBoxZ == nullptr) {
-                m_pSpinBoxZ = new QDoubleSpinBox;
-            }
             layout->addWidget(m_pSpinBoxX, 1);
             layout->addWidget(m_pSpinBoxY, 1);
             layout->addWidget(m_pSpinBoxZ, 1);
@@ -442,18 +412,6 @@ namespace fow {
 
     bool Vector4PropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (!m_bEntryCreated) {
-            if (m_pSpinBoxX == nullptr) {
-                m_pSpinBoxX = new QDoubleSpinBox;
-            }
-            if (m_pSpinBoxY == nullptr) {
-                m_pSpinBoxY = new QDoubleSpinBox;
-            }
-            if (m_pSpinBoxZ == nullptr) {
-                m_pSpinBoxZ = new QDoubleSpinBox;
-            }
-            if (m_pSpinBoxW == nullptr) {
-                m_pSpinBoxW = new QDoubleSpinBox;
-            }
             layout->addWidget(m_pSpinBoxX, 1);
             layout->addWidget(m_pSpinBoxY, 1);
             layout->addWidget(m_pSpinBoxZ, 1);
@@ -520,12 +478,6 @@ namespace fow {
 
     bool ColorPropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (!m_bEntryCreated) {
-            if (m_pColorButton == nullptr) {
-                m_pColorButton = new ColorButton(Color());
-            }
-            if (m_pLabel == nullptr) {
-                m_pLabel = new QLineEdit;
-            }
             layout->addWidget(m_pColorButton, 1);
             layout->addWidget(m_pLabel, 3);
             connect(m_pColorButton, &ColorButton::colorChanged, this, &ColorPropertyEditorEntry::onEditorValueChanged);
@@ -557,15 +509,6 @@ namespace fow {
 
     bool ArrayPropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (!m_bEntryCreated) {
-            if (m_pVBoxLayout == nullptr) {
-                m_pVBoxLayout = new QVBoxLayout;
-            }
-            if (m_pList == nullptr) {
-                m_pList = new QTableWidget;
-            }
-            if (m_pAddButton == nullptr) {
-                m_pAddButton = new QToolButton;
-            }
             m_pVBoxLayout->addWidget(m_pList);
             m_pVBoxLayout->addWidget(m_pAddButton);
             m_pVBoxLayout->addStretch();
@@ -634,15 +577,6 @@ namespace fow {
 
     bool MapPropertyEditorEntry::createEntry(QHBoxLayout* layout) {
         if (!m_bEntryCreated) {
-            if (m_pVBoxLayout == nullptr) {
-                m_pVBoxLayout = new QVBoxLayout;
-            }
-            if (m_pList == nullptr) {
-                m_pList = new QTableWidget;
-            }
-            if (m_pAddButton == nullptr) {
-                m_pAddButton = new QToolButton;
-            }
             m_pVBoxLayout->addWidget(m_pList);
             m_pVBoxLayout->addWidget(m_pAddButton);
             m_pVBoxLayout->addStretch();
@@ -736,60 +670,65 @@ namespace fow {
         Q_EMIT editorValueChanged();
     }
 
-    AssetPropertyEditorEntry::AssetPropertyEditorEntry(const String& name, const String& defaultValue, const Path& assetBaseDir, const DataMappingEntry& mapping_entry, QWidget* parent)
-        : PropertyEditorEntry(name, mapping_entry, parent), m_sAssetBaseDir(assetBaseDir), m_pHBoxLayout(new QHBoxLayout), m_pLineEdit(new QLineEdit), m_pAddButton(new QToolButton), m_pBrowseButton(new QToolButton) {
-        m_pLineEdit->setText(defaultValue.as_cstr());
-        m_pAddButton->setIcon(LoadEditorIcon("Editor/icons/buttons/add.png"));
-        m_pAddButton->setToolTip("Add item");
-        m_pAddButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    AssetPropertyEditorEntry::AssetPropertyEditorEntry(const String& name, const Path& assetBasePath, const String& defaultValue, const DataMappingEntry& mapping_entry, QWidget* parent)
+        : StringPropertyEditorEntry(name, defaultValue, mapping_entry, parent), m_sAssetBaseDir(assetBasePath),
+            m_pAddButton(new QToolButton), m_pBrowseButton(new QToolButton), m_pImportButton(new QToolButton), m_pEditButton(new QToolButton) {
+
+        const bool raw_asset = mapping_entry.assetClassName.equals_any({ "Image", "Mesh" });
+
         m_pBrowseButton->setText("...");
-        m_pBrowseButton->setToolTip("Browse item");
-        connect(m_pAddButton, &QToolButton::clicked, this, &AssetPropertyEditorEntry::addAsset);
-        connect(m_pBrowseButton, &QToolButton::clicked, this, &AssetPropertyEditorEntry::browseAsset);
-        connect(m_pLineEdit, &QLineEdit::textChanged, this, &AssetPropertyEditorEntry::onEditorValueChanged);
+        m_pBrowseButton->setToolTip("Browse assets..");
+        m_pImportButton->setIcon(LoadEditorIcon("Editor/icons/buttons/import.png"));
+        m_pImportButton->setToolTip("Import external asset..");
+        m_pAddButton->setIcon(LoadEditorIcon("Editor/icons/buttons/add.png"));
+        m_pAddButton->setToolTip("Create new asset");
+        m_pEditButton->setIcon(LoadEditorIcon("Editor/icons/buttons/edit.png"));
+        m_pEditButton->setToolTip("Edit asset");
+
+        if (raw_asset) {
+            m_pAddButton->setEnabled(false);
+            m_pEditButton->setEnabled(false);
+        }
+
+        connect(m_pAddButton,    &QToolButton::clicked, this, &AssetPropertyEditorEntry::addAsset);
+        connect(m_pEditButton,   &QToolButton::clicked, this, &AssetPropertyEditorEntry::editAsset);
+        connect(m_pImportButton, &QToolButton::clicked, this, &AssetPropertyEditorEntry::importAsset);
+        connect(m_pBrowseButton, &QToolButton::clicked, this, &AssetPropertyEditorEntry::browsePath);
     }
 
     bool AssetPropertyEditorEntry::createEntry(QHBoxLayout* layout) {
-        if (!m_bEntryCreated) {
-            if (m_pHBoxLayout == nullptr) {
-                m_pHBoxLayout = new QHBoxLayout;
-            }
-            if (m_pLineEdit == nullptr) {
-                m_pLineEdit = new QLineEdit;
-            }
-            if (m_pAddButton == nullptr) {
-                m_pAddButton = new QToolButton;
-            }
-            if (m_pBrowseButton == nullptr) {
-                m_pBrowseButton = new QToolButton;
-            }
-
-            m_pHBoxLayout->addWidget(m_pLineEdit,     6);
-            m_pHBoxLayout->addWidget(m_pBrowseButton, 1);
-            m_pHBoxLayout->addWidget(m_pAddButton,    1);
-            layout->addLayout(m_pHBoxLayout, 4);
-            connect(m_pLineEdit, &QLineEdit::textChanged, this, &AssetPropertyEditorEntry::onEditorValueChanged);
+        if (StringPropertyEditorEntry::createEntry(layout)) {
+            layout->addWidget(m_pBrowseButton, 1);
+            layout->addWidget(m_pAddButton, 1);
+            layout->addWidget(m_pEditButton, 1);
+            layout->addWidget(m_pImportButton, 1);
+            return true;
         }
-        return true;
-    }
-
-    void AssetPropertyEditorEntry::setValue(const String& values) const {
-        m_pLineEdit->setText(values.as_cstr());
-    }
-    String AssetPropertyEditorEntry::getValue() const {
-        return m_pLineEdit->text().toStdString();
+        return false;
     }
 
     void AssetPropertyEditorEntry::onEditorValueChanged() {
-        PropertyEditorEntry::onEditorValueChanged();
+        StringPropertyEditorEntry::onEditorValueChanged();
+        switch (m_preview.index()) {
+            case 1: // ImageViewer
+                std::get<1>(m_preview)->setImage(m_sAssetBaseDir / getValue());
+            break;
+            case 2: // GLView
+                // TODO
+            break;
+            default: /* No preview */ break;
+        }
     }
 
     void AssetPropertyEditorEntry::addAsset() {
-
     }
-    void AssetPropertyEditorEntry::browseAsset() const {
+    void AssetPropertyEditorEntry::editAsset() {
+    }
+    void AssetPropertyEditorEntry::importAsset() {
+    }
+    void AssetPropertyEditorEntry::browsePath() {
         if (auto dialog = ArchiveFileSelectDialog(std::format("Select \"{}\" asset", mapping().assetClassName), m_sAssetBaseDir, "", mapping().assetClassName); dialog.exec() == QDialog::Accepted) {
-            m_pLineEdit->setText(dialog.selectedPath().as_cstr());
+            setValue("/"_s + dialog.selectedPathRelative().as_string());
         }
     }
 
@@ -906,14 +845,10 @@ namespace fow {
                     widget = new MapPropertyEditorEntry(display_name, entry);
                 } break;
                 case DataMappingType::Asset: {
-                    widget = new AssetPropertyEditorEntry(display_name, value, project_path, entry);
+                    widget = new AssetPropertyEditorEntry(display_name, project_path, value, entry);
                     if (mappings.getClassName() == "Texture") {
+                        widget->setPreview(m_pImageViewer);
                         m_pImageViewer->setImage(project_path / value);
-                        connect(widget, &PropertyEditorEntry::editorValueChanged, this, [this, &widget, &project_path] {
-                            m_pImageViewer->setImage(
-                                project_path / static_cast<AssetPropertyEditorEntry*>(widget)->getValue()
-                            );
-                        });
                     }
                 } break;
                 case DataMappingType::ShaderName: {

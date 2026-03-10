@@ -51,6 +51,7 @@ namespace fow {
 
     class ArchiveFileSelectDialog : public QDialog {
         Path m_sSelectionPath;
+        Path m_sAssetRootPath;
         ArchiveFileTree* m_pArchiveFileTree;
         QPushButton* m_pSelectButton;
         QPushButton* m_pCancelButton;
@@ -59,7 +60,8 @@ namespace fow {
         ArchiveFileSelectDialog(const String& title, const Path& projectRoot, const String& filter, QWidget* parent = nullptr);
         ArchiveFileSelectDialog(const String& title, const Path& projectRoot, QWidget* parent = nullptr);
 
-        [[nodiscard]] FOW_CONSTEXPR const Path& selectedPath() const { return m_sSelectionPath; }
+        [[nodiscard]] FOW_CONSTEXPR const Path& selectedPath()         const { return m_sSelectionPath; }
+        [[nodiscard]] Path selectedPathRelative() const;
 
         void accept() override;
         void reject() override;

@@ -99,6 +99,7 @@ namespace fow {
         String m_sName;
         DataMappingEntry m_mapping;
         bool m_bEntryCreated = false;
+        std::variant<NoneType, ImageViewer*, GLView*> m_preview = { NoneType { } };
     public:
         PropertyEditorEntry(const String& name, const DataMappingEntry& mapping_entry, QWidget* parent = nullptr);
 
@@ -106,6 +107,11 @@ namespace fow {
         [[nodiscard]] FOW_CONSTEXPR const DataMappingEntry& mapping() const { return m_mapping; }
         [[nodiscard]] FOW_CONSTEXPR QHBoxLayout* getBaseLayout() const { return m_pBaseLayout; }
         [[nodiscard]] FOW_CONSTEXPR bool isEntryCreated() const { return m_bEntryCreated; }
+
+        inline void setPreview(ImageViewer* viewer) { m_preview = viewer; }
+        inline void setPreview(GLView* viewer) { m_preview = viewer; }
+        inline void removePreview() { m_preview = NoneType { }; }
+        FOW_CONSTEXPR const std::variant<NoneType, ImageViewer*, GLView*>& getPreview() const { return m_preview; }
 
         virtual void createLabel();
         virtual bool createEntry(QHBoxLayout* layout) = 0;
@@ -339,26 +345,25 @@ namespace fow {
         void removeValue(int idx) const;
         void validateItem(QTableWidgetItem* item);
     };
-    class AssetPropertyEditorEntry : public PropertyEditorEntry {
-        QHBoxLayout* m_pHBoxLayout;
-        QLineEdit* m_pLineEdit;
-        QToolButton* m_pAddButton;
-        QToolButton* m_pBrowseButton;
+    class AssetPropertyEditorEntry : public StringPropertyEditorEntry {
         Path m_sAssetBaseDir;
+        QToolButton* m_pAddButton;
+        QToolButton* m_pEditButton;
+        QToolButton* m_pImportButton;
+        QToolButton* m_pBrowseButton;
     public:
-        AssetPropertyEditorEntry(const String& name, const Path& assetBaseDir, const DataMappingEntry& mapping_entry, QWidget* parent = nullptr)
-            : AssetPropertyEditorEntry(name, mapping_entry.defaultValue, assetBaseDir, mapping_entry, parent) { }
-        AssetPropertyEditorEntry(const String& name, const String& defaultValue, const Path& assetBaseDir, const DataMappingEntry& mapping_entry, QWidget* parent = nullptr);
+        AssetPropertyEditorEntry(const String& name, const Path& assetBasePath, const DataMappingEntry& mapping_entry, QWidget* parent = nullptr)
+            : AssetPropertyEditorEntry(name, assetBasePath, mapping_entry.defaultValue, mapping_entry, parent) { }
+        AssetPropertyEditorEntry(const String& name, const Path& assetBasePath, const String& defaultValue, const DataMappingEntry& mapping_entry, QWidget* parent = nullptr);
 
         bool createEntry(QHBoxLayout* layout) override;
-
-        void setValue(const String& values) const;
-        String getValue() const;
     protected:
         void onEditorValueChanged() override;
     private:
         void addAsset();
-        void browseAsset() const;
+        void editAsset();
+        void importAsset();
+        void browsePath();
     };
 
     class PropertyEditor : public QWidget {

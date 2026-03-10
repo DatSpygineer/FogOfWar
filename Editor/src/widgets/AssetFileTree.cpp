@@ -181,8 +181,9 @@ namespace fow {
     }
 
     ArchiveFileSelectDialog::ArchiveFileSelectDialog(const String& title, const Path& projectRoot, const String& filter, const String& className, QWidget* parent)
-        : QDialog(parent) {
+        : QDialog(parent), m_sAssetRootPath(projectRoot) {
         setWindowTitle(title.as_cstr());
+        resize(600, 600);
         auto layout = new QVBoxLayout;
         m_pArchiveFileTree = new ArchiveFileTree(nullptr, projectRoot, filter, className);
         m_pArchiveFileTree->buildTree(projectRoot);
@@ -191,16 +192,22 @@ namespace fow {
         auto buttons_layout = new QHBoxLayout;
         buttons_layout->addStretch();
         m_pSelectButton = new QPushButton(LoadEditorIcon("Editor/icons/buttons/accept.png"), "Select");
-        connect(m_pSelectButton, &QPushButton::clicked, this, &ArchiveFileSelectDialog::accept);
         buttons_layout->addWidget(m_pSelectButton);
         m_pCancelButton = new QPushButton(LoadEditorIcon("Editor/icons/buttons/cross.png"), "Cancel");
-        connect(m_pCancelButton, &QPushButton::clicked, this, &ArchiveFileSelectDialog::reject);
         buttons_layout->addWidget(m_pCancelButton);
         layout->addLayout(std::move(buttons_layout), 1);
         setLayout(std::move(layout));
+
+        connect(m_pSelectButton, &QPushButton::clicked, this, &ArchiveFileSelectDialog::accept);
+        connect(m_pCancelButton, &QPushButton::clicked, this, &ArchiveFileSelectDialog::reject);
+        connect(m_pArchiveFileTree, &QTreeWidget::itemDoubleClicked, this, &ArchiveFileSelectDialog::accept);
     }
     ArchiveFileSelectDialog::ArchiveFileSelectDialog(const String& title, const Path& projectRoot, const String& filter, QWidget* parent) : ArchiveFileSelectDialog(title, projectRoot, filter, "", parent) { }
     ArchiveFileSelectDialog::ArchiveFileSelectDialog(const String& title, const Path& projectRoot, QWidget* parent) : ArchiveFileSelectDialog(title, projectRoot, "", parent) { }
+
+    Path ArchiveFileSelectDialog::selectedPathRelative() const {
+        return m_sSelectionPath.as_relative(m_sAssetRootPath);
+    }
 
     void ArchiveFileSelectDialog::accept() {
         m_sSelectionPath = m_pArchiveFileTree->selectedPath();
