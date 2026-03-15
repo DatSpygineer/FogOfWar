@@ -502,7 +502,7 @@ namespace fow {
         : PropertyEditorEntry(name, mapping_entry, parent), m_pVBoxLayout(new QVBoxLayout), m_pList(new QTableWidget), m_pAddButton(new QToolButton) {
         m_pList->setColumnCount(2);
         m_pAddButton->setText("Add item");
-        m_pAddButton->setIcon(LoadEditorIcon("Editor/icons/buttons/add.png"));
+        m_pAddButton->setIcon(LoadEditorIcon("/icons/buttons/add.png"));
         m_pAddButton->setToolTip("Add item");
         setValues(values);
     }
@@ -539,7 +539,7 @@ namespace fow {
         const auto count = m_pList->rowCount();
         m_pList->insertRow(count);
         auto removeBtn = new QToolButton;
-        removeBtn->setIcon(LoadEditorIcon("Editor/icons/buttons/delete.png"));
+        removeBtn->setIcon(LoadEditorIcon("/icons/buttons/delete.png"));
         removeBtn->setToolButtonStyle(Qt::ToolButtonIconOnly);
         removeBtn->setToolTip("Remove item");
         connect(removeBtn, &QToolButton::clicked, this, [this, &removeBtn] {
@@ -569,7 +569,7 @@ namespace fow {
         : PropertyEditorEntry(name, mapping_entry, parent), m_pVBoxLayout(new QVBoxLayout), m_pList(new QTableWidget), m_pAddButton(new QToolButton) {
         m_pList->setColumnCount(3);
         m_pAddButton->setText("Add item");
-        m_pAddButton->setIcon(LoadEditorIcon("Editor/icons/buttons/add.png"));
+        m_pAddButton->setIcon(LoadEditorIcon("/icons/buttons/add.png"));
         m_pAddButton->setToolTip("Add item");
         setValues(values);
         connect(m_pList, &QTableWidget::itemChanged, this, &MapPropertyEditorEntry::validateItem);
@@ -612,7 +612,7 @@ namespace fow {
         const auto count = m_pList->rowCount();
         m_pList->insertRow(count);
         auto removeBtn = new QToolButton;
-        removeBtn->setIcon(LoadEditorIcon("Editor/icons/buttons/delete.png"));
+        removeBtn->setIcon(LoadEditorIcon("/icons/buttons/delete.png"));
         removeBtn->setToolButtonStyle(Qt::ToolButtonIconOnly);
         removeBtn->setToolTip("Remove item");
         connect(removeBtn, &QToolButton::clicked, this, [this, &removeBtn] {
@@ -678,11 +678,11 @@ namespace fow {
 
         m_pBrowseButton->setText("...");
         m_pBrowseButton->setToolTip("Browse assets..");
-        m_pImportButton->setIcon(LoadEditorIcon("Editor/icons/buttons/import.png"));
+        m_pImportButton->setIcon(LoadEditorIcon("/icons/buttons/import.png"));
         m_pImportButton->setToolTip("Import external asset..");
-        m_pAddButton->setIcon(LoadEditorIcon("Editor/icons/buttons/add.png"));
+        m_pAddButton->setIcon(LoadEditorIcon("/icons/buttons/add.png"));
         m_pAddButton->setToolTip("Create new asset");
-        m_pEditButton->setIcon(LoadEditorIcon("Editor/icons/buttons/edit.png"));
+        m_pEditButton->setIcon(LoadEditorIcon("/icons/buttons/edit.png"));
         m_pEditButton->setToolTip("Edit asset");
 
         if (raw_asset) {
@@ -736,11 +736,11 @@ namespace fow {
         auto layout = new QVBoxLayout;
         auto button_layout = new QHBoxLayout;
         m_pSaveButton = new QToolButton;
-        m_pSaveButton->setIcon(LoadEditorIcon("Editor/icons/menu/save_small.png"));
+        m_pSaveButton->setIcon(LoadEditorIcon("/icons/menu/save_small.png"));
         m_pSaveButton->setToolTip("Save text");
         m_pSaveButton->setEnabled(false);
         m_pRevertButton = new QToolButton;
-        m_pRevertButton->setIcon(LoadEditorIcon("Editor/icons/menu/refresh.png"));
+        m_pRevertButton->setIcon(LoadEditorIcon("/icons/menu/refresh.png"));
         m_pRevertButton->setToolTip("Revert changes");
         m_pRevertButton->setEnabled(false);
         button_layout->addWidget(m_pSaveButton);

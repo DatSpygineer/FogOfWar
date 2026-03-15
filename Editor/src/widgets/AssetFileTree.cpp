@@ -48,7 +48,7 @@ namespace fow {
         item->setData(0, Qt::UserRole, is_dir);
 
         if (is_dir) {
-            item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/folder.png"));
+            item->setIcon(0, LoadEditorIcon("/icons/assetEdit/folder.png"));
         } else {
             const auto patterns = m_sFilter.split(';');
             auto filter_passed = false;
@@ -75,66 +75,66 @@ namespace fow {
                 pugi::xml_document doc;
                 if (doc.load_file(entry_path.as_cstr()).status == pugi::status_ok) {
                     if (doc.child("Texture")) {
-                        item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/texture.png"));
+                        item->setIcon(0, LoadEditorIcon("/icons/assetEdit/texture.png"));
                     } else if (doc.child("Material")) {
-                        item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/material.png"));
+                        item->setIcon(0, LoadEditorIcon("/icons/assetEdit/material.png"));
                     } else if (doc.child("Model")) {
-                        item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/scene.png"));
+                        item->setIcon(0, LoadEditorIcon("/icons/assetEdit/scene.png"));
                     } else if (doc.child("AnimSet")) {
-                        item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/anim.png"));
+                        item->setIcon(0, LoadEditorIcon("/icons/assetEdit/anim.png"));
                     } else if (doc.child("SoundInfo")) {
-                        item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/sound_info.png"));
+                        item->setIcon(0, LoadEditorIcon("/icons/assetEdit/sound_info.png"));
                     } else if (doc.child("Ambience")) {
-                        item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/soundscape.png"));
+                        item->setIcon(0, LoadEditorIcon("/icons/assetEdit/soundscape.png"));
                     } else if (doc.child("Pack")) {
-                        item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/package.png"));
+                        item->setIcon(0, LoadEditorIcon("/icons/assetEdit/package.png"));
                     } else {
-                        item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/xml.png"));
+                        item->setIcon(0, LoadEditorIcon("/icons/assetEdit/xml.png"));
                     }
                     icon_set = true;
                 }
             }
             if (entry_path.extension().equals(".json", StringCompareType::CaseInsensitive)) {
                 if (entry_path.filename() == "Lang.json") {
-                    item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/language_list.png"));
+                    item->setIcon(0, LoadEditorIcon("/icons/assetEdit/language_list.png"));
                 } else if (entry_path.parent().filename() == "Lang") {
-                    item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/language.png"));
+                    item->setIcon(0, LoadEditorIcon("/icons/assetEdit/language.png"));
                 } else {
-                    item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/json.png"));
+                    item->setIcon(0, LoadEditorIcon("/icons/assetEdit/json.png"));
                 }
                 icon_set = true;
             }
             if (entry_path.extension().equals(".lua", StringCompareType::CaseInsensitive)) {
-                item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/script.png"));
+                item->setIcon(0, LoadEditorIcon("/icons/assetEdit/script.png"));
                 icon_set = true;
             }
             if (entry_path.extension().equals(".txt", StringCompareType::CaseInsensitive)) {
-                item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/file_text.png"));
+                item->setIcon(0, LoadEditorIcon("/icons/assetEdit/file_text.png"));
                 icon_set = true;
             }
             if (entry_path.extension().equals_any({ ".cfg", ".ini", ".conf" }, StringCompareType::CaseInsensitive)) {
-                item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/config.png"));
+                item->setIcon(0, LoadEditorIcon("/icons/assetEdit/config.png"));
                 icon_set = true;
             }
             if (entry_path.extension().equals(".csv", StringCompareType::CaseInsensitive)) {
-                item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/table.png"));
+                item->setIcon(0, LoadEditorIcon("/icons/assetEdit/table.png"));
                 icon_set = true;
             }
             if (entry_path.extension().equals_any({ ".png", ".bmp", ".tga", ".dds", ".jpg", ".jpeg" }, StringCompareType::CaseInsensitive)) {
-                item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/image.png"));
+                item->setIcon(0, LoadEditorIcon("/icons/assetEdit/image.png"));
                 icon_set = true;
             }
             if (entry_path.extension().equals_any({ ".glb", ".gltf", ".obj", ".fbx", ".dae" }, StringCompareType::CaseInsensitive)) {
-                item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/mesh.png"));
+                item->setIcon(0, LoadEditorIcon("/icons/assetEdit/mesh.png"));
                 icon_set = true;
             }
             if (entry_path.extension().equals_any({ ".wav", ".mp3", ".ogg", ".flac" }, StringCompareType::CaseInsensitive)) {
-                item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/sound.png"));
+                item->setIcon(0, LoadEditorIcon("/icons/assetEdit/sound.png"));
                 icon_set = true;
             }
 
             if (!icon_set) {
-                item->setIcon(0, LoadEditorIcon("Editor/icons/assetEdit/file.png"));
+                item->setIcon(0, LoadEditorIcon("/icons/assetEdit/file.png"));
             }
         }
 
@@ -191,9 +191,9 @@ namespace fow {
 
         auto buttons_layout = new QHBoxLayout;
         buttons_layout->addStretch();
-        m_pSelectButton = new QPushButton(LoadEditorIcon("Editor/icons/buttons/accept.png"), "Select");
+        m_pSelectButton = new QPushButton(LoadEditorIcon("/icons/buttons/accept.png"), "Select");
         buttons_layout->addWidget(m_pSelectButton);
-        m_pCancelButton = new QPushButton(LoadEditorIcon("Editor/icons/buttons/cross.png"), "Cancel");
+        m_pCancelButton = new QPushButton(LoadEditorIcon("/icons/buttons/cross.png"), "Cancel");
         buttons_layout->addWidget(m_pCancelButton);
         layout->addLayout(std::move(buttons_layout), 1);
         setLayout(std::move(layout));

@@ -7,12 +7,10 @@ namespace fow::QtHelpers {
         if (layout != nullptr) {
             for (auto item = layout->takeAt(0); item != nullptr; item = layout->takeAt(0)) {
                 if (item->layout() != nullptr) {
-                    DISCARD(item->layout()->disconnect());
                     ClearLayout(item->layout());
                     delete item->layout();
                 }
                 if (item->widget() != nullptr) {
-                    DISCARD(item->widget()->disconnect());
                     delete item->widget();
                 }
                 if (item->spacerItem() != nullptr) {

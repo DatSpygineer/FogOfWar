@@ -14,11 +14,11 @@ namespace fow {
         auto layout = new QVBoxLayout;
         auto button_layout = new QHBoxLayout;
         m_pSaveButton = new QToolButton;
-        m_pSaveButton->setIcon(LoadEditorIcon("Editor/icons/menu/save_small.png"));
+        m_pSaveButton->setIcon(LoadEditorIcon("/icons/menu/save_small.png"));
         m_pSaveButton->setToolTip("Save text");
         m_pSaveButton->setEnabled(false);
         m_pRevertButton = new QToolButton;
-        m_pRevertButton->setIcon(LoadEditorIcon("Editor/icons/menu/refresh.png"));
+        m_pRevertButton->setIcon(LoadEditorIcon("/icons/menu/refresh.png"));
         m_pRevertButton->setToolTip("Revert changes");
         m_pRevertButton->setEnabled(false);
         button_layout->addWidget(m_pSaveButton);
@@ -81,11 +81,11 @@ namespace fow {
         auto layout = new QVBoxLayout;
         auto buttons_layout = new QHBoxLayout;
         m_pSaveButton = new QToolButton;
-        m_pSaveButton->setIcon(LoadEditorIcon("Editor/icons/menu/save_small.png"));
+        m_pSaveButton->setIcon(LoadEditorIcon("/icons/menu/save_small.png"));
         m_pSaveButton->setToolTip("Save table");
         m_pSaveButton->setEnabled(false);
         m_pRevertButton = new QToolButton;
-        m_pRevertButton->setIcon(LoadEditorIcon("Editor/icons/menu/refresh.png"));
+        m_pRevertButton->setIcon(LoadEditorIcon("/icons/menu/refresh.png"));
         m_pRevertButton->setToolTip("Revert changes");
         m_pRevertButton->setEnabled(false);
         buttons_layout->addWidget(m_pSaveButton);
@@ -201,10 +201,10 @@ namespace fow {
         if (currentRow < 0) {
             currentRow = m_pDictionary->rowCount();
         }
-        auto act_insert_before = menu.addAction(LoadEditorIcon("Editor/icons/menu/table_rows_insert_above.png"), "Insert row above");
-        auto act_insert_after  = menu.addAction(LoadEditorIcon("Editor/icons/menu/table_rows_insert_below.png"), "Insert row below");
+        auto act_insert_before = menu.addAction(LoadEditorIcon("/icons/menu/table_rows_insert_above.png"), "Insert row above");
+        auto act_insert_after  = menu.addAction(LoadEditorIcon("/icons/menu/table_rows_insert_below.png"), "Insert row below");
         menu.addSeparator();
-        auto act_remove        = menu.addAction(LoadEditorIcon("Editor/icons/menu/table_rows_delete.png"), "Remove row", QKeySequence::Delete);
+        auto act_remove        = menu.addAction(LoadEditorIcon("/icons/menu/table_rows_delete.png"), "Remove row", QKeySequence::Delete);
 
         connect(act_insert_before, &QAction::triggered, this, [this, &currentRow] {
             m_pDictionary->insertRow(currentRow);
