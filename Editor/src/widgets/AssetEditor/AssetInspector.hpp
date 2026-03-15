@@ -10,7 +10,7 @@
 
 #include <fow/Shared.hpp>
 
-#include "ImageViewer.hpp"
+#include "../ImageViewer.hpp"
 
 namespace fow {
     class PropertyEditor;

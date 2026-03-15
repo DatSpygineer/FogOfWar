@@ -10,7 +10,7 @@
 
 #include "util/ResourceHelper.hpp"
 #include "widgets/RecentFilesButton.hpp"
-#include "widgets/AssetInspector.hpp"
+#include "../widgets/AssetEditor/AssetInspector.hpp"
 
 extern bool DevMode;
 

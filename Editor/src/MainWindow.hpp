@@ -4,8 +4,8 @@
 #include <QMainWindow>
 #include <QToolBox>
 
-#include "widgets/EditorViewport.hpp"
-#include "widgets/GLView.hpp"
+#include "widgets/GLView//EditorViewport.hpp"
+#include "widgets/GLView/GLView.hpp"
 
 namespace fow {
     class MainWindow : public QMainWindow {

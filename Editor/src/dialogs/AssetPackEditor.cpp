@@ -8,7 +8,7 @@
 
 #include "util/GameSettings.hpp"
 #include "util/Zipper.hpp"
-#include "widgets/AssetFileTree.hpp"
+#include "../widgets/AssetEditor/AssetFileTree.hpp"
 
 extern fow::Path EditorBaseDir;
 
@@ -77,14 +77,14 @@ namespace fow {
         auto layout = new QVBoxLayout;
         auto toolbar = new QToolBar;
         m_pNewProjectButton = new QToolButton;
-        m_pNewProjectButton->setIcon(LoadEditorIcon("/icons/toolbar/new_large.png"));
+        m_pNewProjectButton->setIcon(LoadEditorIcon("Editor/icons/toolbar/new_large.png"));
         m_pNewProjectButton->setToolTip("New package");
         toolbar->addWidget(m_pNewProjectButton);
         m_pOpenProjectButton = new QToolButton;
-        m_pOpenProjectButton->setIcon(LoadEditorIcon("/icons/toolbar/open_large.png"));
+        m_pOpenProjectButton->setIcon(LoadEditorIcon("Editor/icons/toolbar/open_large.png"));
         m_pOpenProjectButton->setToolTip("Open package..");
         toolbar->addWidget(m_pOpenProjectButton);
-        m_pOpenRecentButton = new RecentFilesButton(LoadEditorIcon("/icons/toolbar/open_recent_large.png"));
+        m_pOpenRecentButton = new RecentFilesButton(LoadEditorIcon("Editor/icons/toolbar/open_recent_large.png"));
         m_pOpenRecentButton->setToolTip("Open recent packages");
 
         const auto recent_list_path = EditorBaseDir / "recent_packages.txt";
@@ -96,7 +96,7 @@ namespace fow {
 
         toolbar->addWidget(m_pOpenRecentButton);
         m_pSaveArchiveButton = new QToolButton;
-        m_pSaveArchiveButton->setIcon(LoadEditorIcon("/icons/toolbar/save_large.png"));
+        m_pSaveArchiveButton->setIcon(LoadEditorIcon("Editor/icons/toolbar/save_large.png"));
         m_pSaveArchiveButton->setEnabled(false);
         m_pSaveArchiveButton->setToolTip("Save package..");
         toolbar->addWidget(m_pSaveArchiveButton);

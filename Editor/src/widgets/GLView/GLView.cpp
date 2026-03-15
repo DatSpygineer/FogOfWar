@@ -4,7 +4,7 @@
 #include <QDir>
 #include <QMessageBox>
 
-#include "../util/GameSettings.hpp"
+#include "util/GameSettings.hpp"
 
 
 namespace fow {

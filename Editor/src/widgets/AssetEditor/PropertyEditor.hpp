@@ -19,7 +19,7 @@
 
 #include <fow/Shared.hpp>
 
-#include "GLView.hpp"
+#include "../GLView/GLView.hpp"
 #include "widgets/ColorButton.hpp"
 #include "dialogs/AssetPackEditor.hpp"
 #include "util/ShaderParamInfo.hpp"
