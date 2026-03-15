@@ -1167,7 +1167,33 @@ namespace fow {
     Result<Color> StringToColor(const String& str) {
         const auto trimmed = str.clone_begin_trimmed();
         if (trimmed.starts_with('#')) {
-            StringToInt<uint64_t>(trimmed.substr(1));
+            const auto result = StringToInt<uint32_t>(trimmed.substr(1));
+            if (result.has_value()) {
+                return Success<Color>(Color::FromInt(result.value()));
+            }
+            return Failure(result.error());
         }
+
+        const auto tokens = trimmed.split(',');
+
+        if (tokens.size() < 3) {
+            return Failure(std::format("Invalid format \"{}\"", str));
+        }
+
+        const auto r = StringToFloat<float>(tokens.at(0));
+        const auto g = StringToFloat<float>(tokens.at(1));
+        const auto b = StringToFloat<float>(tokens.at(2));
+        const auto a = tokens.size() > 3 ? StringToFloat<float>(tokens.at(3)) : 1.0;
+
+        if (!r.has_value() || !g.has_value() || !b.has_value() || !a.has_value()) {
+            return Failure(std::format("Failed to parse string \"{}\"", str));
+        }
+
+        return Success<Color>(Color {
+            r.value() > 1.0f ? (r.value() / 255.0f) : r.value(),
+            g.value() > 1.0f ? (g.value() / 255.0f) : g.value(),
+            b.value() > 1.0f ? (b.value() / 255.0f) : b.value(),
+            a.value() > 1.0f ? (a.value() / 255.0f) : a.value()
+        });
     }
 }

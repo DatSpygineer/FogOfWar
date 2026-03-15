@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Material shader="PhongLitGeneric">
-    <Parameters>
-        <MainTexture>/Textures/Duck.texture.xml</MainTexture>
-        <SpecularMap>/Textures/test_s.texture.xml</SpecularMap>
-        <NormalMap>$DEFAULT_NORMAL</NormalMap>
-    </Parameters>
-</Material>

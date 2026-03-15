@@ -35,7 +35,7 @@ namespace fow {
         FOW_RENDER_API void UpdateCameraViewMatrix(const Matrix4& matrix);
         FOW_RENDER_API void UpdateCameraPositionSimple(const Vector3& position);
         FOW_RENDER_API void UpdateCameraPosition(const Vector3& position, const Vector3& target, const Vector3& up);
-        FOW_RENDER_API void UpdateCameraPosition(const Vector3& position, const Vector3& forward, const Vector3& up, const glm::quat& rotation);
+        FOW_RENDER_API void UpdateCameraPosition(const Vector3& position, const Vector3& forward, const Vector3& up, const Quat& rotation);
         FOW_RENDER_API Matrix4 GetViewMatrix();
         FOW_RENDER_API Matrix4 GetProjectionMatrix();
         FOW_RENDER_API void SetViewport(const Rectangle& rect);

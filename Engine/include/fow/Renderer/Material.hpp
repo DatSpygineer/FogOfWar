@@ -110,6 +110,8 @@ namespace fow {
         static Result<MaterialPtr> ParseXml(const String& source, const pugi::xml_node& root, AssetLoaderFlags::Type flags);
         static Result<MaterialPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
 
+        static Result<MaterialPtr> New(const String& shader_name, const HashMap<String, MaterialParameterValue>& params = { });
+
         static const Material Null;
     };
 }

@@ -23,7 +23,7 @@ namespace fow {
     static Result<> RemoveActionCommand(const Vector<String>& args);
     static Result<> ToggleConsoleCommand(const Vector<String>& args);
 
-    const auto vid_resolution  = CVar::Create("vid_resolution",  Vector2(1280, 720),  CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
+    const auto vid_resolution  = CVar::Create("vid_resolution",  Vector2(1280, 720),    CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
     const auto vid_window_mode = CVar::Create("vid_window_mode", "Windowed",            CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateWindowMode);
     const auto vid_monitor_idx = CVar::Create("vid_monitor_idx", 0,                     CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMonitorIndex);
     const auto vid_vsync       = CVar::Create("vid_vsync",       false,                 CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateVSync);

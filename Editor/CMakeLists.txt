@@ -29,5 +29,5 @@ add_custom_command(TARGET FogOfWarEditor
     PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_LIST_DIR}/res
-        ${FOW_EDITOR_DIRECTORY}/Editor
+        ${FOW_EDITOR_DIRECTORY}/EditorResources
 )

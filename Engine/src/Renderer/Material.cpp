@@ -1464,5 +1464,13 @@ namespace fow {
         return ParseXml(path.as_string(), doc.value(), flags);
     }
 
+    Result<MaterialPtr> Material::New(const String& shader_name, const HashMap<String, MaterialParameterValue>& params) {
+        auto shader = Shader::FromCache(shader_name);
+        if (shader == nullptr) {
+            return Failure(std::format("Could not get shader \"{}\"", shader_name));
+        }
+        return std::make_shared<Material>(shader, params);
+    }
+
     const Material Material::Null = { };
 }

@@ -101,37 +101,7 @@ namespace fow {
         return Failure("Not implemented");
     }
     Result<MeshPtr> Mesh::CreateSphere(const MaterialPtr& material, const float radius, const uint32_t segments, const MeshDrawMode draw_mode) {
-        Vector<Vertex> vertices;
-        for (uint32_t y = 0; y < segments; ++y) {
-            for (uint32_t x = 0; x < segments; ++x) {
-                const auto xseg = static_cast<float>(x) / segments;
-                const auto yseg = static_cast<float>(y) / segments;
-                const auto pos = Vector3(
-                    std::cos(xseg * 2.0f * M_PI) * std::sin(yseg * M_PI),
-                    std::cos(yseg * M_PI),
-                    std::sin(xseg * 2.0f * M_PI) * std::sin(yseg * M_PI)
-                );
-                const auto uv = Vector2(xseg, yseg);
-                const auto norm = pos;
-                vertices.emplace_back(pos * radius, norm, norm, norm, uv);
-            }
-        }
-
-        Vector<GLuint> indices;
-        for (uint32_t y = 0; y < segments; ++y) {
-            if (y % 2 == 0) {
-                for (uint32_t x = 0; x < segments; ++x) {
-                    indices.emplace_back(y * (segments + 1) + x);
-                    indices.emplace_back((y + 1) * (segments + 1) + x);
-                }
-            } else {
-                for (int32_t x = segments; x >= 0; --x) {
-                    indices.emplace_back((y + 1) * (segments + 1) + x);
-                    indices.emplace_back(y * (segments + 1) + x);
-                }
-            }
-        }
-        return Create(material, vertices, indices, MeshPrimitive::TriangleStrip, draw_mode);
+        return Failure("Not implemented");
     }
 
     const Mesh Mesh::Null = Mesh { };

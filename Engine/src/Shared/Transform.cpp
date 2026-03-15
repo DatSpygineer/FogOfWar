@@ -21,12 +21,12 @@ namespace fow {
         m_scale = scale;
     }
     void Transform::set_local_rotation(const Vector3& euler_rotation) {
-        m_rotation = glm::quat(euler_rotation);
+        m_rotation = Quat(euler_rotation);
     }
     void Transform::set_local_rotation(const Vector3& axis, const float angle) {
         m_rotation = glm::angleAxis(angle, axis);
     }
-    void Transform::set_local_rotation(const glm::quat& rotation) {
+    void Transform::set_local_rotation(const Quat& rotation) {
         m_rotation = rotation;
     }
 
@@ -42,7 +42,7 @@ namespace fow {
             m_scale -= m_pParent->get_scale();
         }
     }
-    void Transform::set_rotation(const glm::quat& rotation) {
+    void Transform::set_rotation(const Quat& rotation) {
         m_rotation = rotation;
         if (m_pParent != nullptr) {
             m_rotation -= rotation;

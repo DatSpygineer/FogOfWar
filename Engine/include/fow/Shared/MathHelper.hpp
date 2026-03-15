@@ -20,6 +20,7 @@ namespace fow {
     using Vector3 = glm::vec3;
     using Vector4 = glm::vec4;
     using Matrix4 = glm::mat4;
+    using Quat    = glm::quat;
 
     using Vector2b = glm::bvec2;
     using Vector3b = glm::bvec3;

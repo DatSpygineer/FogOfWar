@@ -84,16 +84,6 @@ namespace fow {
             return Failure(result.error().what());
         }
     }
-
-    namespace Files {
-        Result<String> ReadAllText(const Path& path);
-        Result<Vector<String>> ReadAllLines(const Path& path);
-        Result<Vector<uint8_t>> ReadAllBytes(const Path& path);
-
-        Result<> WriteAllText(const Path& path, const String& text);
-        Result<> WriteAllLines(const Path& path, const Vector<String>& lines);
-        Result<> WriteAllBytes(const Path& path, const Vector<uint8_t>& lines);
-    }
 }
 
 #endif

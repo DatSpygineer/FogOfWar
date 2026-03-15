@@ -123,7 +123,7 @@ namespace fow {
         void UpdateCameraPosition(const Vector3& position, const Vector3& target, const Vector3& up) {
             s_view_matrix = glm::lookAt(position, target, up);
         }
-        void UpdateCameraPosition(const Vector3& position, const Vector3& forward, const Vector3& up, const glm::quat& rotation) {
+        void UpdateCameraPosition(const Vector3& position, const Vector3& forward, const Vector3& up, const Quat& rotation) {
             s_view_matrix = glm::lookAt(position, position + glm::rotate(rotation, forward), up);
         }
 

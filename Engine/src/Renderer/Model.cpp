@@ -25,6 +25,25 @@ namespace fow {
         return materials;
     }
 
+    void Model::set_materials(const Vector<MaterialPtr>& materials) const {
+        for (size_t i = 0; i < materials.size(); ++i) {
+            m_meshes.at(i)->material() = materials.at(i);
+        }
+    }
+
+    void Model::set_material(const MaterialPtr& material, const GLuint index) const {
+        if (index >= m_meshes.size()) {
+            return;
+        }
+        m_meshes.at(index)->material() = material;
+    }
+
+    void Model::set_all_materials(const MaterialPtr& material) const {
+        for (auto& mesh : m_meshes) {
+            mesh->material() = material;
+        }
+    }
+
     static Result<> ProcessModelNodes(const String& source_path, const aiScene* scene, const aiNode* node, Vector<MeshPtr>& meshes, const Vector<MaterialPtr>& materials) {
         if (!scene->HasMeshes()) {
             return Failure("No mesh data found!");

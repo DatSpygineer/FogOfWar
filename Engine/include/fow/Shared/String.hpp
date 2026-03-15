@@ -504,11 +504,11 @@ struct std::formatter<fow::Vector4> {
     }
 };
 template<>
-struct std::formatter<glm::quat> : std::formatter<fow::Vector4> {
+struct std::formatter<fow::Quat> : std::formatter<fow::Vector4> {
     FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
         return ctx.end();
     }
-    inline auto format(const glm::quat& value, std::format_context& ctx) const {
+    inline auto format(const fow::Quat& value, std::format_context& ctx) const {
         return std::formatter<fow::Vector4>::format(fow::Vector4(value.x, value.y, value.z, value.w), ctx);
     }
 };

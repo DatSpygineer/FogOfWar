@@ -2,6 +2,8 @@
 
 #include <QMessageBox>
 
+#include "util/ResourceHelper.hpp"
+
 namespace fow {
     void EditorViewport::initializeGL() {
         GLView::initializeGL();

@@ -4,6 +4,7 @@
 #include <string>
 #include <optional>
 #include <memory>
+#include <ranges>
 #include <vector>
 #include <unordered_map>
 

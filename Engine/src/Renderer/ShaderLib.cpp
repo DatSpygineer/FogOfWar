@@ -9,10 +9,12 @@
     #define SHADERLIB_FILENAME "libshaderlib.so"
 #endif
 
-const fow::Dylib* s_shaderlib = nullptr;
-
 namespace fow::ShaderLib {
+    const fow::Dylib* s_shaderlib = nullptr;
+    static Path s_shaderlib_basedir = "";
+
     Result<> Load(const Path& base_path) {
+        s_shaderlib_basedir = base_path;
         if (s_shaderlib == nullptr) {
             s_shaderlib = new Dylib(base_path / SHADERLIB_FILENAME);
             if (!s_shaderlib->is_valid()) {

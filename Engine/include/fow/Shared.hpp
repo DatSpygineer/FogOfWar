@@ -14,5 +14,6 @@
 #include "fow/Shared/Lang.hpp"
 #include "fow/Shared/Argparse.hpp"
 #include "fow/Shared/Algo.hpp"
+#include "fow/Shared/Filesys.hpp"
 
 #endif

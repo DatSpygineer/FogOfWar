@@ -8,8 +8,8 @@ namespace fow {
         bool m_bDrawGrid = false;
         bool m_bUpdateGrid = false;
         glm::ivec2 m_GridSize = glm::ivec2(64);
-        MeshPtr m_pGridMesh;
-        MaterialPtr m_pGridMaterial;
+        MeshPtr m_pGridMesh = nullptr;
+        MaterialPtr m_pGridMaterial = nullptr;
     public:
         explicit EditorViewport(QWidget *parent) : GLView(parent) { }
 
