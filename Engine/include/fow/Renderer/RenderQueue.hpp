@@ -9,7 +9,7 @@
 
 namespace fow {
     struct FOW_RENDER_API LightInfo {
-        const Transform& transform;
+        const Transform* transform;
         Vector3 color;
         float intensity;
         bool enabled;

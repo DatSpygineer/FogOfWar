@@ -115,10 +115,11 @@ namespace fow {
     namespace Vector3Constants {
 #if !FOW_CONSTEXPR_ENABLED
         const Vector3 Up;
+        const Vector3 Down;
         const Vector3 Forward;
+        const Vector3 Backward;
         const Vector3 Right;
         const Vector3 Left;
-        const Vector3 Down;
         const Vector3 Zero;
         const Vector3 One;
 
@@ -126,13 +127,14 @@ namespace fow {
         const Vector3 UnitY;
         const Vector3 UnitZ;
 #else
-        constexpr Vector3 Up      = { 0.0f, 1.0f, 0.0f };
-        constexpr Vector3 Forward = { 0.0f, 0.0f, -1.0f };
-        constexpr Vector3 Right   = { 1.0f, 0.0f, 0.0f };
-        constexpr Vector3 Left    = { -1.0f, 0.0f, 0.0f };
-        constexpr Vector3 Down    = { 0.0f, -1.0f, 0.0f };
-        constexpr Vector3 Zero    = { 0.0f, 0.0f, 0.0f };
-        constexpr Vector3 One     = { 1.0f, 1.0f, 1.0f };
+        constexpr Vector3 Up       = { 0.0f, 1.0f, 0.0f };
+        constexpr Vector3 Down     = { 0.0f, -1.0f, 0.0f };
+        constexpr Vector3 Forward  = { 0.0f, 0.0f, -1.0f };
+        constexpr Vector3 Backward = { 0.0f, 0.0f, 1.0f };
+        constexpr Vector3 Right    = { 1.0f, 0.0f, 0.0f };
+        constexpr Vector3 Left     = { -1.0f, 0.0f, 0.0f };
+        constexpr Vector3 Zero     = { 0.0f, 0.0f, 0.0f };
+        constexpr Vector3 One      = { 1.0f, 1.0f, 1.0f };
 
         constexpr Vector3 UnitX   = { 1.0f, 0.0f, 0.0f };
         constexpr Vector3 UnitY   = { 0.0f, 1.0f, 0.0f };

@@ -64,7 +64,7 @@ namespace fow {
     };
 
     class FOW_ENGINE_API CameraComponent : public Component {
-        float m_fFov, m_fNear, m_fFar;
+        float m_fFov = 60.0f, m_fNear = 0.1f, m_fFar = 1000.0f;
     public:
         FOW_COMPONENT_CLASS(CameraComponent, Component)
 

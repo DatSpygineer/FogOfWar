@@ -24,6 +24,10 @@ namespace fow {
     static Result<> ToggleConsoleCommand(const Vector<String>& args);
     static Result<> SetSceneCommand(const Vector<String>& args);
 
+#ifndef NDEBUG
+    static void GLDebugMessageCallback(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
+#endif
+
     const auto vid_resolution  = CVar::Create("vid_resolution",  Vector2(1280, 720),    CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
     const auto vid_window_mode = CVar::Create("vid_window_mode", "Windowed",            CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateWindowMode);
     const auto vid_monitor_idx = CVar::Create("vid_monitor_idx", 0,                     CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMonitorIndex);
@@ -176,6 +180,9 @@ namespace fow {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifndef NDEBUG
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
             const auto msaa = std::min(r_msaa->as_int().value_or(0), 16);
             if (msaa > 0) {
                 glfwWindowHint(GLFW_SAMPLES, msaa);
@@ -229,6 +236,8 @@ namespace fow {
 #ifndef NDEBUG
             const auto debug_title = std::format("{} | FogOfWar Engine - {}", s_window_title, GetVersion().to_string());
             glfwSetWindowTitle(s_window, debug_title.c_str());
+
+            glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
 #endif
 
             if (const auto lang = cl_lang->as_string(); lang.has_value()) {
@@ -996,4 +1005,42 @@ namespace fow {
 
         return Success();
     }
+
+#ifndef NDEBUG
+    static void GLDebugMessageCallback(const GLenum source, const GLenum type, GLuint id, const GLenum severity, const GLsizei length, const GLchar* message, const void* userParam) {
+        FOW_DISCARD(length);
+        FOW_DISCARD(userParam);
+
+        String source_str;
+        switch (source) {
+            case GL_DEBUG_SOURCE_API: source_str = "API"; break;
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM: source_str = "Window System"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER: source_str = "Shader Compiler"; break;
+            case GL_DEBUG_SOURCE_THIRD_PARTY: source_str = "Third Party"; break;
+            case GL_DEBUG_SOURCE_APPLICATION: source_str = "Application"; break;
+            default: source_str = "Unknown"; break;
+        }
+
+        String severity_str;
+        switch (severity) {
+            case GL_DEBUG_SEVERITY_HIGH: severity_str = "High"; break;
+            case GL_DEBUG_SEVERITY_MEDIUM: severity_str = "Medium"; break;
+            case GL_DEBUG_SEVERITY_LOW: severity_str = "Low"; break;
+            case GL_DEBUG_SEVERITY_NOTIFICATION: severity_str = "Notification"; break;
+            default: severity_str = "Unknown"; break;
+        }
+
+        LogLevel log_level;
+        switch (type) {
+            case GL_DEBUG_TYPE_ERROR:
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: log_level = LogLevel::Error; break;
+            case GL_DEBUG_TYPE_PORTABILITY:
+            case GL_DEBUG_TYPE_PERFORMANCE:
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: log_level = LogLevel::Warning; break;
+            default: log_level = LogLevel::Info; break;
+        }
+
+        Debug::Log(log_level, std::format("OpenGL (id 0x{:X}) [Source: {}, Severity: {}] - {}", id, source_str, severity_str, message));
+    }
+#endif
 }

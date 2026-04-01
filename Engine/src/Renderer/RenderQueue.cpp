@@ -65,8 +65,9 @@ namespace fow::RenderQueue {
         return AddLight(transform, Vector3(color.x, color.y, color.z), color.w, is_enabled);
     }
     LightInfoPtr AddLight(const Transform& transform, const Vector3& color, const float intensity, const bool is_enabled) {
-        s_lights.push_back(std::make_shared<LightInfo>(transform, color, intensity, is_enabled));
-        return s_lights.back();
+        auto light_info = std::make_shared<LightInfo>(&transform, color, intensity, is_enabled);
+        s_lights.push_back(light_info);
+        return light_info;
     }
     LightInfoPtr AddLight(const Transform& transform, const Color& color, const float intensity, const bool is_enabled) {
         return AddLight(transform, Vector3(color.to_vec3()), intensity, is_enabled);
@@ -94,7 +95,7 @@ namespace fow::RenderQueue {
             if (const auto mat = mesh->material(); mat != nullptr) {
                 size_t i = 0;
                 for (const auto& light : lights) {
-                    mat->set_parameter(std::format("Light[{}].Position", i), light->transform.get_position());
+                    mat->set_parameter(std::format("Light[{}].Position", i), light->transform != nullptr ? light->transform->get_position() : Vector3Constants::Zero);
                     mat->set_parameter(std::format("Light[{}].Color", i), Vector4(light->color, light->enabled ? light->intensity : 0.0f));
                     ++i;
                 }
@@ -118,7 +119,7 @@ namespace fow::RenderQueue {
 
                 size_t i = 0;
                 for (const auto& light : lights) {
-                    mat->set_parameter(std::format("Light[{}].Position", i), light->transform.get_position());
+                    mat->set_parameter(std::format("Light[{}].Position", i), light->transform != nullptr ? light->transform->get_position() : Vector3Constants::Zero);
                     mat->set_parameter(std::format("Light[{}].Color", i), Vector4(light->color, light->intensity));
                     ++i;
                 }

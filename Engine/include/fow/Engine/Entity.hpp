@@ -52,7 +52,7 @@ namespace fow {
         Scene& m_rScene;
         EntityId m_uId;
         HashMap<std::type_index, ComponentPtr<Component>> m_components;
-        bool m_bEnabled = false;
+        bool m_bEnabled = true;
         bool m_bSpawned = false;
 
         Entity(Scene& scene, const EntityId id) : m_rScene(scene), m_uId(id) { }

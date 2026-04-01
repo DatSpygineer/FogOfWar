@@ -12,13 +12,14 @@ namespace fow {
     const Vector2 Vector2Constants::UnitX = { 1.0f, 0.0f };
     const Vector2 Vector2Constants::UnitY = { 0.0f, 1.0f };
 
-    const Vector3 Vector3Constants::Up      = { 0.0f, 1.0f, 0.0f };
-    const Vector3 Vector3Constants::Forward = { 0.0f, 0.0f, -1.0f };
-    const Vector3 Vector3Constants::Right   = { 1.0f, 0.0f, 0.0f };
-    const Vector3 Vector3Constants::Left    = { -1.0f, 0.0f, 0.0f };
-    const Vector3 Vector3Constants::Down    = { 0.0f, -1.0f, 0.0f };
-    const Vector3 Vector3Constants::Zero    = { 0.0f, 0.0f, 0.0f };
-    const Vector3 Vector3Constants::One     = { 1.0f, 1.0f, 1.0f };
+    const Vector3 Vector3Constants::Up       = { 0.0f, 1.0f, 0.0f };
+    const Vector3 Vector3Constants::Down     = { 0.0f, -1.0f, 0.0f };
+    const Vector3 Vector3Constants::Forward  = { 0.0f, 0.0f, -1.0f };
+    const Vector3 Vector3Constants::Backward = { 0.0f, 0.0f, 1.0f };
+    const Vector3 Vector3Constants::Right    = { 1.0f, 0.0f, 0.0f };
+    const Vector3 Vector3Constants::Left     = { -1.0f, 0.0f, 0.0f };
+    const Vector3 Vector3Constants::Zero     = { 0.0f, 0.0f, 0.0f };
+    const Vector3 Vector3Constants::One      = { 1.0f, 1.0f, 1.0f };
 
     const Vector3 Vector3Constants::UnitX   = { 1.0f, 0.0f, 0.0f };
     const Vector3 Vector3Constants::UnitY   = { 0.0f, 1.0f, 0.0f };

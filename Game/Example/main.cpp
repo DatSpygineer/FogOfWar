@@ -37,32 +37,30 @@ public:
 
         m_pScene = std::make_shared<Scene>();
         const auto ent_camera = m_pScene->create_entity();
-        ent_camera->enable();
+        const auto comp_camera_transform = ent_camera->add_component<TransformComponent>();
+        comp_camera_transform->transform().set_position(Vector3Constants::Forward * -5.0f);
         ent_camera->add_component<FlyCameraComponent>();
 
         const auto ent_model = m_pScene->create_entity();
-        ent_model->enable();
+        const auto comp_model_transform = ent_model->add_component<TransformComponent>();
         const auto comp_model = ent_model->add_component<ModelRendererComponent>();
         comp_model->set_model(model.value().ptr());
 
         const auto ent_light_1 = m_pScene->create_entity();
-        ent_light_1->enable();
         const auto comp_light_1_transform = ent_light_1->add_component<TransformComponent>();
-        comp_light_1_transform->transform().set_position(Vector3 { -10.0f, -5.0f, 0.0f });
+        comp_light_1_transform->transform().set_position(Vector3 { -5.0f, -0.0f, 0.0f });
         const auto comp_light_1 = ent_light_1->add_component<LightComponent>();
         comp_light_1->set_color(Color { 1.0f, 1.0f, 1.0f });
         comp_light_1->set_intensity(300.0f);
 
         const auto ent_light_2 = m_pScene->create_entity();
-        ent_light_2->enable();
         const auto comp_light_2_transform = ent_light_2->add_component<TransformComponent>();
-        comp_light_2_transform->transform().set_position(Vector3 { 10.0f, 5.0f, 0.0f });
-        const auto comp_light_2 = ent_light_1->add_component<LightComponent>();
+        comp_light_2_transform->transform().set_position(Vector3 { 5.0f, 0.0f, 0.0f });
+        const auto comp_light_2 = ent_light_2->add_component<LightComponent>();
         comp_light_2->set_color(Color { 1.0f, 1.0f, 1.0f });
         comp_light_2->set_intensity(300.0f);
 
         const auto ent_env = m_pScene->create_entity();
-        ent_env->enable();
         const auto comp_env_transform = ent_light_2->add_component<TransformComponent>();
         comp_env_transform->transform().set_rotation_deg(Vector3Constants::UnitX * 180.0f);
         const auto comp_env = ent_env->add_component<EnvironmentComponent>();
