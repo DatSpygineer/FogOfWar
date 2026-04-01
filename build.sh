@@ -39,7 +39,7 @@ fi
 mkdir -p Build/cmake-${build_type}
 cd Build/cmake-${build_type} || goto cd_fail
 cmake ../.. -DCMAKE_BUILD_TYPE=${build_type}
-make all
+cmake --build -j${nproc}
 exit 0
 
 cd_fail:
