@@ -111,12 +111,14 @@ namespace fow {
             Debug::Assert(m_pMaterial->apply());
             Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_MODEL", Matrix4 { 1.0f }), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_MODEL[0]", Matrix4 { 1.0f }), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(m_pMaterial->shader()->set_uniform("INSTANCE_COUNT", 1), "Error while applying uniform \"INSTANCE_COUNT\"");
         } else {
             Shader::PlaceHolder()->use();
             Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL", Matrix4 { 1.0f }), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL[0]", Matrix4 { 1.0f }), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("INSTANCE_COUNT", 1), "Error while applying uniform \"INSTANCE_COUNT\"");
         }
         glBindVertexArray(m_uVao);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_iIndexCount), GL_UNSIGNED_INT, nullptr);
@@ -127,15 +129,49 @@ namespace fow {
             Debug::Assert(m_pMaterial->apply());
             Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_MODEL", transform.matrix()), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_MODEL[0]", transform.matrix()), "Error while applying uniform \"MATRIX_MODEL\"");
         } else {
             Shader::PlaceHolder()->use();
             Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL", transform.matrix()), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL[0]", transform.matrix()), "Error while applying uniform \"MATRIX_MODEL\"");
         }
         glBindVertexArray(m_uVao);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_iIndexCount), GL_UNSIGNED_INT, nullptr);
+        glBindVertexArray(0);
+    }
+
+    void Mesh::draw_instances(const Vector<Transform>& transforms) const {
+        if (m_pMaterial != nullptr && m_pMaterial->is_valid()) {
+            Debug::Assert(m_pMaterial->apply());
+            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
+            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
+            auto i = 0;
+            for (const auto& transform : transforms) {
+                Debug::Assert(m_pMaterial->shader()->set_uniform(
+                    std::format("MATRIX_MODEL[{}]", i),
+                    transform.matrix()),
+                    std::format("Error while applying uniform \"MATRIX_MODEL[{}]\"", i)
+                );
+                ++i;
+            }
+        } else {
+            Shader::PlaceHolder()->use();
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
+            auto i = 0;
+            for (const auto& transform : transforms) {
+                Debug::Assert(Shader::PlaceHolder()->set_uniform(
+                    std::format("MATRIX_MODEL[{}]", i),
+                    transform.matrix()),
+                    std::format("Error while applying uniform \"MATRIX_MODEL[{}]\"", i)
+                );
+                ++i;
+            }
+        }
+
+        glBindVertexArray(m_uVao);
+        glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(m_iIndexCount), GL_UNSIGNED_INT, nullptr, static_cast<GLsizei>(transforms.size()));
         glBindVertexArray(0);
     }
 

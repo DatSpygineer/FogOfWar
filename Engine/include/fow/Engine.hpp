@@ -7,6 +7,8 @@
 #include "fow/Shared/GameState.hpp"
 #include "fow/Engine/Convar.hpp"
 #include "fow/Engine/KeyCodeWrapper.hpp"
+#include "fow/Engine/Entity.hpp"
+#include "fow/Engine/Components.hpp"
 
 namespace fow {
     enum class WindowMode {
@@ -18,13 +20,13 @@ namespace fow {
     public:
         virtual ~Game() = default;
 
-        ABSTRACT(void on_init());
-        ABSTRACT(void on_update(double dt));
-        ABSTRACT(void on_render(double dt));
-        ABSTRACT(void on_close());
-        ABSTRACT(String title() const);
-        ABSTRACT(Vector<String> game_data_archives() const);
-        ABSTRACT(bool allow_mods() const);
+        FOW_ABSTRACT(void on_init());
+        FOW_ABSTRACT(void on_update(double dt));
+        FOW_ABSTRACT(void on_render(double dt));
+        FOW_ABSTRACT(void on_close());
+        FOW_ABSTRACT(String title() const);
+        FOW_ABSTRACT(Vector<String> game_data_archives() const);
+        FOW_ABSTRACT(bool allow_mods() const);
         virtual void on_window_resized(const Vector2i& new_size) { }
         virtual void on_update_imgui(double dt) { }
     };
@@ -44,6 +46,7 @@ namespace fow {
         FOW_ENGINE_API Vector2i GetWindowPosition();
         FOW_ENGINE_API Vector2i GetWindowSize();
         FOW_ENGINE_API const Version& GetVersion();
+        FOW_ENGINE_API void SetScene(const ScenePtr& scene);
     }
 
     namespace Input {

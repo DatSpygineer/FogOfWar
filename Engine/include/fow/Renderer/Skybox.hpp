@@ -20,6 +20,8 @@ namespace fow {
         ~Skybox();
 
         void draw() const;
+
+        static Result<SkyboxPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
     };
 }
 

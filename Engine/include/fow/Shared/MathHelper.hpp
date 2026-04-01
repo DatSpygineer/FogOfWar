@@ -58,6 +58,13 @@ namespace fow {
             const auto [ r, g, b, a ] = to_bytes();
             return r << 24 | g << 16 | b << 8 | a;
         }
+
+        [[nodiscard]] FOW_CONSTEXPR Vector3 to_vec3() const {
+            return Vector3 { r, g, b };
+        }
+        [[nodiscard]] FOW_CONSTEXPR Vector4 to_vec4() const {
+            return Vector4 { r, g, b, a };
+        }
     };
 
     enum class ColorFormat {
@@ -80,6 +87,136 @@ namespace fow {
         Rectangle& operator=(const Rectangle& other)     = default;
         Rectangle& operator=(Rectangle&& other) noexcept = default;
     };
+
+    namespace Vector2Constants {
+#if !FOW_CONSTEXPR_ENABLED
+        const Vector2 Up;
+        const Vector2 Down;
+        const Vector2 Left;
+        const Vector2 Right;
+        const Vector2 Zero;
+        const Vector2 One;
+
+        const Vector2 UnitX;
+        const Vector2 UnitY;
+#else
+        constexpr Vector2 Up    = { 0.0f, 1.0f };
+        constexpr Vector2 Down  = { 0.0f, -1.0f };
+        constexpr Vector2 Left  = { -1.0f, 0.0f };
+        constexpr Vector2 Right = { 1.0f, 0.0f };
+        constexpr Vector2 Zero  = { 0.0f, 0.0f };
+        constexpr Vector2 One   = { 1.0f, 1.0f };
+
+        constexpr Vector2 UnitX = { 1.0f, 0.0f };
+        constexpr Vector2 UnitY = { 0.0f, 1.0f };
+#endif
+    }
+
+    namespace Vector3Constants {
+#if !FOW_CONSTEXPR_ENABLED
+        const Vector3 Up;
+        const Vector3 Forward;
+        const Vector3 Right;
+        const Vector3 Left;
+        const Vector3 Down;
+        const Vector3 Zero;
+        const Vector3 One;
+
+        const Vector3 UnitX;
+        const Vector3 UnitY;
+        const Vector3 UnitZ;
+#else
+        constexpr Vector3 Up      = { 0.0f, 1.0f, 0.0f };
+        constexpr Vector3 Forward = { 0.0f, 0.0f, -1.0f };
+        constexpr Vector3 Right   = { 1.0f, 0.0f, 0.0f };
+        constexpr Vector3 Left    = { -1.0f, 0.0f, 0.0f };
+        constexpr Vector3 Down    = { 0.0f, -1.0f, 0.0f };
+        constexpr Vector3 Zero    = { 0.0f, 0.0f, 0.0f };
+        constexpr Vector3 One     = { 1.0f, 1.0f, 1.0f };
+
+        constexpr Vector3 UnitX   = { 1.0f, 0.0f, 0.0f };
+        constexpr Vector3 UnitY   = { 0.0f, 1.0f, 0.0f };
+        constexpr Vector3 UnitZ   = { 0.0f, 0.0f, 1.0f };
+#endif
+    }
+
+    namespace Vector4Constants {
+#if !FOW_CONSTEXPR_ENABLED
+        const Vector4 Zero;
+        const Vector4 One;
+
+        const Vector4 UnitX;
+        const Vector4 UnitY;
+        const Vector4 UnitZ;
+        const Vector4 UnitW;
+#else
+        constexpr Vector4 Zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+        constexpr Vector4 One  = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+        constexpr Vector4 UnitX = { 1.0f, 0.0f, 0.0f, 0.0f };
+        constexpr Vector4 UnitY = { 0.0f, 1.0f, 0.0f, 0.0f };
+        constexpr Vector4 UnitZ = { 0.0f, 0.0f, 1.0f, 0.0f };
+        constexpr Vector4 UnitW = { 0.0f, 0.0f, 0.0f, 1.0f };
+#endif
+    }
+
+    namespace QuatConstants {
+#if !FOW_CONSTEXPR_ENABLED
+        const Quat Identity;
+#else
+        constexpr Quat Identity = { 1.0f, 0.0f, 0.0f, 0.0f };
+#endif
+    }
+
+    namespace Matrix4Constants {
+#if !FOW_CONSTEXPR_ENABLED
+        const Matrix4 Identity;
+#else
+        constexpr Matrix4 Identity = { 1.0f };
+#endif
+    }
+
+    namespace ColorConstants {
+#if !FOW_CONSTEXPR_ENABLED
+        const Color White;
+        const Color Black;
+        const Color Red;
+        const Color Green;
+        const Color Blue;
+        const Color Yellow;
+        const Color Cyan;
+        const Color Magenta;
+        const Color Transparent;
+
+        const Color Gray;
+        const Color Grey;
+        const Color DarkGray;
+        const Color DarkGrey;
+        const Color LightGray;
+        const Color LightGrey;
+
+        const Color NormalMap;
+#else
+        constexpr Color White       = { 1.0f, 1.0f, 1.0f, 1.0f };
+        constexpr Color Black       = { 0.0f, 0.0f, 0.0f, 1.0f };
+        constexpr Color Red         = { 1.0f, 0.0f, 0.0f, 1.0f };
+        constexpr Color Green       = { 0.0f, 1.0f, 0.0f, 1.0f };
+        constexpr Color Blue        = { 0.0f, 0.0f, 1.0f, 1.0f };
+        constexpr Color Yellow      = { 1.0f, 1.0f, 0.0f, 1.0f };
+        constexpr Color Cyan        = { 0.0f, 1.0f, 1.0f, 1.0f };
+        constexpr Color Magenta     = { 1.0f, 0.0f, 1.0f, 1.0f };
+        constexpr Color Transparent = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        constexpr Color Gray        = { 0.5f, 0.5f, 0.5f, 1.0f };
+        constexpr Color Grey        = { 0.5f, 0.5f, 0.5f, 1.0f };
+        constexpr Color DarkGray    = { 0.25f, 0.25f, 0.25f, 1.0f };
+        constexpr Color DarkGrey    = { 0.25f, 0.25f, 0.25f, 1.0f };
+        constexpr Color LightGray   = { 0.75f, 0.75f, 0.75f, 1.0f };
+        constexpr Color LightGrey   = { 0.75f, 0.75f, 0.75f, 1.0f };
+
+        constexpr Color NormalMap   = { 0.5f, 0.5f, 1.0f, 1.0f };
+#endif
+    }
 }
 
 #endif

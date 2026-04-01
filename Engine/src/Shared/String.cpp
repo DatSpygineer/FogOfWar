@@ -942,6 +942,13 @@ namespace fow {
             return Failure(std::format("Failed to parse string \"{}\" to vec4: {}", str, ex.what()));
         }
     }
+    Result<Quat> StringToQuat(const String& str) {
+        const auto result = StringToVec4(str);
+        if (result.has_value()) {
+            return Success<Quat>(Quat { result.value() });
+        }
+        return Failure(result.error());
+    }
 
     Result<Vector2b> StringToBVec2(const String& str) {
         const auto tokens = str.split(',');

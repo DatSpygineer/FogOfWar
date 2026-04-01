@@ -7,6 +7,7 @@
 #include "fow/Renderer/Mesh.hpp"
 #include "fow/Renderer/Model.hpp"
 #include "fow/Renderer/Skybox.hpp"
+#include "fow/Renderer/RenderQueue.hpp"
 
 namespace fow {
     enum class BlendFactor : GLenum {
@@ -42,6 +43,11 @@ namespace fow {
         FOW_RENDER_API void SetViewport(float x, float y, float width, float height);
         FOW_RENDER_API Rectangle GetViewport();
         FOW_RENDER_API void Clear(const Color& color);
+
+        FOW_RENDER_API Vector3 GetCameraPosition();
+        FOW_RENDER_API Vector3 GetCameraTarget();
+        FOW_RENDER_API Vector3 GetCameraForward();
+        FOW_RENDER_API Vector3 GetCameraUp();
     }
 }
 

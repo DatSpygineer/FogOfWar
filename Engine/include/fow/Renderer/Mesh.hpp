@@ -131,6 +131,7 @@ namespace fow {
 
         void draw() const;
         void draw(const Transform& transform) const;
+        void draw_instances(const Vector<Transform>& transforms) const;
     };
 
     class FOW_RENDER_API MeshBuilder final {

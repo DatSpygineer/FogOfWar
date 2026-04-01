@@ -25,6 +25,7 @@ namespace fow {
 
         void draw() const;
         void draw(const Transform& transform) const;
+        void draw_instances(const Vector<Transform>& transforms) const;
 
         [[nodiscard]] Vector<MaterialPtr> materials() const;
         void set_materials(const Vector<MaterialPtr>& materials) const;

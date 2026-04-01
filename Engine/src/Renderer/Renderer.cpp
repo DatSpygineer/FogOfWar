@@ -11,6 +11,10 @@ namespace fow {
         static auto s_proj_matrix = Matrix4 { 1.0f };
         static Path s_base_path = Path::CurrentDir();
         static bool s_initialized = false;
+        static auto s_camera_position = Vector3 { 0.0f, 0.0f, 0.0f };
+        static auto s_camera_target   = Vector3 { 0.0f, 0.0f, 0.0f };
+        static auto s_camera_up       = Vector3 { 0.0f, 1.0f, 0.0f };
+        static auto s_camera_forward  = Vector3 { 0.0f, 0.0f, 1.0f };
 
         static Result<> InitializeShared(const Path& app_base_path, const int msaa, const Function<Result<>()>& loader) {
             if (s_initialized) {
@@ -118,12 +122,21 @@ namespace fow {
         }
 
         void UpdateCameraPositionSimple(const Vector3& position) {
+            s_camera_position = s_camera_target = position;
             s_view_matrix = glm::translate(s_view_matrix, position);
         }
         void UpdateCameraPosition(const Vector3& position, const Vector3& target, const Vector3& up) {
+            s_camera_position = position;
+            s_camera_target = target;
+            s_camera_up = up;
+            s_camera_forward = glm::normalize(target - position);
             s_view_matrix = glm::lookAt(position, target, up);
         }
         void UpdateCameraPosition(const Vector3& position, const Vector3& forward, const Vector3& up, const Quat& rotation) {
+            s_camera_position = position;
+            s_camera_forward = forward;
+            s_camera_up = up;
+            s_camera_target = position + glm::rotate(rotation, forward);
             s_view_matrix = glm::lookAt(position, position + glm::rotate(rotation, forward), up);
         }
 
@@ -146,6 +159,19 @@ namespace fow {
         void Clear(const Color& color) {
             glClearColor(color.r, color.g, color.b, color.a);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        }
+
+        Vector3 GetCameraPosition() {
+            return s_camera_position;
+        }
+        Vector3 GetCameraTarget() {
+            return s_camera_target;
+        }
+        Vector3 GetCameraForward() {
+            return s_camera_forward;
+        }
+        Vector3 GetCameraUp() {
+            return s_camera_up;
         }
     }
 }

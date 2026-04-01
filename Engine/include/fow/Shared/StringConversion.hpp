@@ -20,6 +20,7 @@ namespace fow {
     FOW_SHARED_API Result<Vector2>  StringToVec2 (const String& str);
     FOW_SHARED_API Result<Vector3>  StringToVec3 (const String& str);
     FOW_SHARED_API Result<Vector4>  StringToVec4 (const String& str);
+    FOW_SHARED_API Result<Quat>     StringToQuat (const String& str);
     FOW_SHARED_API Result<Vector2b> StringToBVec2(const String& str);
     FOW_SHARED_API Result<Vector3b> StringToBVec3(const String& str);
     FOW_SHARED_API Result<Vector4b> StringToBVec4(const String& str);
@@ -32,7 +33,7 @@ namespace fow {
     FOW_SHARED_API Result<glm::dvec2> StringToDVec2(const String& str);
     FOW_SHARED_API Result<glm::dvec3> StringToDVec3(const String& str);
     FOW_SHARED_API Result<glm::dvec4> StringToDVec4(const String& str);
-    FOW_SHARED_API Result<Matrix4>  StringToMat4 (const String& str);
+    FOW_SHARED_API Result<Matrix4>    StringToMat4 (const String& str);
     FOW_SHARED_API Result<Color>      StringToColor(const String& str);
 
     template<IntegerType T>

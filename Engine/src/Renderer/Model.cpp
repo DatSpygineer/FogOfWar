@@ -17,6 +17,12 @@ namespace fow {
         }
     }
 
+    void Model::draw_instances(const Vector<Transform>& transforms) const {
+        for (const auto& mesh : m_meshes) {
+            mesh->draw_instances(transforms);
+        }
+    }
+
     Vector<MaterialPtr> Model::materials() const {
         Vector<MaterialPtr> materials;
         for (const auto& mesh : m_meshes) {

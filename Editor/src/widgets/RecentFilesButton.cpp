@@ -21,7 +21,7 @@ namespace fow {
 
         if (m_uMaxEntryCount > 0 && m_actions.size() > m_uMaxEntryCount) {
             action = m_actions.front();
-            DISCARD(disconnect(action));
+            FOW_DISCARD(disconnect(action));
             removeAction(action);
             m_actions.pop_back();
         }
@@ -47,13 +47,13 @@ namespace fow {
         const auto idx = findFilePath(path);
         const auto action = m_actions.at(idx);
         m_actions.erase(m_actions.begin() + idx);
-        DISCARD(disconnect(action));
+        FOW_DISCARD(disconnect(action));
         removeAction(action);
     }
 
     void RecentFilesButton::clearFilePaths() {
         for (const auto action : m_actions) {
-            DISCARD(disconnect(action));
+            FOW_DISCARD(disconnect(action));
             removeAction(action);
         }
         m_actions.clear();

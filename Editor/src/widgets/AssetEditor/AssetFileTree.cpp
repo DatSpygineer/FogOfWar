@@ -160,7 +160,7 @@ namespace fow {
     }
 
     void ArchiveFileTree::inspectSelection(const QTreeWidgetItem* current, const QTreeWidgetItem* previous) {
-        DISCARD(previous);
+        FOW_DISCARD(previous);
 
         m_sSelectedPath = "";
         if (current == nullptr) {

@@ -99,4 +99,12 @@ namespace fow {
         glDepthMask(GL_TRUE);
         glEnable(GL_CULL_FACE);
     }
+
+    Result<SkyboxPtr> Skybox::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {
+        const auto material = Assets::Load<Material>(path, flags);
+        if (!material.has_value()) {
+            return Failure(material.error());
+        }
+        return Success<SkyboxPtr>(std::make_shared<Skybox>(material.value().ptr()));
+    }
 }

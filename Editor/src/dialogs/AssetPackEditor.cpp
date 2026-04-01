@@ -165,7 +165,7 @@ namespace fow {
                     }
                     unzipSource = false;
                 } else {
-                    DISCARD(packageSourceDir.remove_all());
+                    FOW_DISCARD(packageSourceDir.remove_all());
                 }
             }
 

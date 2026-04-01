@@ -22,6 +22,7 @@ namespace fow {
     static Result<> CreateActionCommand(const Vector<String>& args);
     static Result<> RemoveActionCommand(const Vector<String>& args);
     static Result<> ToggleConsoleCommand(const Vector<String>& args);
+    static Result<> SetSceneCommand(const Vector<String>& args);
 
     const auto vid_resolution  = CVar::Create("vid_resolution",  Vector2(1280, 720),    CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
     const auto vid_window_mode = CVar::Create("vid_window_mode", "Windowed",            CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateWindowMode);
@@ -33,18 +34,17 @@ namespace fow {
     const auto create_action   = CVar::Create("create_action",   &CreateActionCommand,  CVarFlags::Default);
     const auto remove_action   = CVar::Create("remove_action",   &RemoveActionCommand,  CVarFlags::Default);
     const auto toggle_console  = CVar::Create("toggle_console",  &ToggleConsoleCommand, CVarFlags::Default);
+    const auto set_scene       = CVar::Create("set_scene",       &SetSceneCommand,      CVarFlags::Default);
 
     namespace Engine {
         static bool s_initialized = false;
         static GLFWwindow* s_window = nullptr;
         static String s_window_title = "FogOfWar";
-        
         static Color s_background_color = { 0.25f, 0.25f, 0.25f };
         static SharedPtr<Game> s_game_class = nullptr;
         static Path s_base_path = Path::CurrentDir();
-        static const auto s_version = Version {
-            0, 1, 0
-        };
+        static const auto s_version = Version { 0, 1, 0 };
+        static ScenePtr s_scene = nullptr;
 
         Path GetGameBasePath() {
             return s_base_path;
@@ -205,7 +205,7 @@ namespace fow {
             Renderer::EnableBlend(true);
             Renderer::SetViewport(0.0f, 0.0f, resolution.x, resolution.y);
             glfwSetWindowSizeCallback(s_window, [](GLFWwindow* window, const int width, const int height) {
-                DISCARD(window);
+                FOW_DISCARD(window);
                 Renderer::SetViewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height));
                 if (s_game_class != nullptr) {
                     s_game_class->on_window_resized(Vector2i { width, height });
@@ -252,6 +252,10 @@ namespace fow {
                 s_game_class->on_init();
             }
 
+            if (s_scene != nullptr) {
+                s_scene->spawn();
+            }
+
             while (GetGameState() == GameState::Running) {
                 glfwPollEvents();
                 Input::Poll();
@@ -265,6 +269,9 @@ namespace fow {
 
                 if (s_game_class != nullptr) {
                     s_game_class->on_update(time - last_time);
+                }
+                if (s_scene != nullptr) {
+                    s_scene->update(time - last_time);
                 }
 
                 ImGui_ImplOpenGL3_NewFrame();
@@ -294,6 +301,10 @@ namespace fow {
                 if (glfwWindowShouldClose(s_window)) {
                     SetGameStateClosing();
                 }
+            }
+
+            if (s_scene != nullptr) {
+                s_scene->destroy_all();
             }
 
             auto cfg_path = s_base_path / "cfg";
@@ -361,6 +372,18 @@ namespace fow {
         const Version& GetVersion() {
             return s_version;
         }
+
+        void SetScene(const ScenePtr& scene) {
+            if (s_scene != nullptr) {
+                s_scene->destroy_all();
+            }
+
+            s_scene = scene;
+
+            if (s_scene != nullptr && GetGameState() == GameState::Running) {
+                s_scene->spawn();
+            }
+        }
     }
 
     static void UpdateResolution(const CVarPtr& self) {
@@ -414,7 +437,7 @@ namespace fow {
         }
     }
     static Result<> QuitCommand(const Vector<String>& args) {
-        DISCARD(args);
+        FOW_DISCARD(args);
         if (Engine::s_window == nullptr) {
             exit(GetGameExitCode());
         } else {
@@ -451,7 +474,7 @@ namespace fow {
             s_initialized          = true;
 
             glfwSetScrollCallback(Engine::s_window, [](GLFWwindow* window, const double x, const double y) {
-                DISCARD(window);
+                FOW_DISCARD(window);
                 s_mouse_scroll = glm::dvec2 { x, y };
             });
         }
@@ -957,8 +980,23 @@ namespace fow {
     }
 
     static Result<> ToggleConsoleCommand(const Vector<String>& args) {
-        DISCARD(args);
+        FOW_DISCARD(args);
         Console::ToggleConsoleVisible();
+        return Success();
+    }
+
+    Result<> SetSceneCommand(const Vector<String>& args) {
+        if (args.size() < 1) {
+            return Failure("Usage: set_scene <scene asset path>");
+        }
+
+        auto scene = Assets::Load<Scene>(args.at(0));
+        if (!scene.has_value()) {
+            return Failure(scene.error());
+        }
+
+        Engine::SetScene(scene.value().ptr());
+
         return Success();
     }
 }
