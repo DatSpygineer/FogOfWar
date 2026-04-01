@@ -3,7 +3,7 @@
 #include "fow/Renderer.hpp"
 
 namespace fow {
-    Vector<Vertex> Vertex::CreateVertexArrayFromBuffers(const Vector<glm::vec3>& positions, const Vector<glm::vec3>& normals, const Vector<glm::vec3>& tangents, const Vector<glm::vec3>& bitangents, const Vector<glm::vec2>& uvs) {
+    Vector<Vertex> Vertex::CreateVertexArrayFromBuffers(const Vector<Vector3>& positions, const Vector<Vector3>& normals, const Vector<Vector3>& tangents, const Vector<Vector3>& bitangents, const Vector<Vector2>& uvs) {
         Vector<Vertex> vertices;
         vertices.reserve(positions.size());
         for (size_t i = 0; i < positions.size(); ++i) {
@@ -78,12 +78,12 @@ namespace fow {
         return Success<MeshPtr>(std::move(std::make_shared<Mesh>(std::move(Mesh { vao, vbo, ebo, static_cast<GLsizei>(indices.size()), material, primitive }))));
     }
 
-    Result<MeshPtr> Mesh::CreateQuad(const MaterialPtr& material, const glm::vec2& scale, const MeshDrawMode draw_mode) {
+    Result<MeshPtr> Mesh::CreateQuad(const MaterialPtr& material, const Vector2& scale, const MeshDrawMode draw_mode) {
         const Vector vertices = {
-            Vertex { glm::vec3 { scale.x *  0.5f, scale.y * -0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 1.0f, 1.0f } },
-            Vertex { glm::vec3 { scale.x *  0.5f, scale.y *  0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 1.0f, 0.0f } },
-            Vertex { glm::vec3 { scale.x * -0.5f, scale.y *  0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 0.0f, 0.0f } },
-            Vertex { glm::vec3 { scale.x * -0.5f, scale.y * -0.5f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec3{ 0.0f, 1.0f, 0.0f },   glm::vec2 { 0.0f, 1.0f } }
+            Vertex { Vector3 { scale.x *  0.5f, scale.y * -0.5f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector2 { 1.0f, 1.0f } },
+            Vertex { Vector3 { scale.x *  0.5f, scale.y *  0.5f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector2 { 1.0f, 0.0f } },
+            Vertex { Vector3 { scale.x * -0.5f, scale.y *  0.5f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector2 { 0.0f, 0.0f } },
+            Vertex { Vector3 { scale.x * -0.5f, scale.y * -0.5f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector2 { 0.0f, 1.0f } }
         };
         const Vector indices = {
             0u, 1u, 2u,
@@ -91,16 +91,16 @@ namespace fow {
         };
         return Create(material, vertices, indices, MeshPrimitive::Triangles, draw_mode);
     }
-    Result<MeshPtr> Mesh::CreateCube(const MaterialPtr& material, const glm::vec3& mins, const glm::vec3& maxs, const MeshDrawMode draw_mode) {
+    Result<MeshPtr> Mesh::CreateCube(const MaterialPtr& material, const Vector3& mins, const Vector3& maxs, const MeshDrawMode draw_mode) {
         return Failure("Not implemented");
     }
-    Result<MeshPtr> Mesh::CreateCylinder(const MaterialPtr& material, float radius, float height, float subdivision, MeshDrawMode draw_mode) {
+    Result<MeshPtr> Mesh::CreateCylinder(const MaterialPtr& material, float radius, float height, const uint32_t segments, MeshDrawMode draw_mode) {
         return Failure("Not implemented");
     }
-    Result<MeshPtr> Mesh::CreateCapsule(const MaterialPtr& material, float radius, float height, float subdivision, MeshDrawMode draw_mode) {
+    Result<MeshPtr> Mesh::CreateCapsule(const MaterialPtr& material, float radius, float height, const uint32_t segments, MeshDrawMode draw_mode) {
         return Failure("Not implemented");
     }
-    Result<MeshPtr> Mesh::CreateSphere(const MaterialPtr& material, float radius, float subdivision, MeshDrawMode draw_mode) {
+    Result<MeshPtr> Mesh::CreateSphere(const MaterialPtr& material, const float radius, const uint32_t segments, const MeshDrawMode draw_mode) {
         return Failure("Not implemented");
     }
 
@@ -111,12 +111,14 @@ namespace fow {
             Debug::Assert(m_pMaterial->apply());
             Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_MODEL", glm::mat4 { 1.0f }), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_MODEL[0]", Matrix4 { 1.0f }), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(m_pMaterial->shader()->set_uniform("INSTANCE_COUNT", 1), "Error while applying uniform \"INSTANCE_COUNT\"");
         } else {
             Shader::PlaceHolder()->use();
             Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL", glm::mat4 { 1.0f }), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL[0]", Matrix4 { 1.0f }), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("INSTANCE_COUNT", 1), "Error while applying uniform \"INSTANCE_COUNT\"");
         }
         glBindVertexArray(m_uVao);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_iIndexCount), GL_UNSIGNED_INT, nullptr);
@@ -127,15 +129,49 @@ namespace fow {
             Debug::Assert(m_pMaterial->apply());
             Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_MODEL", transform.matrix()), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_MODEL[0]", transform.matrix()), "Error while applying uniform \"MATRIX_MODEL\"");
         } else {
             Shader::PlaceHolder()->use();
             Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL", transform.matrix()), "Error while applying uniform \"MATRIX_MODEL\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL[0]", transform.matrix()), "Error while applying uniform \"MATRIX_MODEL\"");
         }
         glBindVertexArray(m_uVao);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_iIndexCount), GL_UNSIGNED_INT, nullptr);
+        glBindVertexArray(0);
+    }
+
+    void Mesh::draw_instances(const Vector<Transform>& transforms) const {
+        if (m_pMaterial != nullptr && m_pMaterial->is_valid()) {
+            Debug::Assert(m_pMaterial->apply());
+            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
+            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
+            auto i = 0;
+            for (const auto& transform : transforms) {
+                Debug::Assert(m_pMaterial->shader()->set_uniform(
+                    std::format("MATRIX_MODEL[{}]", i),
+                    transform.matrix()),
+                    std::format("Error while applying uniform \"MATRIX_MODEL[{}]\"", i)
+                );
+                ++i;
+            }
+        } else {
+            Shader::PlaceHolder()->use();
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
+            auto i = 0;
+            for (const auto& transform : transforms) {
+                Debug::Assert(Shader::PlaceHolder()->set_uniform(
+                    std::format("MATRIX_MODEL[{}]", i),
+                    transform.matrix()),
+                    std::format("Error while applying uniform \"MATRIX_MODEL[{}]\"", i)
+                );
+                ++i;
+            }
+        }
+
+        glBindVertexArray(m_uVao);
+        glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(m_iIndexCount), GL_UNSIGNED_INT, nullptr, static_cast<GLsizei>(transforms.size()));
         glBindVertexArray(0);
     }
 

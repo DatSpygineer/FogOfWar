@@ -9,20 +9,25 @@
     #define SHADERLIB_FILENAME "libshaderlib.so"
 #endif
 
-const fow::Dylib* s_shaderlib = nullptr;
-
 namespace fow::ShaderLib {
-    Result<> Load(const Path& base_path) {
-        s_shaderlib = new Dylib(base_path / SHADERLIB_FILENAME);
-        if (!s_shaderlib->is_valid()) {
-            return Failure("Failed to load shader library!");
-        }
+    const fow::Dylib* s_shaderlib = nullptr;
+    static Path s_shaderlib_basedir = "";
 
-        if (const auto shaderlib_init = s_shaderlib->symbol<void(*)()>("ShaderLibInitialize"); shaderlib_init != nullptr) {
-            shaderlib_init();
-            return Success();
+    Result<> Load(const Path& base_path) {
+        s_shaderlib_basedir = base_path;
+        if (s_shaderlib == nullptr) {
+            s_shaderlib = new Dylib(base_path / SHADERLIB_FILENAME);
+            if (!s_shaderlib->is_valid()) {
+                return Failure("Failed to load shader library!");
+            }
+
+            if (const auto shaderlib_init = s_shaderlib->symbol<void(*)()>("ShaderLibInitialize"); shaderlib_init != nullptr) {
+                shaderlib_init();
+                return Success();
+            }
+            return Failure("Failed to initialize shader library!");
         }
-        return Failure("Failed to initialize shader library!");
+        return Success();
     }
 
     Result<ShaderSources> GetSourcesForShader(const String& name) {
@@ -50,6 +55,19 @@ namespace fow::ShaderLib {
             return Success<String>(src);
         }
         return Failure(std::format("Failed to get shader source \"{}\": Could not load function \"ShaderLibGetSource\"", name));
+    }
+
+    Vector<String> GetShaders() {
+        if (s_shaderlib != nullptr) {
+            if (const auto fn = s_shaderlib->symbol("ShaderLibGetShaders"); fn != nullptr) {
+                std::vector<std::string> shaders;
+                reinterpret_cast<void(*)(std::vector<std::string>*)>(fn)(&shaders);
+                Vector<String> result;
+                std::ranges::transform(shaders, std::back_inserter(result), [](const std::string& value) { return String(value); });
+                return result;
+            }
+        }
+        return { };
     }
 
     void Unload() {

@@ -25,8 +25,12 @@ namespace fow {
 
         void draw() const;
         void draw(const Transform& transform) const;
+        void draw_instances(const Vector<Transform>& transforms) const;
 
-        Vector<MaterialPtr> materials() const;
+        [[nodiscard]] Vector<MaterialPtr> materials() const;
+        void set_materials(const Vector<MaterialPtr>& materials) const;
+        void set_material(const MaterialPtr& material, GLuint index) const;
+        void set_all_materials(const MaterialPtr& material) const;
 
         static Result<ModelPtr> Load(const String& source_path, const Vector<uint8_t>& data, const Vector<MaterialPtr>& materials);
         static Result<ModelPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);

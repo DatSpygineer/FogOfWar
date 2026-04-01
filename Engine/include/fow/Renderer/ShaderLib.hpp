@@ -14,6 +14,7 @@ namespace fow {
         FOW_RENDER_API Result<> Load(const Path& base_path);
         FOW_RENDER_API Result<ShaderSources> GetSourcesForShader(const String& name);
         FOW_RENDER_API Result<String> GetSource(const String& name);
+        FOW_RENDER_API Vector<String> GetShaders();
         FOW_RENDER_API void Unload();
     }
 }

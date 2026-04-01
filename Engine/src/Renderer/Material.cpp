@@ -251,40 +251,40 @@ namespace fow {
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector2)) {
                     if (m_mParams.contains(name)) {
                         const auto uvec2 = std::get<8>(value);
-                        m_mParams.at(name) = glm::bvec2(uvec2.x != 0, uvec2.y != 0);
+                        m_mParams.at(name) = Vector2b(uvec2.x != 0, uvec2.y != 0);
                     } else {
                         const auto uvec2 = std::get<8>(value);
-                        m_mParams.emplace(name, glm::bvec2(uvec2.x != 0, uvec2.y != 0));
+                        m_mParams.emplace(name, Vector2b(uvec2.x != 0, uvec2.y != 0));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector2)) {
                     if (m_mParams.contains(name)) {
                         const auto ivec2 = std::get<11>(value);
-                        m_mParams.at(name) = glm::bvec2(ivec2.x != 0, ivec2.y != 0);
+                        m_mParams.at(name) = Vector2b(ivec2.x != 0, ivec2.y != 0);
                     } else {
                         const auto ivec2 = std::get<11>(value);
-                        m_mParams.emplace(name, glm::bvec2(ivec2.x != 0, ivec2.y != 0));
+                        m_mParams.emplace(name, Vector2b(ivec2.x != 0, ivec2.y != 0));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector2)) {
                     if (m_mParams.contains(name)) {
                         const auto fvec2 = std::get<14>(value);
-                        m_mParams.at(name) = glm::bvec2(fvec2.x != 0, fvec2.y != 0);
+                        m_mParams.at(name) = Vector2b(fvec2.x != 0, fvec2.y != 0);
                     } else {
                         const auto fvec2 = std::get<14>(value);
-                        m_mParams.emplace(name, glm::bvec2(fvec2.x != 0, fvec2.y != 0));
+                        m_mParams.emplace(name, Vector2b(fvec2.x != 0, fvec2.y != 0));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector2)) {
                     if (m_mParams.contains(name)) {
                         const auto dvec2 = std::get<17>(value);
-                        m_mParams.at(name) = glm::bvec2(dvec2.x != 0, dvec2.y != 0);
+                        m_mParams.at(name) = Vector2b(dvec2.x != 0, dvec2.y != 0);
                     } else {
                         const auto dvec2 = std::get<17>(value);
-                        m_mParams.emplace(name, glm::bvec2(dvec2.x != 0, dvec2.y != 0));
+                        m_mParams.emplace(name, Vector2b(dvec2.x != 0, dvec2.y != 0));
                     }
                     return Success();
                 }
@@ -305,40 +305,40 @@ namespace fow {
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector3)) {
                     if (m_mParams.contains(name)) {
                         const auto uvec3 = std::get<9>(value);
-                        m_mParams.at(name) = glm::bvec3(uvec3.x != 0, uvec3.y != 0, uvec3.z != 0);
+                        m_mParams.at(name) = Vector3b(uvec3.x != 0, uvec3.y != 0, uvec3.z != 0);
                     } else {
                         const auto uvec3 = std::get<9>(value);
-                        m_mParams.emplace(name, glm::bvec3(uvec3.x != 0, uvec3.y != 0, uvec3.z != 0));
+                        m_mParams.emplace(name, Vector3b(uvec3.x != 0, uvec3.y != 0, uvec3.z != 0));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector3)) {
                     if (m_mParams.contains(name)) {
                         const auto ivec3 = std::get<12>(value);
-                        m_mParams.at(name) = glm::bvec3(ivec3.x != 0, ivec3.y != 0, ivec3.z != 0);
+                        m_mParams.at(name) = Vector3b(ivec3.x != 0, ivec3.y != 0, ivec3.z != 0);
                     } else {
                         const auto ivec3 = std::get<12>(value);
-                        m_mParams.emplace(name, glm::bvec3(ivec3.x != 0, ivec3.y != 0, ivec3.z != 0));
+                        m_mParams.emplace(name, Vector3b(ivec3.x != 0, ivec3.y != 0, ivec3.z != 0));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector3)) {
                     if (m_mParams.contains(name)) {
                         const auto fvec3 = std::get<15>(value);
-                        m_mParams.at(name) = glm::bvec3(fvec3.x != 0, fvec3.y != 0, fvec3.z != 0);
+                        m_mParams.at(name) = Vector3b(fvec3.x != 0, fvec3.y != 0, fvec3.z != 0);
                     } else {
                         const auto fvec3 = std::get<15>(value);
-                        m_mParams.emplace(name, glm::bvec3(fvec3.x != 0, fvec3.y != 0, fvec3.z != 0));
+                        m_mParams.emplace(name, Vector3b(fvec3.x != 0, fvec3.y != 0, fvec3.z != 0));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector3)) {
                     if (m_mParams.contains(name)) {
                         const auto dvec3 = std::get<18>(value);
-                        m_mParams.at(name) = glm::bvec3(dvec3.x != 0, dvec3.y != 0, dvec3.z != 0);
+                        m_mParams.at(name) = Vector3b(dvec3.x != 0, dvec3.y != 0, dvec3.z != 0);
                     } else {
                         const auto dvec3 = std::get<18>(value);
-                        m_mParams.emplace(name, glm::bvec3(dvec3.x != 0, dvec3.y != 0, dvec3.z != 0));
+                        m_mParams.emplace(name, Vector3b(dvec3.x != 0, dvec3.y != 0, dvec3.z != 0));
                     }
                     return Success();
                 }
@@ -359,40 +359,40 @@ namespace fow {
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector4)) {
                     if (m_mParams.contains(name)) {
                         const auto uvec4 = std::get<10>(value);
-                        m_mParams.at(name) = glm::bvec4(uvec4.x != 0, uvec4.y != 0, uvec4.z != 0, uvec4.w != 0);
+                        m_mParams.at(name) = Vector4b(uvec4.x != 0, uvec4.y != 0, uvec4.z != 0, uvec4.w != 0);
                     } else {
                         const auto uvec4 = std::get<10>(value);
-                        m_mParams.emplace(name, glm::bvec4(uvec4.x != 0, uvec4.y != 0, uvec4.z != 0, uvec4.w != 0));
+                        m_mParams.emplace(name, Vector4b(uvec4.x != 0, uvec4.y != 0, uvec4.z != 0, uvec4.w != 0));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector4)) {
                     if (m_mParams.contains(name)) {
                         const auto ivec4 = std::get<13>(value);
-                        m_mParams.at(name) = glm::bvec4(ivec4.x != 0, ivec4.y != 0, ivec4.z != 0, ivec4.w != 0);
+                        m_mParams.at(name) = Vector4b(ivec4.x != 0, ivec4.y != 0, ivec4.z != 0, ivec4.w != 0);
                     } else {
                         const auto ivec4 = std::get<13>(value);
-                        m_mParams.emplace(name, glm::bvec4(ivec4.x != 0, ivec4.y != 0, ivec4.z != 0, ivec4.w != 0));
+                        m_mParams.emplace(name, Vector4b(ivec4.x != 0, ivec4.y != 0, ivec4.z != 0, ivec4.w != 0));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector4)) {
                     if (m_mParams.contains(name)) {
                         const auto fvec4 = std::get<16>(value);
-                        m_mParams.at(name) = glm::bvec4(fvec4.x != 0, fvec4.y != 0, fvec4.z != 0, fvec4.w != 0);
+                        m_mParams.at(name) = Vector4b(fvec4.x != 0, fvec4.y != 0, fvec4.z != 0, fvec4.w != 0);
                     } else {
                         const auto fvec4 = std::get<16>(value);
-                        m_mParams.emplace(name, glm::bvec4(fvec4.x != 0, fvec4.y != 0, fvec4.z != 0, fvec4.w != 0));
+                        m_mParams.emplace(name, Vector4b(fvec4.x != 0, fvec4.y != 0, fvec4.z != 0, fvec4.w != 0));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector4)) {
                     if (m_mParams.contains(name)) {
                         const auto dvec4 = std::get<19>(value);
-                        m_mParams.at(name) = glm::bvec4(dvec4.x != 0, dvec4.y != 0, dvec4.z != 0, dvec4.w != 0);
+                        m_mParams.at(name) = Vector4b(dvec4.x != 0, dvec4.y != 0, dvec4.z != 0, dvec4.w != 0);
                     } else {
                         const auto dvec4 = std::get<19>(value);
-                        m_mParams.emplace(name, glm::bvec4(dvec4.x != 0, dvec4.y != 0, dvec4.z != 0, dvec4.w != 0));
+                        m_mParams.emplace(name, Vector4b(dvec4.x != 0, dvec4.y != 0, dvec4.z != 0, dvec4.w != 0));
                     }
                     return Success();
                 }
@@ -404,41 +404,41 @@ namespace fow {
             case ShaderUniformType::IntVector2: {
                 if (value.index() == static_cast<int>(MaterialParameterType::BoolVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec2(std::get<5>(value));
+                        m_mParams.at(name) = Vector2i(std::get<5>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec2(std::get<5>(value)));
+                        m_mParams.emplace(name, Vector2i(std::get<5>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec2(std::get<8>(value));
+                        m_mParams.at(name) = Vector2i(std::get<8>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec2(std::get<8>(value)));
+                        m_mParams.emplace(name, Vector2i(std::get<8>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec2(std::get<11>(value));
+                        m_mParams.at(name) = Vector2i(std::get<11>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec2(std::get<11>(value)));
+                        m_mParams.emplace(name, Vector2i(std::get<11>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec2(std::get<14>(value));
+                        m_mParams.at(name) = Vector2i(std::get<14>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec2(std::get<14>(value)));
+                        m_mParams.emplace(name, Vector2i(std::get<14>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec2(std::get<17>(value));
+                        m_mParams.at(name) = Vector2i(std::get<17>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec2(std::get<17>(value)));
+                        m_mParams.emplace(name, Vector2i(std::get<17>(value)));
                     }
                     return Success();
                 }
@@ -450,41 +450,41 @@ namespace fow {
             case ShaderUniformType::IntVector3: {
                 if (value.index() == static_cast<int>(MaterialParameterType::BoolVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec3(std::get<6>(value));
+                        m_mParams.at(name) = Vector3i(std::get<6>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec3(std::get<6>(value)));
+                        m_mParams.emplace(name, Vector3i(std::get<6>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec3(std::get<9>(value));
+                        m_mParams.at(name) = Vector3i(std::get<9>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec3(std::get<9>(value)));
+                        m_mParams.emplace(name, Vector3i(std::get<9>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec3(std::get<12>(value));
+                        m_mParams.at(name) = Vector3i(std::get<12>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec3(std::get<12>(value)));
+                        m_mParams.emplace(name, Vector3i(std::get<12>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec3(std::get<15>(value));
+                        m_mParams.at(name) = Vector3i(std::get<15>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec3(std::get<15>(value)));
+                        m_mParams.emplace(name, Vector3i(std::get<15>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec3(std::get<18>(value));
+                        m_mParams.at(name) = Vector3i(std::get<18>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec3(std::get<18>(value)));
+                        m_mParams.emplace(name, Vector3i(std::get<18>(value)));
                     }
                     return Success();
                 }
@@ -496,41 +496,41 @@ namespace fow {
             case ShaderUniformType::IntVector4: {
                 if (value.index() == static_cast<int>(MaterialParameterType::BoolVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec4(std::get<7>(value));
+                        m_mParams.at(name) = Vector4i(std::get<7>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec4(std::get<7>(value)));
+                        m_mParams.emplace(name, Vector4i(std::get<7>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec4(std::get<10>(value));
+                        m_mParams.at(name) = Vector4i(std::get<10>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec4(std::get<10>(value)));
+                        m_mParams.emplace(name, Vector4i(std::get<10>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec4(std::get<13>(value));
+                        m_mParams.at(name) = Vector4i(std::get<13>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec4(std::get<13>(value)));
+                        m_mParams.emplace(name, Vector4i(std::get<13>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec4(std::get<16>(value));
+                        m_mParams.at(name) = Vector4i(std::get<16>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec4(std::get<16>(value)));
+                        m_mParams.emplace(name, Vector4i(std::get<16>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::ivec4(std::get<19>(value));
+                        m_mParams.at(name) = Vector4i(std::get<19>(value));
                     } else {
-                        m_mParams.emplace(name, glm::ivec4(std::get<19>(value)));
+                        m_mParams.emplace(name, Vector4i(std::get<19>(value)));
                     }
                     return Success();
                 }
@@ -542,41 +542,41 @@ namespace fow {
             case ShaderUniformType::UIntVector2: {
                 if (value.index() == static_cast<int>(MaterialParameterType::BoolVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec2(std::get<5>(value));
+                        m_mParams.at(name) = Vector2u(std::get<5>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec2(std::get<5>(value)));
+                        m_mParams.emplace(name, Vector2u(std::get<5>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec2(std::get<8>(value));
+                        m_mParams.at(name) = Vector2u(std::get<8>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec2(std::get<8>(value)));
+                        m_mParams.emplace(name, Vector2u(std::get<8>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec2(std::get<11>(value));
+                        m_mParams.at(name) = Vector2u(std::get<11>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec2(std::get<11>(value)));
+                        m_mParams.emplace(name, Vector2u(std::get<11>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec2(std::get<14>(value));
+                        m_mParams.at(name) = Vector2u(std::get<14>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec2(std::get<14>(value)));
+                        m_mParams.emplace(name, Vector2u(std::get<14>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec2(std::get<17>(value));
+                        m_mParams.at(name) = Vector2u(std::get<17>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec2(std::get<17>(value)));
+                        m_mParams.emplace(name, Vector2u(std::get<17>(value)));
                     }
                     return Success();
                 }
@@ -588,41 +588,41 @@ namespace fow {
             case ShaderUniformType::UIntVector3: {
                 if (value.index() == static_cast<int>(MaterialParameterType::BoolVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec3(std::get<6>(value));
+                        m_mParams.at(name) = Vector3u(std::get<6>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec3(std::get<6>(value)));
+                        m_mParams.emplace(name, Vector3u(std::get<6>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec3(std::get<9>(value));
+                        m_mParams.at(name) = Vector3u(std::get<9>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec3(std::get<9>(value)));
+                        m_mParams.emplace(name, Vector3u(std::get<9>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec3(std::get<12>(value));
+                        m_mParams.at(name) = Vector3u(std::get<12>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec3(std::get<12>(value)));
+                        m_mParams.emplace(name, Vector3u(std::get<12>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec3(std::get<15>(value));
+                        m_mParams.at(name) = Vector3u(std::get<15>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec3(std::get<15>(value)));
+                        m_mParams.emplace(name, Vector3u(std::get<15>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec3(std::get<18>(value));
+                        m_mParams.at(name) = Vector3u(std::get<18>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec3(std::get<18>(value)));
+                        m_mParams.emplace(name, Vector3u(std::get<18>(value)));
                     }
                     return Success();
                 }
@@ -634,41 +634,41 @@ namespace fow {
             case ShaderUniformType::UIntVector4: {
                 if (value.index() == static_cast<int>(MaterialParameterType::BoolVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec4(std::get<7>(value));
+                        m_mParams.at(name) = Vector4u(std::get<7>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec4(std::get<7>(value)));
+                        m_mParams.emplace(name, Vector4u(std::get<7>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec4(std::get<10>(value));
+                        m_mParams.at(name) = Vector4u(std::get<10>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec4(std::get<10>(value)));
+                        m_mParams.emplace(name, Vector4u(std::get<10>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec4(std::get<13>(value));
+                        m_mParams.at(name) = Vector4u(std::get<13>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec4(std::get<13>(value)));
+                        m_mParams.emplace(name, Vector4u(std::get<13>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec4(std::get<16>(value));
+                        m_mParams.at(name) = Vector4u(std::get<16>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec4(std::get<16>(value)));
+                        m_mParams.emplace(name, Vector4u(std::get<16>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::uvec4(std::get<19>(value));
+                        m_mParams.at(name) = Vector4u(std::get<19>(value));
                     } else {
-                        m_mParams.emplace(name, glm::uvec4(std::get<19>(value)));
+                        m_mParams.emplace(name, Vector4u(std::get<19>(value)));
                     }
                     return Success();
                 }
@@ -680,41 +680,41 @@ namespace fow {
             case ShaderUniformType::FloatVector2: {
                 if (value.index() == static_cast<int>(MaterialParameterType::BoolVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec2(std::get<5>(value));
+                        m_mParams.at(name) = Vector2(std::get<5>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec2(std::get<5>(value)));
+                        m_mParams.emplace(name, Vector2(std::get<5>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec2(std::get<8>(value));
+                        m_mParams.at(name) = Vector2(std::get<8>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec2(std::get<8>(value)));
+                        m_mParams.emplace(name, Vector2(std::get<8>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec2(std::get<11>(value));
+                        m_mParams.at(name) = Vector2(std::get<11>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec2(std::get<11>(value)));
+                        m_mParams.emplace(name, Vector2(std::get<11>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec2(std::get<14>(value));
+                        m_mParams.at(name) = Vector2(std::get<14>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec2(std::get<14>(value)));
+                        m_mParams.emplace(name, Vector2(std::get<14>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector2)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec2(std::get<17>(value));
+                        m_mParams.at(name) = Vector2(std::get<17>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec2(std::get<17>(value)));
+                        m_mParams.emplace(name, Vector2(std::get<17>(value)));
                     }
                     return Success();
                 }
@@ -726,41 +726,41 @@ namespace fow {
             case ShaderUniformType::FloatVector3: {
                 if (value.index() == static_cast<int>(MaterialParameterType::BoolVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec3(std::get<6>(value));
+                        m_mParams.at(name) = Vector3(std::get<6>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec3(std::get<6>(value)));
+                        m_mParams.emplace(name, Vector3(std::get<6>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec3(std::get<9>(value));
+                        m_mParams.at(name) = Vector3(std::get<9>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec3(std::get<9>(value)));
+                        m_mParams.emplace(name, Vector3(std::get<9>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec3(std::get<12>(value));
+                        m_mParams.at(name) = Vector3(std::get<12>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec3(std::get<12>(value)));
+                        m_mParams.emplace(name, Vector3(std::get<12>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec3(std::get<15>(value));
+                        m_mParams.at(name) = Vector3(std::get<15>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec3(std::get<15>(value)));
+                        m_mParams.emplace(name, Vector3(std::get<15>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector3)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec3(std::get<18>(value));
+                        m_mParams.at(name) = Vector3(std::get<18>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec3(std::get<18>(value)));
+                        m_mParams.emplace(name, Vector3(std::get<18>(value)));
                     }
                     return Success();
                 }
@@ -772,41 +772,41 @@ namespace fow {
             case ShaderUniformType::FloatVector4: {
                 if (value.index() == static_cast<int>(MaterialParameterType::BoolVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec4(std::get<7>(value));
+                        m_mParams.at(name) = Vector4(std::get<7>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec4(std::get<7>(value)));
+                        m_mParams.emplace(name, Vector4(std::get<7>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::UIntVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec4(std::get<10>(value));
+                        m_mParams.at(name) = Vector4(std::get<10>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec4(std::get<10>(value)));
+                        m_mParams.emplace(name, Vector4(std::get<10>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::IntVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec4(std::get<13>(value));
+                        m_mParams.at(name) = Vector4(std::get<13>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec4(std::get<13>(value)));
+                        m_mParams.emplace(name, Vector4(std::get<13>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::FloatVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec4(std::get<16>(value));
+                        m_mParams.at(name) = Vector4(std::get<16>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec4(std::get<16>(value)));
+                        m_mParams.emplace(name, Vector4(std::get<16>(value)));
                     }
                     return Success();
                 }
                 if (value.index() == static_cast<int>(MaterialParameterType::DoubleVector4)) {
                     if (m_mParams.contains(name)) {
-                        m_mParams.at(name) = glm::vec4(std::get<19>(value));
+                        m_mParams.at(name) = Vector4(std::get<19>(value));
                     } else {
-                        m_mParams.emplace(name, glm::vec4(std::get<19>(value)));
+                        m_mParams.emplace(name, Vector4(std::get<19>(value)));
                     }
                     return Success();
                 }
@@ -1296,7 +1296,7 @@ namespace fow {
                                 if (const auto value = String(child.child_value()).clone_trimmed(); value.starts_with('#')) {
                                     if (const auto result = StringToInt<uint32_t>(value); result.has_value()) {
                                         const uint32_t rgba = result.value();
-                                        params.emplace(child.name(), glm::vec4 {
+                                        params.emplace(child.name(), Vector4 {
                                                            ((rgba >> 24) & 0xFF) / 255.0f,
                                                            ((rgba >> 16) & 0xFF) / 255.0f,
                                                            ((rgba >> 8 ) & 0xFF) / 255.0f,
@@ -1354,6 +1354,8 @@ namespace fow {
                                     params.emplace(child.name(), Texture::DefaultWhite());
                                 } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
                                     params.emplace(child.name(), Texture::DefaultBlack());
+                                } else if (strcmp(texture_path, "$DEFAULT_GRAY") == 0 || strcmp(texture_path, "$DEFAULT_GREY") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultGray());
                                 } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
                                     params.emplace(child.name(), Texture::DefaultNormal());
                                 } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
@@ -1374,6 +1376,8 @@ namespace fow {
                                     params.emplace(child.name(), Texture::DefaultWhite());
                                 } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
                                     params.emplace(child.name(), Texture::DefaultBlack());
+                                } else if (strcmp(texture_path, "$DEFAULT_GRAY") == 0 || strcmp(texture_path, "$DEFAULT_GREY") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultGray());
                                 } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
                                     params.emplace(child.name(), Texture::DefaultNormal());
                                 } else if (strcmp(texture_path, "$PLACEHOLDER") == 0) {
@@ -1392,6 +1396,8 @@ namespace fow {
                                 const char* texture_path = child.child_value();
                                 if (strcmp(texture_path, "$DEFAULT_WHITE") == 0) {
                                     params.emplace(child.name(), Texture::DefaultWhite());
+                                } else if (strcmp(texture_path, "$DEFAULT_GRAY") == 0 || strcmp(texture_path, "$DEFAULT_GREY") == 0) {
+                                    params.emplace(child.name(), Texture::DefaultGray());
                                 } else if (strcmp(texture_path, "$DEFAULT_BLACK") == 0) {
                                     params.emplace(child.name(), Texture::DefaultBlack());
                                 } else if (strcmp(texture_path, "$DEFAULT_NORMAL") == 0) {
@@ -1456,6 +1462,14 @@ namespace fow {
             return Failure(std::format("Failed to load material \"{}\": {}", path, doc.error().message));
         }
         return ParseXml(path.as_string(), doc.value(), flags);
+    }
+
+    Result<MaterialPtr> Material::New(const String& shader_name, const HashMap<String, MaterialParameterValue>& params) {
+        auto shader = Shader::FromCache(shader_name);
+        if (shader == nullptr) {
+            return Failure(std::format("Could not get shader \"{}\"", shader_name));
+        }
+        return std::make_shared<Material>(shader, params);
     }
 
     const Material Material::Null = { };

@@ -11,10 +11,10 @@ namespace fow {
     FOW_SHARED_API Vector<String> GetAvailableLanguages();
     FOW_SHARED_API String Translate(const String& key, const String& default_value);
     inline String Translate(const String& key) { return Translate(key, key); }
+}
 
-    inline String operator""_T(const char* cstr, const size_t len) {
-        return Translate(String { cstr, len });
-    }
+inline fow::String operator""_T(const char* cstr, const size_t len) {
+    return fow::Translate(fow::String { cstr, len });
 }
 
 #endif

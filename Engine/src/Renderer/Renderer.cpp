@@ -7,28 +7,24 @@
 namespace fow {
     namespace Renderer {
         static auto s_viewport = Rectangle { 0.0f, 0.0f, 1280.0f, 720.0f };
-        static auto s_view_matrix = glm::mat4 { 1.0f };
-        static auto s_proj_matrix = glm::mat4 { 1.0f };
+        static auto s_view_matrix = Matrix4 { 1.0f };
+        static auto s_proj_matrix = Matrix4 { 1.0f };
         static Path s_base_path = Path::CurrentDir();
         static bool s_initialized = false;
+        static auto s_camera_position = Vector3 { 0.0f, 0.0f, 0.0f };
+        static auto s_camera_target   = Vector3 { 0.0f, 0.0f, 0.0f };
+        static auto s_camera_up       = Vector3 { 0.0f, 1.0f, 0.0f };
+        static auto s_camera_forward  = Vector3 { 0.0f, 0.0f, 1.0f };
 
-        Result<> Initialize(const Path& app_base_path, int msaa, void* (*loader)(const char*)) {
+        static Result<> InitializeShared(const Path& app_base_path, const int msaa, const Function<Result<>()>& loader) {
             if (s_initialized) {
                 return Failure("Failed to initialize renderer: already initialized");
             }
 
             s_base_path = app_base_path;
-#ifdef _WIN32
-            if (const auto err = glewInit(); err != GLEW_OK) {
-                return Failure(std::format("Failed to initialize OpenGL: GL Error {}", reinterpret_cast<const char*>(glewGetErrorString(err))));
+            if (const auto result = loader(); !result.has_value()) {
+                return result;
             }
-#else
-            if (loader != nullptr) {
-                if (!gladLoadGLLoader(loader)) {
-                    return Failure(std::format("Failed to initialize OpenGL: GL Error {}", glGetError()));
-                }
-            }
-#endif
             if (const auto result = ShaderLib::Load(s_base_path); !result.has_value()) {
                 return result;
             }
@@ -49,6 +45,39 @@ namespace fow {
 
             return Success();
         }
+
+        Result<> Initialize(const Path& app_base_path, const int msaa, void* (*loader)(const char*)) {
+            return InitializeShared(app_base_path, msaa, [&loader]() -> Result<> {
+#ifdef _WIN32
+                if (const auto err = glewInit(); err != GLEW_OK) {
+                    return Failure(std::format("Failed to initialize OpenGL: GL Error {}", reinterpret_cast<const char*>(glewGetErrorString(err))));
+                }
+#else
+                if (loader != nullptr) {
+                    if (!gladLoadGLLoader(loader)) {
+                        return Failure("Failed to initialize OpenGL!");
+                    }
+                }
+#endif
+                return Success();
+            });
+        }
+
+        Result<> InitializeForEditor(const Path& app_base_path, const int msaa) {
+            return InitializeShared(app_base_path, msaa, []() -> Result<> {
+#ifdef _WIN32
+                if (const auto err = glewInit(); err != GLEW_OK) {
+                    return Failure(std::format("Failed to initialize OpenGL: GL Error {}", reinterpret_cast<const char*>(glewGetErrorString(err))));
+                }
+#else
+                if (!gladLoadGL()) {
+                        return Failure("Failed to initialize OpenGL!");
+                }
+#endif
+                return Success();
+            });
+        }
+
         void Terminate() {
             ShaderLib::Unload();
         }
@@ -66,7 +95,7 @@ namespace fow {
             }
         }
 
-        void UpdateCameraProjectionMatrix(const glm::mat4& matrix) {
+        void UpdateCameraProjectionMatrix(const Matrix4& matrix) {
             s_proj_matrix = matrix;
         }
         void UpdateCameraProjectionOrtho(const float x, const float y, const float width, const float height, const float near, const float far) {
@@ -84,28 +113,37 @@ namespace fow {
         void UpdateCameraProjectionPerspective(const float fov, const float width, const float height, const float near, const float far) {
             s_proj_matrix = glm::perspective(glm::radians(fov), width / height, near, far);
         }
-        void UpdateCameraProjectionPerspective(const float fov, const glm::vec2& size, const float near, const float far) {
+        void UpdateCameraProjectionPerspective(const float fov, const Vector2& size, const float near, const float far) {
             s_proj_matrix = glm::perspective(glm::radians(fov), size.x / size.y, near, far);
         }
 
-        void UpdateCameraViewMatrix(const glm::mat4& matrix) {
+        void UpdateCameraViewMatrix(const Matrix4& matrix) {
             s_view_matrix = matrix;
         }
 
-        void UpdateCameraPositionSimple(const glm::vec3& position) {
+        void UpdateCameraPositionSimple(const Vector3& position) {
+            s_camera_position = s_camera_target = position;
             s_view_matrix = glm::translate(s_view_matrix, position);
         }
-        void UpdateCameraPosition(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up) {
+        void UpdateCameraPosition(const Vector3& position, const Vector3& target, const Vector3& up) {
+            s_camera_position = position;
+            s_camera_target = target;
+            s_camera_up = up;
+            s_camera_forward = glm::normalize(target - position);
             s_view_matrix = glm::lookAt(position, target, up);
         }
-        void UpdateCameraPosition(const glm::vec3& position, const glm::vec3& forward, const glm::vec3& up, const glm::quat& rotation) {
+        void UpdateCameraPosition(const Vector3& position, const Vector3& forward, const Vector3& up, const Quat& rotation) {
+            s_camera_position = position;
+            s_camera_forward = forward;
+            s_camera_up = up;
+            s_camera_target = position + glm::rotate(rotation, forward);
             s_view_matrix = glm::lookAt(position, position + glm::rotate(rotation, forward), up);
         }
 
-        glm::mat4 GetViewMatrix() {
+        Matrix4 GetViewMatrix() {
             return s_view_matrix;
         }
-        glm::mat4 GetProjectionMatrix() {
+        Matrix4 GetProjectionMatrix() {
             return s_proj_matrix;
         }
         void SetViewport(const Rectangle& rect) {
@@ -121,6 +159,19 @@ namespace fow {
         void Clear(const Color& color) {
             glClearColor(color.r, color.g, color.b, color.a);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        }
+
+        Vector3 GetCameraPosition() {
+            return s_camera_position;
+        }
+        Vector3 GetCameraTarget() {
+            return s_camera_target;
+        }
+        Vector3 GetCameraForward() {
+            return s_camera_forward;
+        }
+        Vector3 GetCameraUp() {
+            return s_camera_up;
         }
     }
 }

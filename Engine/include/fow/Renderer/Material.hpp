@@ -11,22 +11,22 @@ namespace fow {
         GLint,
         GLfloat,
         GLdouble,
-        glm::bvec2,
-        glm::bvec3,
-        glm::bvec4,
-        glm::uvec2,
-        glm::uvec3,
-        glm::uvec4,
-        glm::ivec2,
-        glm::ivec3,
-        glm::ivec4,
-        glm::vec2,
-        glm::vec3,
-        glm::vec4,
+        Vector2b,
+        Vector3b,
+        Vector4b,
+        Vector2u,
+        Vector3u,
+        Vector4u,
+        Vector2i,
+        Vector3i,
+        Vector4i,
+        Vector2,
+        Vector3,
+        Vector4,
         glm::dvec2,
         glm::dvec3,
         glm::dvec4,
-        glm::mat4,
+        Matrix4,
         TexturePtr
     >;
 
@@ -109,6 +109,8 @@ namespace fow {
         static Result<MaterialPtr> ParseXml(const String& source, const pugi::xml_document& doc, AssetLoaderFlags::Type flags);
         static Result<MaterialPtr> ParseXml(const String& source, const pugi::xml_node& root, AssetLoaderFlags::Type flags);
         static Result<MaterialPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
+
+        static Result<MaterialPtr> New(const String& shader_name, const HashMap<String, MaterialParameterValue>& params = { });
 
         static const Material Null;
     };

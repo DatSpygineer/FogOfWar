@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ShaderParams>
+    <Param name="MainTexture"           category="Albedo"     type="Texture" default="$DEFAULT_WHITE"/>
+    <Param name="ColorTint"             category="Albedo"     type="Color"   default="1, 1, 1, 1"/>
+    <Param name="AlphaScissor"          category="Albedo"     type="bool"    default="false"/>
+    <Param name="AlphaScissorThreshold" category="Albedo"     type="float"   default="0.5"/>
+    <Param name="EmissionMap"           category="Albedo"     type="Texture" default="$DEFAULT_BLACK"/>
+    <Param name="EnvMapStrength"        category="Specular"   type="float"   default="1.0"/>
+    <Param name="SpecularMap"           category="Specular"   type="Texture" default="$DEFAULT_GRAY"/>
+    <Param name="Roughness"             category="Specular"   type="float"   default="1.0"/>
+    <Param name="Metallicness"          category="Specular"   type="float"   default="1.0"/>
+    <Param name="AmbientOcclusion"      category="Specular"   type="float"   default="1.0"/>
+    <Param name="BrdfLut"               category="Specular"   type="Texture" default="/Textures/ibl_brdf_lut.texture.xml"/>
+    <Param name="NormalMap"             category="Normal Map" type="Texture" default="$DEFAULT_NORMAL"/>
+</ShaderParams>

@@ -24,6 +24,9 @@ uniform PBRLightInfo Lights[MAX_LIGHTS];
 uniform int LightCount;
 uniform float EnvMapStrength;
 
+uniform vec4 SunLightColor;
+uniform vec3 SunLightDir;
+
 uniform float Roughness        = 1.0;
 uniform float Metallicness     = 1.0;
 uniform float AmbientOcclusion = 1.0;
@@ -89,6 +92,7 @@ vec3 fresnelSchlickRoughness(float cos_theta, vec3 f0, float roughness) {
 
 vec3 pbr_light(vec3 normal, vec3 view, vec3 base_reflectivity, vec3 albedo, float metallic, float roughness) {
     vec3 light_result = vec3(0.0);
+    // Point lights
     for (int i = 0; i < LightCount; i++) {
         vec3 l = normalize(Lights[i].Position - FRAGMENT_WORLD_POSITION);
         vec3 h = normalize(view + l);
@@ -111,6 +115,29 @@ vec3 pbr_light(vec3 normal, vec3 view, vec3 base_reflectivity, vec3 albedo, floa
         float ndotl = max(dot(normal, l), 0.0);
         light_result += (kd * albedo / PI + specular) * radiance * ndotl;
     }
+
+    // Sun light
+    {
+        vec3 l = SunLightDir;
+        vec3 h = normalize(view + l);
+        vec3 radiance = SunLightColor.rgb * SunLightColor.a;
+
+        float ndf = distributionGGX(normal, h, roughness);
+        float g = geometrySmith(normal, view, l, roughness);
+        vec3  f = fresnelSchlick(clamp(dot(h, view), 0.0, 1.0), base_reflectivity);
+
+        vec3 numerator = ndf * g * f;
+        float denominator = 4.0 * max(dot(normal, view), 0.0) * max(dot(normal, view), 0.0) + 0.0001;
+        vec3 specular = numerator / denominator;
+
+        vec3 ks = f;
+        vec3 kd = vec3(1.0) - ks;
+        kd *= 1.0 - metallic;
+
+        float ndotl = max(dot(normal, l), 0.0);
+        light_result += (kd * albedo / PI + specular) * radiance * ndotl;
+    }
+
     return light_result;
 }
 

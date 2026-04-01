@@ -7,6 +7,6 @@
     "freetype",
     "pugixml",
     "gtest",
-    "shaderc"
+    "qt"
   ]
 }

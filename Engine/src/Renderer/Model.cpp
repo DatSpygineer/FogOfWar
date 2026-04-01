@@ -17,12 +17,37 @@ namespace fow {
         }
     }
 
+    void Model::draw_instances(const Vector<Transform>& transforms) const {
+        for (const auto& mesh : m_meshes) {
+            mesh->draw_instances(transforms);
+        }
+    }
+
     Vector<MaterialPtr> Model::materials() const {
         Vector<MaterialPtr> materials;
         for (const auto& mesh : m_meshes) {
             materials.push_back(mesh->material());
         }
         return materials;
+    }
+
+    void Model::set_materials(const Vector<MaterialPtr>& materials) const {
+        for (size_t i = 0; i < materials.size(); ++i) {
+            m_meshes.at(i)->material() = materials.at(i);
+        }
+    }
+
+    void Model::set_material(const MaterialPtr& material, const GLuint index) const {
+        if (index >= m_meshes.size()) {
+            return;
+        }
+        m_meshes.at(index)->material() = material;
+    }
+
+    void Model::set_all_materials(const MaterialPtr& material) const {
+        for (auto& mesh : m_meshes) {
+            mesh->material() = material;
+        }
     }
 
     static Result<> ProcessModelNodes(const String& source_path, const aiScene* scene, const aiNode* node, Vector<MeshPtr>& meshes, const Vector<MaterialPtr>& materials) {
@@ -51,11 +76,11 @@ namespace fow {
                     }
                     indices.emplace_back(vertices.size());
                     vertices.emplace_back(
-                        glm::vec3 { pos.x, pos.y, pos.z },
-                        glm::vec3 { norm.x, norm.y, norm.z },
-                        glm::vec3 { tang.x, tang.y, tang.z },
-                        glm::vec3 { bitang.x, bitang.y, bitang.z },
-                        glm::vec2 { uv.x, 1.0f - uv.y }
+                        Vector3 { pos.x, pos.y, pos.z },
+                        Vector3 { norm.x, norm.y, norm.z },
+                        Vector3 { tang.x, tang.y, tang.z },
+                        Vector3 { bitang.x, bitang.y, bitang.z },
+                        Vector2 { uv.x, 1.0f - uv.y }
                     );
                 }
                 if (mesh->mMaterialIndex < materials.size()) {

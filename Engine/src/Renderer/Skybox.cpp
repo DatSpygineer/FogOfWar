@@ -89,7 +89,7 @@ namespace fow {
         glBindVertexArray(m_uVao);
 
         auto view = Renderer::GetViewMatrix();
-        view[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // Clear translation
+        view[3] = Vector4(0.0f, 0.0f, 0.0f, 1.0f); // Clear translation
 
         Debug::Assert(m_pMaterial->apply());
         Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
@@ -98,5 +98,13 @@ namespace fow {
         glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT);
         glDepthMask(GL_TRUE);
         glEnable(GL_CULL_FACE);
+    }
+
+    Result<SkyboxPtr> Skybox::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {
+        const auto material = Assets::Load<Material>(path, flags);
+        if (!material.has_value()) {
+            return Failure(material.error());
+        }
+        return Success<SkyboxPtr>(std::make_shared<Skybox>(material.value().ptr()));
     }
 }

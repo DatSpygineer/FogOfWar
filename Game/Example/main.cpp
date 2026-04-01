@@ -1,131 +1,40 @@
 #include "fow/Core.hpp"
 
 #include "imgui.h"
-#include "glm/gtx/matrix_interpolation.hpp"
+#include "fow/Engine/Entity.hpp"
+
+#include "Components.hpp"
 
 using namespace fow;
 
-struct LightInfo {
-    glm::vec3 position;
-    glm::vec4 color;
-
-    float constant;
-    float linear;
-    float quadratic;
-};
-
-class Camera {
-    glm::vec3 m_position, m_forward, m_right, m_up;
-    float m_fYaw = 0.0f;
-    float m_fPitch = 0.0f;
-    bool m_bEnableFreeLook = false;
-public:
-    Camera() { }
-    Camera(const glm::vec3& position) : m_position(position), m_forward(glm::vec3 { 0.0f, 0.0f, 1.0f }), m_right(glm::vec3 { 1.0f, 0.0f, 0.0f }), m_up(glm::vec3 { 0.0f, 1.0f, 0.0f }) {
-        Renderer::UpdateCameraProjectionPerspective(60.0f, Engine::GetWindowSize(), 0.1f, 1000.0f);
-        Renderer::UpdateCameraPosition(m_position, m_position + m_forward, m_up);
-    }
-
-    void update(const double dt) {
-        auto update = false;
-
-        if (Input::KeyIsPressed(KeyCode::Escape)) {
-            m_bEnableFreeLook = !m_bEnableFreeLook;
-            Input::SetCursorMode(m_bEnableFreeLook ? Input::CursorMode::Disabled : Input::CursorMode::Normal);
-        }
-
-        if (m_bEnableFreeLook) {
-            const auto x_axis = -Input::GetAxis("move_right", "move_left");
-            const auto y_axis = Input::GetAxis("move_forward", "move_backward");
-            const auto z_axis = Input::GetAxis("move_up", "move_down");
-            const float speed = Input::KeyIsDown(KeyCode::LeftShift) ? 8.0f : 4.0f;
-            auto motion = glm::vec3 { 0.0f };
-            auto motion_y = 0.0f;
-            if (x_axis != 0) {
-                motion += m_right * x_axis * static_cast<float>(dt) * speed;
-                update = true;
-            }
-            if (y_axis != 0) {
-                motion += m_forward * y_axis * static_cast<float>(dt) * speed;
-                update = true;
-            }
-            if (z_axis != 0) {
-                motion_y += z_axis * static_cast<float>(dt) * speed;
-                update = true;
-            }
-            const auto look_movement = Input::MouseMovement();
-            if (look_movement.length() != 0.0f) {
-                m_fPitch = static_cast<float>(m_fPitch + look_movement.y * dt * 2.0f);
-                m_fYaw -= look_movement.x * dt * 2.0f;
-                update = true;
-            }
-
-            if (update) {
-                const auto forward = glm::normalize(glm::vec3((glm::axisAngleMatrix(m_up, m_fYaw) * glm::axisAngleMatrix(m_right, m_fPitch) * glm::vec4(m_forward, 0.0f))));
-                m_position += glm::vec3((glm::axisAngleMatrix(m_up, m_fYaw) * glm::axisAngleMatrix(m_right, m_fPitch) * glm::vec4(motion, 0.0f))) + m_up * motion_y;
-                Renderer::UpdateCameraPosition(m_position, m_position + forward, m_up);
-            }
-        }
-    }
-
-    constexpr auto position() const {
-        return m_position;
-    }
-};
-
 class ExampleGame : public Game {
-    Asset<Model> test_model;
-    Asset<Model> test_plane_model;
-    Asset<Material> skybox_material;
-    float m_fAngle = 0.0f;
+    Asset<Material> n_skyboxMaterial;
+    ScenePtr m_pScene;
 
-    float m_fPhongStrength  = 0.5f;
-    float m_fPhongExponent  = 0.5f;
-    float m_fEnvMapStrength = 0.5f;
-    SkyboxPtr m_pSkybox = nullptr;
-
-    Camera m_camera;
-
-    Vector<LightInfo> m_lights = {
-        LightInfo {
-            .position  = glm::vec3 { 10.0f, 0.0f, 0.0f },
-            .color     = glm::vec4 { 1.0f, 1.0f, 1.0f, 300.0f },
-            .constant  = 1.0f,
-            .linear    = 0.09f,
-            .quadratic = 0.032f
-        },
-        LightInfo {
-            .position  = glm::vec3 { -10.0f, 0.0f, 0.0f },
-            .color     = glm::vec4 { 1.0f, 1.0f, 1.0f, 300.0f },
-            .constant  = 1.0f,
-            .linear    = 0.09f,
-            .quadratic = 0.032f
-        }
-    };
-
-    float m_ambientLightStrength = 0.125f;
-    glm::vec3 m_ambientLightColor = glm::vec3 { 1.0f, 1.0f, 1.0f };
-    glm::vec3 m_sunDir   = glm::vec3 { 0.0f, -1.0f, 0.0f };
-    glm::vec3 m_sunColor = glm::vec3 { 1.0 };
+    ComponentPtr<TransformComponent> m_pLight1Transform = nullptr;
+    ComponentPtr<LightComponent> m_pLight1 = nullptr;
+    ComponentPtr<TransformComponent> m_pLight2Transform = nullptr;
+    ComponentPtr<LightComponent> m_pLight2 = nullptr;
 public:
     ExampleGame() : Game() { }
 
     void on_init() override {
-        auto model = Assets::Load<Model>("/Models/Sphere.model.xml");
+        auto model = Assets::Load<Model>("/Models/Cube.model.xml");
         Debug::AssertFatal(model);
-        if (model.has_value()) {
-            test_model = std::move(model.value());
+        if (!model.has_value()) {
+            return;
         }
-        model = Assets::Load<Model>("/Models/Plane.model.xml");
-        Debug::AssertFatal(model);
-        if (model.has_value()) {
-            test_plane_model = std::move(model.value());
+
+        auto light_model = Assets::Load<Model>("/Models/Light.model.xml");
+        Debug::AssertFatal(light_model);
+        if (!light_model.has_value()) {
+            return;
         }
 
         auto material = Assets::Load<Material>("/Materials/SkyTest.material.xml");
         Debug::AssertFatal(material);
         if (material.has_value()) {
-            skybox_material = material.value();
+            n_skyboxMaterial = material.value();
         }
 
         Input::CreateAction("move_left",     Input::Type::KeyboardKey, KeyCode::A);
@@ -135,95 +44,67 @@ public:
         Input::CreateAction("move_up",       Input::Type::KeyboardKey, KeyCode::Space);
         Input::CreateAction("move_down",     Input::Type::KeyboardKey, KeyCode::LeftControl);
 
-        m_camera = Camera { glm::vec3 { 0.0f, 0.0f, -5.0f } };
-        m_pSkybox = std::make_shared<Skybox>(skybox_material.ptr());
+        RenderQueue::SetSkybox(std::make_shared<Skybox>(n_skyboxMaterial.ptr()));
+
+        m_pScene = std::make_shared<Scene>();
+        const auto ent_camera = m_pScene->create_entity();
+        const auto comp_camera_transform = ent_camera->add_component<TransformComponent>();
+        comp_camera_transform->set_position(Vector3Constants::Forward * -2.5f);
+        ent_camera->add_component<FlyCameraComponent>();
+
+        const auto ent_model = m_pScene->create_entity();
+        const auto comp_model_transform = ent_model->add_component<TransformComponent>();
+        comp_model_transform->set_position(Vector3Constants::Forward * 2.5f);
+        const auto comp_model = ent_model->add_component<ModelRendererComponent>();
+        comp_model->set_model(model.value().ptr());
+        ent_model->add_component<TestSphereComponent>();
+
+        const auto ent_light_1 = m_pScene->create_entity();
+        m_pLight1Transform = ent_light_1->add_component<TransformComponent>();
+        m_pLight1Transform->set_position(Vector3 { -5.0f, 1.0f, 5.0f });
+        m_pLight1 = ent_light_1->add_component<LightComponent>();
+        m_pLight1->set_color(Color { 1.0f, 1.0f, 1.0f });
+        m_pLight1->set_intensity(300.0f);
+        const auto comp_light_1_model = ent_light_1->add_component<ModelRendererComponent>();
+        comp_light_1_model->set_model(light_model.value().ptr());
+
+        const auto ent_light_2 = m_pScene->create_entity();
+        m_pLight2Transform = ent_light_2->add_component<TransformComponent>();
+        m_pLight2Transform->set_position(Vector3 { 5.0f, 1.0f, -5.0f });
+        m_pLight2 = ent_light_2->add_component<LightComponent>();
+        m_pLight2->set_color(Color { 1.0f, 1.0f, 1.0f });
+        m_pLight2->set_intensity(300.0f);
+        const auto comp_light_2_model = ent_light_2->add_component<ModelRendererComponent>();
+        comp_light_2_model->set_model(light_model.value().ptr());
+
+        const auto ent_env = m_pScene->create_entity();
+        const auto comp_env_transform = ent_light_2->add_component<TransformComponent>();
+        comp_env_transform->set_rotation_deg(Vector3Constants::UnitX * 180.0f);
+        const auto comp_env = ent_env->add_component<EnvironmentComponent>();
+        comp_env->set_sunlight_color(Color { 1.0f, 1.0f, 1.0f });
+        comp_env->set_sunlight_intensity(100.0f);
+        comp_env->set_skybox(std::make_shared<Skybox>(n_skyboxMaterial.ptr()));
+
+        Engine::SetScene(m_pScene);
     }
     void on_update(const double dt) override {
-        m_camera.update(dt);
-        m_fAngle += static_cast<float>(dt * 0.5f);
-        if (Input::KeyIsPressed(KeyCode::F10)) {
-            Console::ToggleConsoleVisible();
-        }
     }
     void on_render(const double dt) override {
-        m_pSkybox->draw();
-        for (const auto& mat : test_model->materials()) {
-            Debug::Assert(mat->set_parameter("ViewPos", m_camera.position()));
-#if 0
-            Debug::Assert(mat->set_parameter("PhongStrength", m_fPhongStrength));
-            Debug::Assert(mat->set_parameter("PhongExponent", m_fPhongExponent));
-            Debug::Assert(mat->set_parameter("Environment.AmbientColor", m_ambientLightColor));
-            Debug::Assert(mat->set_parameter("Environment.AmbientStrength", m_ambientLightStrength));
-            Debug::Assert(mat->set_parameter("Environment.SunDirection", m_sunDir));
-            Debug::Assert(mat->set_parameter("Environment.SunLightColor", m_sunColor));
-            Debug::Assert(mat->set_parameter("Lights[0].Position", m_light1.position));
-            Debug::Assert(mat->set_parameter("Lights[0].Color", m_light1.color));
-            Debug::Assert(mat->set_parameter("Lights[0].Constant", m_light1.constant));
-            Debug::Assert(mat->set_parameter("Lights[0].Linear", m_light1.linear));
-            Debug::Assert(mat->set_parameter("Lights[0].Quadratic", m_light1.quadratic));
-            Debug::Assert(mat->set_parameter("Lights[1].Position", m_light2.position));
-            Debug::Assert(mat->set_parameter("Lights[1].Color", m_light2.color));
-            Debug::Assert(mat->set_parameter("Lights[1].Constant", m_light2.constant));
-            Debug::Assert(mat->set_parameter("Lights[1].Linear", m_light2.linear));
-            Debug::Assert(mat->set_parameter("Lights[1].Quadratic", m_light2.quadratic));
-            Debug::Assert(mat->set_parameter("LightCount", 2));
-            Debug::Assert(mat->set_parameter("EnvMapStrength", m_fEnvMapStrength));
-#endif
-            for (size_t i = 0; i < m_lights.size(); i++) {
-                Debug::Assert(mat->set_parameter(std::format("Lights[{}].Position", i), m_lights.at(i).position));
-                Debug::Assert(mat->set_parameter(std::format("Lights[{}].Color", i), m_lights.at(i).color));
-            }
-            Debug::Assert(mat->set_parameter("Roughness", m_fPhongStrength));
-            Debug::Assert(mat->set_parameter("Metallicness", m_fPhongExponent));
-            Debug::Assert(mat->set_parameter("LightCount", static_cast<GLint>(m_lights.size())));
-            Debug::Assert(mat->set_parameter("EnvMapStrength", m_fEnvMapStrength));
-
-        }
-        test_model->draw();
-        test_model->draw(Transform { glm::vec3 {  2.0f, 0.0f, -2.0f }, glm::vec3 { 1.0f }, glm::quat { } });
-        test_model->draw(Transform { glm::vec3 { -2.0f, 0.0f,  2.0f }, glm::vec3 { 1.0f }, glm::quat { } });
     }
     void on_close() override {
     }
-    void on_window_resized(const glm::ivec2& new_size) override {
-    }
 
-#if __cplusplus >= 202302L
-    [[nodiscard]] constexpr String title() const override {
-#else
-    [[nodiscard]] inline String title() const override {
-#endif
+    [[nodiscard]] FOW_CONSTEXPR String title() const override {
         return "Example";
     }
     [[nodiscard]] Vector<String> game_data_archives() const override {
         return Vector<String> { "Data.pak" };
     }
-    [[nodiscard]] Path base_data_path() const override {
-        return Engine::GetGameBasePath() / "data";
-    }
-    [[nodiscard]] Option<Path> mod_data_path() const override {
-        return Engine::GetGameBasePath() / "mods";
+    [[nodiscard]] bool allow_mods() const override {
+        return FOW_MODS_ENABLED;
     }
     void on_update_imgui(double dt) override {
-        ImGui::Begin("Shader test");
-        ImGui::SeparatorText("Environment Parameters");
-            ImGui::SliderFloat("Ambient Strength", &m_ambientLightStrength, 0.0f, 1.0f);
-            ImGui::ColorEdit3("Ambient Color", glm::value_ptr(m_ambientLightColor));
-            ImGui::InputFloat3("Sun Direction", glm::value_ptr(m_sunDir));
-            ImGui::ColorEdit3("Sun Color", glm::value_ptr(m_sunColor));
-        ImGui::SeparatorText("Phong Parameters");
-            ImGui::SliderFloat("Roughness", &m_fPhongStrength, 0.0f, 1.0f);
-            ImGui::SliderFloat("Metallicness", &m_fPhongExponent, 0.0f, 1.0f);
-            ImGui::SliderFloat("Envmap Strength", &m_fEnvMapStrength, 0.0f, 1.0f);
-        ImGui::End();
     }
 };
 
-int main(const int argc, char** argv) {
-    Debug::AssertFatal(Engine::Initialize(argc, argv, "Example", []() -> std::shared_ptr<Game> {
-        return std::make_shared<ExampleGame>();
-    }));
-    Engine::SetBackgroundColor(Color { 0.25f, 0.5f, 1.0f });
-    Engine::Run();
-    return 0;
-}
+FOW_ENTRY_POINT(ExampleGame)

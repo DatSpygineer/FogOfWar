@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Mapping>
+    <ClassName>Pack</ClassName>
+    <Params>
+        <Param name="Name"        type="string" category="Package Info" optional="false"/>
+        <Param name="Description" type="string" category="Package Info" optional="false"/>
+    </Params>
+</Mapping>

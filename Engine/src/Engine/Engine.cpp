@@ -9,6 +9,8 @@
 
 #include <fow/Engine/ImGui.hpp>
 
+#include "rfl/json/write.hpp"
+
 namespace fow {
     static void UpdateResolution(const CVarPtr& self);
     static void UpdateWindowMode(const CVarPtr& self);
@@ -20,8 +22,13 @@ namespace fow {
     static Result<> CreateActionCommand(const Vector<String>& args);
     static Result<> RemoveActionCommand(const Vector<String>& args);
     static Result<> ToggleConsoleCommand(const Vector<String>& args);
+    static Result<> SetSceneCommand(const Vector<String>& args);
 
-    const auto vid_resolution  = CVar::Create("vid_resolution",  glm::vec2(1280, 720),  CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
+#ifndef NDEBUG
+    static void GLDebugMessageCallback(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
+#endif
+
+    const auto vid_resolution  = CVar::Create("vid_resolution",  Vector2(1280, 720),    CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
     const auto vid_window_mode = CVar::Create("vid_window_mode", "Windowed",            CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateWindowMode);
     const auto vid_monitor_idx = CVar::Create("vid_monitor_idx", 0,                     CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMonitorIndex);
     const auto vid_vsync       = CVar::Create("vid_vsync",       false,                 CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateVSync);
@@ -31,18 +38,17 @@ namespace fow {
     const auto create_action   = CVar::Create("create_action",   &CreateActionCommand,  CVarFlags::Default);
     const auto remove_action   = CVar::Create("remove_action",   &RemoveActionCommand,  CVarFlags::Default);
     const auto toggle_console  = CVar::Create("toggle_console",  &ToggleConsoleCommand, CVarFlags::Default);
+    const auto set_scene       = CVar::Create("set_scene",       &SetSceneCommand,      CVarFlags::Default);
 
     namespace Engine {
         static bool s_initialized = false;
         static GLFWwindow* s_window = nullptr;
         static String s_window_title = "FogOfWar";
-        
-        static Color s_background_color = { 0.25f, 0.25f, 0.25f };
+        static Color s_background_color = { 0.25f, 0.5f, 1.0f };
         static SharedPtr<Game> s_game_class = nullptr;
         static Path s_base_path = Path::CurrentDir();
-        static const auto s_version = Version {
-            0, 1, 0
-        };
+        static const auto s_version = Version { 0, 1, 0 };
+        static ScenePtr s_scene = nullptr;
 
         Path GetGameBasePath() {
             return s_base_path;
@@ -62,7 +68,7 @@ namespace fow {
             return s_background_color;
         }
 
-        Result<> Initialize(int argc, char** argv, const String& title, const std::function<std::shared_ptr<Game>()>& game_class_ctor) {
+        Result<> Initialize(int argc, os_char_t** argv, const Function<std::shared_ptr<Game>()>& game_class_ctor) {
             if (s_initialized) {
                 return Failure("Engine is already initialized!");
             }
@@ -71,21 +77,14 @@ namespace fow {
             Debug::Initialize(s_base_path / "logs");
             s_game_class = std::move(game_class_ctor());
 
+            s_window_title = s_game_class->title();
+
             Path::CurrentDir(s_base_path);
 
-            Assets::Initialize(s_game_class->base_data_path(), s_game_class->game_data_archives(), s_game_class->mod_data_path());
+            Debug::AssertFatal(Assets::Initialize(s_base_path / "data", s_game_class->game_data_archives(), s_game_class->allow_mods() ? Some(s_base_path / "mods") : None()));
             Debug::Assert(Console::Initialize());
 
-            HashMap<String, Vector<String>> args;
-            String current_arg = "";
-            for (int i = 1; i < argc; ++i) {
-                if (argv[i][0] == '-') {
-                    current_arg = argv[i];
-                    args.emplace(current_arg, Vector<String> { });
-                } else if (!current_arg.is_empty()) {
-                    args.at(current_arg).emplace_back(argv[i]);
-                }
-            }
+            HashMap<String, Vector<String>> args = ParseArgs(argc, argv);
             Debug::Assert(LoadLanguageFiles());
 
             if (glfwInit() != GLFW_TRUE) {
@@ -94,7 +93,7 @@ namespace fow {
                 return Failure(std::format("Failed to initialize GLFW: \"{}\" (code {})", message, code));
             }
 
-            glm::vec2 resolution   = vid_resolution->as_vec2().value_or(glm::vec2 { 1280, 720 });
+            Vector2 resolution   = vid_resolution->as_vec2().value_or(Vector2 { 1280, 720 });
             WindowMode window_mode = rfl::string_to_enum<WindowMode>(vid_window_mode->as_string().value_or("Windowed").as_std_str())
                                         .value_or(WindowMode::Windowed);
             bool vsync_enabled     = vid_vsync->as_bool().value_or(false);
@@ -109,7 +108,7 @@ namespace fow {
                     } else if (!h.has_value()) {
                         Debug::LogError("Failed to parse argument \"-resolution\": Height has invalid format!");
                     } else {
-                        resolution = glm::ivec2(w.value(), h.value());
+                        resolution = Vector2i(w.value(), h.value());
                     }
                 } else {
                     Debug::LogError("Failed to parse argument \"-resolution\": Expected 2 values!");
@@ -183,11 +182,14 @@ namespace fow {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifndef NDEBUG
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
             const auto msaa = std::min(r_msaa->as_int().value_or(0), 16);
             if (msaa > 0) {
                 glfwWindowHint(GLFW_SAMPLES, msaa);
             }
-            s_window = glfwCreateWindow(resolution.x, resolution.y, title.as_cstr(), monitor, nullptr);
+            s_window = glfwCreateWindow(resolution.x, resolution.y, s_window_title.as_cstr(), monitor, nullptr);
 
             if (s_window == nullptr) {
                 const char* message;
@@ -197,7 +199,6 @@ namespace fow {
             }
 
             Input::Initialize();
-            s_window_title = title;
             glfwMakeContextCurrent(s_window);
             if (const auto result = Renderer::Initialize(s_base_path, msaa, reinterpret_cast<void*(*)(const char*)>(glfwGetProcAddress)); !result.has_value()) {
                 glfwDestroyWindow(s_window);
@@ -207,10 +208,10 @@ namespace fow {
             Renderer::EnableBlend(true);
             Renderer::SetViewport(0.0f, 0.0f, resolution.x, resolution.y);
             glfwSetWindowSizeCallback(s_window, [](GLFWwindow* window, const int width, const int height) {
-                DISCARD(window);
+                FOW_DISCARD(window);
                 Renderer::SetViewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height));
                 if (s_game_class != nullptr) {
-                    s_game_class->on_window_resized(glm::ivec2 { width, height });
+                    s_game_class->on_window_resized(Vector2i { width, height });
                 }
             });
 
@@ -236,6 +237,8 @@ namespace fow {
 #ifndef NDEBUG
             const auto debug_title = std::format("{} | FogOfWar Engine - {}", s_window_title, GetVersion().to_string());
             glfwSetWindowTitle(s_window, debug_title.c_str());
+
+            glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
 #endif
 
             if (const auto lang = cl_lang->as_string(); lang.has_value()) {
@@ -254,6 +257,10 @@ namespace fow {
                 s_game_class->on_init();
             }
 
+            if (s_scene != nullptr) {
+                s_scene->spawn();
+            }
+
             while (GetGameState() == GameState::Running) {
                 glfwPollEvents();
                 Input::Poll();
@@ -267,6 +274,9 @@ namespace fow {
 
                 if (s_game_class != nullptr) {
                     s_game_class->on_update(time - last_time);
+                }
+                if (s_scene != nullptr) {
+                    s_scene->update(time - last_time);
                 }
 
                 ImGui_ImplOpenGL3_NewFrame();
@@ -288,6 +298,8 @@ namespace fow {
                     s_game_class->on_render(time - last_time);
                 }
 
+                RenderQueue::Render();
+
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
                 glfwSwapBuffers(s_window);
@@ -296,6 +308,10 @@ namespace fow {
                 if (glfwWindowShouldClose(s_window)) {
                     SetGameStateClosing();
                 }
+            }
+
+            if (s_scene != nullptr) {
+                s_scene->destroy_all();
             }
 
             auto cfg_path = s_base_path / "cfg";
@@ -340,28 +356,40 @@ namespace fow {
             glfwSetWindowTitle(s_window, title.as_cstr());
 #endif
         }
-        void SetWindowPosition(const glm::ivec2& value) {
+        void SetWindowPosition(const Vector2i& value) {
             glfwSetWindowPos(s_window, value.x, value.y);
         }
-        void SetWindowSize(const glm::ivec2& value) {
+        void SetWindowSize(const Vector2i& value) {
             glfwSetWindowSize(s_window, value.x, value.y);
         }
         String GetWindowTitle() {
             return s_window_title;
         }
-        glm::ivec2 GetWindowPosition() {
-            glm::ivec2 result;
+        Vector2i GetWindowPosition() {
+            Vector2i result;
             glfwGetWindowPos(s_window, &result.x, &result.y);
             return result;
         }
-        glm::ivec2 GetWindowSize() {
-            glm::ivec2 result;
+        Vector2i GetWindowSize() {
+            Vector2i result;
             glfwGetWindowSize(s_window, &result.x, &result.y);
             return result;
         }
 
         const Version& GetVersion() {
             return s_version;
+        }
+
+        void SetScene(const ScenePtr& scene) {
+            if (s_scene != nullptr) {
+                s_scene->destroy_all();
+            }
+
+            s_scene = scene;
+
+            if (s_scene != nullptr && GetGameState() == GameState::Running) {
+                s_scene->spawn();
+            }
         }
     }
 
@@ -378,16 +406,29 @@ namespace fow {
         if (Engine::s_window == nullptr) {
             return;
         }
+
+        if (const auto mode = rfl::string_to_enum<WindowMode>(self->as_string()->as_std_str()); mode.has_value()) {
+            switch (mode.value()) {
+                case WindowMode::Windowed: {
+
+                } break;
+                case WindowMode::Fullscreen: {
+
+                } break;
+            }
+        }
     }
     static void UpdateMonitorIndex(const CVarPtr& self) {
         if (Engine::s_window == nullptr) {
             return;
         }
+        // TODO
     }
     static void UpdateVSync(const CVarPtr& self) {
         if (Engine::s_window == nullptr) {
             return;
         }
+        // TODO
     }
 
     void UpdateMSAA(const CVarPtr& self) {
@@ -403,7 +444,7 @@ namespace fow {
         }
     }
     static Result<> QuitCommand(const Vector<String>& args) {
-        DISCARD(args);
+        FOW_DISCARD(args);
         if (Engine::s_window == nullptr) {
             exit(GetGameExitCode());
         } else {
@@ -440,7 +481,7 @@ namespace fow {
             s_initialized          = true;
 
             glfwSetScrollCallback(Engine::s_window, [](GLFWwindow* window, const double x, const double y) {
-                DISCARD(window);
+                FOW_DISCARD(window);
                 s_mouse_scroll = glm::dvec2 { x, y };
             });
         }
@@ -909,10 +950,10 @@ namespace fow {
             return s_mouse_btn_state.at(static_cast<int>(button)) == State::Released || s_mouse_btn_state.at(static_cast<int>(button)) == State::Up;
         }
 
-        glm::vec2 MousePosition() {
+        Vector2 MousePosition() {
             return s_mouse_position;
         }
-        glm::vec2 MouseMovement() {
+        Vector2 MouseMovement() {
             return s_mouse_position_delta;
         }
     }
@@ -946,8 +987,61 @@ namespace fow {
     }
 
     static Result<> ToggleConsoleCommand(const Vector<String>& args) {
-        DISCARD(args);
+        FOW_DISCARD(args);
         Console::ToggleConsoleVisible();
         return Success();
     }
+
+    Result<> SetSceneCommand(const Vector<String>& args) {
+        if (args.size() < 1) {
+            return Failure("Usage: set_scene <scene asset path>");
+        }
+
+        auto scene = Assets::Load<Scene>(args.at(0));
+        if (!scene.has_value()) {
+            return Failure(scene.error());
+        }
+
+        Engine::SetScene(scene.value().ptr());
+
+        return Success();
+    }
+
+#ifndef NDEBUG
+    static void GLDebugMessageCallback(const GLenum source, const GLenum type, GLuint id, const GLenum severity, const GLsizei length, const GLchar* message, const void* userParam) {
+        FOW_DISCARD(length);
+        FOW_DISCARD(userParam);
+
+        String source_str;
+        switch (source) {
+            case GL_DEBUG_SOURCE_API: source_str = "API"; break;
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM: source_str = "Window System"; break;
+            case GL_DEBUG_SOURCE_SHADER_COMPILER: source_str = "Shader Compiler"; break;
+            case GL_DEBUG_SOURCE_THIRD_PARTY: source_str = "Third Party"; break;
+            case GL_DEBUG_SOURCE_APPLICATION: source_str = "Application"; break;
+            default: source_str = "Unknown"; break;
+        }
+
+        String severity_str;
+        switch (severity) {
+            case GL_DEBUG_SEVERITY_HIGH: severity_str = "High"; break;
+            case GL_DEBUG_SEVERITY_MEDIUM: severity_str = "Medium"; break;
+            case GL_DEBUG_SEVERITY_LOW: severity_str = "Low"; break;
+            case GL_DEBUG_SEVERITY_NOTIFICATION: severity_str = "Notification"; break;
+            default: severity_str = "Unknown"; break;
+        }
+
+        LogLevel log_level;
+        switch (type) {
+            case GL_DEBUG_TYPE_ERROR:
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: log_level = LogLevel::Error; break;
+            case GL_DEBUG_TYPE_PORTABILITY:
+            case GL_DEBUG_TYPE_PERFORMANCE:
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: log_level = LogLevel::Warning; break;
+            default: log_level = LogLevel::Info; break;
+        }
+
+        Debug::Log(log_level, std::format("OpenGL (id 0x{:X}) [Source: {}, Severity: {}] - {}", id, source_str, severity_str, message));
+    }
+#endif
 }

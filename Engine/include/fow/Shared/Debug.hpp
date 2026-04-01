@@ -22,7 +22,7 @@ namespace fow {
         FOW_SHARED_API void Initialize(const Path& log_base_dir);
         FOW_SHARED_API void Terminate();
 
-        using LogMessageCallback = std::function<void(LogLevel, const Time::TimePoint&, const String&, const std::source_location&)>;
+        using LogMessageCallback = Function<void(LogLevel, const Time::TimePoint&, const String&, const std::source_location&)>;
 
         FOW_SHARED_API void SetMessageSentCallback(const LogMessageCallback& callback);
         FOW_SHARED_API void SetMinimumLogLevel(LogLevel level);

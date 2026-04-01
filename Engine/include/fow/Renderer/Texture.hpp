@@ -130,7 +130,7 @@ namespace fow {
 
         [[nodiscard]] FOW_CONSTEXPR GLuint id() const { return m_uId; }
         [[nodiscard]] FOW_CONSTEXPR bool is_valid() const { return m_uId != 0; }
-        ABSTRACT(TextureTarget target() const);
+        FOW_ABSTRACT(TextureTarget target() const);
 
         [[nodiscard]] GLsizei width() const;
         [[nodiscard]] GLsizei height() const;
@@ -159,6 +159,7 @@ namespace fow {
 
         static TexturePtr PlaceHolder();
         static TexturePtr DefaultWhite();
+        static TexturePtr DefaultGray();
         static TexturePtr DefaultBlack();
         static TexturePtr DefaultNormal();
         static void UnloadPlaceHolder();

@@ -8,21 +8,21 @@
 
 namespace fow {
     struct FOW_RENDER_API Vertex {
-        glm::vec3 position;
-        glm::vec3 normal;
-        glm::vec3 tangent;
-        glm::vec3 bitangent;
-        glm::vec2 uv;
+        Vector3 position;
+        Vector3 normal;
+        Vector3 tangent;
+        Vector3 bitangent;
+        Vector2 uv;
 
         Vertex(const Vertex& other) = default;
         Vertex(Vertex&& other) noexcept = default;
-        Vertex(const glm::vec3& position, const glm::vec3& normal, const glm::vec3& tangent, const glm::vec3& bitangent, const glm::vec2& uv) :
+        Vertex(const Vector3& position, const Vector3& normal, const Vector3& tangent, const Vector3& bitangent, const Vector2& uv) :
             position(position), normal(normal), tangent(tangent), bitangent(bitangent), uv(uv) { }
 
         Vertex& operator= (const Vertex& other) = default;
         Vertex& operator= (Vertex&& other) noexcept = default;
 
-        static Vector<Vertex> CreateVertexArrayFromBuffers(const Vector<glm::vec3>& positions, const Vector<glm::vec3>& normals, const Vector<glm::vec3>& tangents, const Vector<glm::vec3>& bitangents, const Vector<glm::vec2>& uvs);
+        static Vector<Vertex> CreateVertexArrayFromBuffers(const Vector<Vector3>& positions, const Vector<Vector3>& normals, const Vector<Vector3>& tangents, const Vector<Vector3>& bitangents, const Vector<Vector2>& uvs);
     };
 
     enum class MeshDrawMode : GLenum {
@@ -121,16 +121,17 @@ namespace fow {
         [[nodiscard]] FOW_CONSTEXPR MeshPrimitive primitive_type() const { return m_ePrimitive; }
 
         static Result<MeshPtr> Create(const MaterialPtr& material, const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, MeshPrimitive primitive = MeshPrimitive::Triangles, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
-        static Result<MeshPtr> CreateQuad(const MaterialPtr& material, const glm::vec2& scale = glm::vec2(1.0f), MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
-        static Result<MeshPtr> CreateCube(const MaterialPtr& material, const glm::vec3& mins, const glm::vec3& maxs, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
-        static Result<MeshPtr> CreateCylinder(const MaterialPtr& material, float radius, float height, float subdivision, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
-        static Result<MeshPtr> CreateCapsule(const MaterialPtr& material, float radius, float height, float subdivision, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
-        static Result<MeshPtr> CreateSphere(const MaterialPtr& material, float radius, float subdivision, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> CreateQuad(const MaterialPtr& material, const Vector2& scale = Vector2(1.0f), MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> CreateCube(const MaterialPtr& material, const Vector3& mins, const Vector3& maxs, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> CreateCylinder(const MaterialPtr& material, float radius, float height, uint32_t segments, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> CreateCapsule(const MaterialPtr& material, float radius, float height, uint32_t segments, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> CreateSphere(const MaterialPtr& material, float radius, uint32_t segments, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
 
         static const Mesh Null;
 
         void draw() const;
         void draw(const Transform& transform) const;
+        void draw_instances(const Vector<Transform>& transforms) const;
     };
 
     class FOW_RENDER_API MeshBuilder final {
@@ -144,10 +145,10 @@ namespace fow {
         explicit MeshBuilder(const MeshPrimitive primitive)                  : m_ePrimitive(primitive), m_pMaterial(std::make_shared<Material>())   { }
 
         void append(const Vertex& vertex);
-        inline void append(const glm::vec3& position, const glm::vec2& uv) {
-            append(position, glm::vec3 { 0.0f, 1.0f, 0.0f }, glm::vec3 { 0.0f, 1.0f, 0.0f }, glm::vec3 { 0.0f, 1.0f, 0.0f }, uv);
+        inline void append(const Vector3& position, const Vector2& uv) {
+            append(position, Vector3 { 0.0f, 1.0f, 0.0f }, Vector3 { 0.0f, 1.0f, 0.0f }, Vector3 { 0.0f, 1.0f, 0.0f }, uv);
         }
-        inline void append(const glm::vec3& position, const glm::vec3& normal, const glm::vec3& tangent, const glm::vec3& bitangent, const glm::vec2& uv) {
+        inline void append(const Vector3& position, const Vector3& normal, const Vector3& tangent, const Vector3& bitangent, const Vector2& uv) {
             append(Vertex { position, normal, tangent, bitangent, uv });
         }
 
