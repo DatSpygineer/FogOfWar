@@ -22,6 +22,7 @@ namespace fow {
         FOW_RENDER_API void EnqueueInstanced(const MeshPtr& mesh, const Vector<Transform>& transforms);
         FOW_RENDER_API void EnqueueInstanced(const ModelPtr& model, const Vector<Transform>& transforms);
         FOW_RENDER_API void SetSkybox(const SkyboxPtr& skybox);
+        FOW_RENDER_API void SetEnvMap(const TextureCubeMapPtr& texture, const TextureCubeMapPtr& texture_blurred, float intensity);
         FOW_RENDER_API void SetSunlight(const Transform& transform, const Color& color, float intensity, bool is_enabled = true);
         FOW_RENDER_API void SetSunlight(const Transform& transform, const Vector3& color, float intensity, bool is_enabled = true);
         FOW_RENDER_API void SetSunlight(const Transform& transform, const Vector4& color, bool is_enabled = true);

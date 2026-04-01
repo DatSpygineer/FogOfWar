@@ -582,6 +582,23 @@ namespace fow {
         return String { ss.str() };
     }
 
+    String String::FromWChar(wchar_t c, size_t count) {
+        wchar_t buffer[count + 1];
+        for (size_t i = 0; i < count; i++) {
+            buffer[i] = c;
+        }
+        buffer[count] = '\0';
+        return FromWChar(buffer);
+    }
+    String String::FromWChar(const wchar_t* cstr) {
+        char buffer[wcslen(cstr) + 1];
+        wcstombs(buffer, cstr, wcslen(cstr) + 1);
+        return buffer;
+    }
+    String String::FromWChar(const std::wstring& str) {
+        return FromWChar(str.c_str());
+    }
+
     bool String::operator<(const String& other) const {
         return as_std_str() < other.as_std_str();
     }

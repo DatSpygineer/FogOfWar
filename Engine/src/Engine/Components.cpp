@@ -4,6 +4,61 @@
 #include "fow/Renderer.hpp"
 
 namespace fow {
+    void TransformComponent::set_position(const Vector3& position) {
+        m_transform.set_position(position);
+    }
+    void TransformComponent::set_rotation(const Vector3& rotation) {
+        m_transform.set_rotation(rotation);
+    }
+
+    void TransformComponent::set_rotation_deg(const Vector3& rotation) {
+        m_transform.set_rotation_deg(rotation);
+    }
+
+    void TransformComponent::set_rotation(const Quat& rotation) {
+        m_transform.set_rotation(rotation);
+    }
+    void TransformComponent::set_scale(const Vector3& scale) {
+        m_transform.set_scale(scale);
+    }
+    void TransformComponent::set_local_position(const Vector3& position) {
+        m_transform.set_local_position(position);
+    }
+    void TransformComponent::set_local_rotation(const Vector3& rotation) {
+        m_transform.set_local_rotation(rotation);
+    }
+    void TransformComponent::set_local_rotation(const Quat& rotation) {
+        m_transform.set_local_rotation(rotation);
+    }
+    void TransformComponent::set_local_scale(const Vector3& scale) {
+        m_transform.set_local_scale(scale);
+    }
+    void TransformComponent::set_parent(Transform& transform) {
+        m_transform.set_parent(&transform);
+    }
+
+    Vector3 TransformComponent::get_position() const {
+        return m_transform.get_position();
+    }
+    Quat TransformComponent::get_rotation() const {
+        return m_transform.get_rotation();
+    }
+    Vector3 TransformComponent::get_scale() const {
+        return m_transform.get_scale();
+    }
+    Vector3 TransformComponent::get_local_position() const {
+        return m_transform.get_local_position();
+    }
+    Quat TransformComponent::get_local_rotation() const {
+        return m_transform.get_local_rotation();
+    }
+    Vector3 TransformComponent::get_local_scale() const {
+        return m_transform.get_local_scale();
+    }
+    const Transform& TransformComponent::get_parent() const {
+        return *m_transform.get_parent();
+    }
+
     void TransformComponent::set_transform(const Transform& transform) {
         m_transform = transform;
     }
@@ -54,6 +109,7 @@ namespace fow {
     void EnvironmentComponent::on_enable() {
         RenderQueue::SetSunlightEnabled(true);
         RenderQueue::SetSkybox(m_pSkybox);
+        RenderQueue::SetEnvMap(m_pEnvMap, m_pEnvMapBlur, m_fEnvMapIntensity);
     }
 
     void EnvironmentComponent::on_disable() {
@@ -73,6 +129,13 @@ namespace fow {
         RenderQueue::SetSkybox(skybox);
     }
 
+    void EnvironmentComponent::set_env_map(const TextureCubeMapPtr& texture, const TextureCubeMapPtr& texture_blurred, float intensity) {
+        m_pEnvMap = texture;
+        m_pEnvMapBlur = texture_blurred;
+        m_fEnvMapIntensity = intensity;
+        RenderQueue::SetEnvMap(texture, texture_blurred, intensity);
+    }
+
     void EnvironmentComponent::set_parameter(const String& name, const String& value) {
         if (name.equals("sunlight_color", StringCompareType::CaseInsensitive)) {
             if (const auto result = StringToColor(value); result.has_value()) {
@@ -88,6 +151,19 @@ namespace fow {
             if (const auto skybox = Assets::Load<Skybox>(value); skybox.has_value()) {
                 m_pSkybox = skybox.value().ptr();
             }
+        }
+        if (name.equals("env_map", StringCompareType::CaseInsensitive)) {
+            if (const auto texture = Assets::Load<TextureCubeMap>(value); texture.has_value()) {
+                m_pEnvMap = texture.value().ptr();
+            }
+        }
+        if (name.equals("env_map_blur", StringCompareType::CaseInsensitive)) {
+            if (const auto texture = Assets::Load<TextureCubeMap>(value); texture.has_value()) {
+                m_pEnvMapBlur = texture.value().ptr();
+            }
+        }
+        if (name.equals("env_map_intensity", StringCompareType::CaseInsensitive)) {
+            m_fEnvMapIntensity = StringToFloat<float>(value).value_or(1.0f);
         }
     }
 

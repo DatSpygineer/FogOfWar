@@ -136,6 +136,10 @@ namespace fow {
         static String Join(const Vector<String>& tokens, char delim);
         static String Join(const Vector<String>& tokens, const String& delim);
 
+        static String FromWChar(wchar_t c, size_t count);
+        static String FromWChar(const wchar_t* cstr);
+        static String FromWChar(const std::wstring& str);
+
         [[nodiscard]] inline bool operator==(const String& other) const { return equals(other);  }
         [[nodiscard]] inline bool operator==(const std::nullptr_t&) const { return m_pData == nullptr;  }
         [[nodiscard]] inline bool operator!=(const String& other) const { return !equals(other); }

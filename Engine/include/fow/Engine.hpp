@@ -10,6 +10,29 @@
 #include "fow/Engine/Entity.hpp"
 #include "fow/Engine/Components.hpp"
 
+#define __FOW_SHARED_ENTRY_POINT(__game_class) \
+    ::fow::Debug::AssertFatal(::fow::Engine::Initialize(argc, argv, []() -> std::shared_ptr<::fow::Game> { \
+        return std::make_shared<__game_class>(); \
+    })); \
+    ::fow::Engine::Run(); \
+
+#ifdef _WIN32
+    #define FOW_ENTRY_POINT(__game_class) \
+    int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) { \
+        int argc; \
+        LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc); \
+        __FOW_SHARED_ENTRY_POINT(__game_class) \
+        LocalFree(argv); \
+        return 0; \
+    }
+#else
+    #define FOW_ENTRY_POINT(__game_class) \
+    int main(const int argc, char** argv) { \
+        __FOW_SHARED_ENTRY_POINT(__game_class) \
+        return 0; \
+    }
+#endif
+
 namespace fow {
     enum class WindowMode {
         Windowed,
@@ -37,7 +60,7 @@ namespace fow {
         FOW_ENGINE_API void SetBackgroundColor(const Color& color);
         FOW_ENGINE_API void SetBackgroundColor(Color&& color) noexcept;
         FOW_ENGINE_API Color GetBackgroundColor();
-        FOW_ENGINE_API Result<> Initialize(int argc, char** argv, const String& title, const Function<std::shared_ptr<Game>()>& game_class_ctor);
+        FOW_ENGINE_API Result<> Initialize(int argc, os_char_t** argv, const Function<std::shared_ptr<Game>()>& game_class_ctor);
         FOW_ENGINE_API void Run();
         FOW_ENGINE_API void SetWindowTitle(const String& title);
         FOW_ENGINE_API void SetWindowPosition(const Vector2i& value);

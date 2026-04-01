@@ -44,7 +44,7 @@ namespace fow {
         static bool s_initialized = false;
         static GLFWwindow* s_window = nullptr;
         static String s_window_title = "FogOfWar";
-        static Color s_background_color = { 0.25f, 0.25f, 0.25f };
+        static Color s_background_color = { 0.25f, 0.5f, 1.0f };
         static SharedPtr<Game> s_game_class = nullptr;
         static Path s_base_path = Path::CurrentDir();
         static const auto s_version = Version { 0, 1, 0 };
@@ -68,7 +68,7 @@ namespace fow {
             return s_background_color;
         }
 
-        Result<> Initialize(int argc, char** argv, const String& title, const Function<std::shared_ptr<Game>()>& game_class_ctor) {
+        Result<> Initialize(int argc, os_char_t** argv, const Function<std::shared_ptr<Game>()>& game_class_ctor) {
             if (s_initialized) {
                 return Failure("Engine is already initialized!");
             }
@@ -76,6 +76,8 @@ namespace fow {
             s_base_path = Path(argv[0]).parent();
             Debug::Initialize(s_base_path / "logs");
             s_game_class = std::move(game_class_ctor());
+
+            s_window_title = s_game_class->title();
 
             Path::CurrentDir(s_base_path);
 
@@ -187,7 +189,7 @@ namespace fow {
             if (msaa > 0) {
                 glfwWindowHint(GLFW_SAMPLES, msaa);
             }
-            s_window = glfwCreateWindow(resolution.x, resolution.y, title.as_cstr(), monitor, nullptr);
+            s_window = glfwCreateWindow(resolution.x, resolution.y, s_window_title.as_cstr(), monitor, nullptr);
 
             if (s_window == nullptr) {
                 const char* message;
@@ -197,7 +199,6 @@ namespace fow {
             }
 
             Input::Initialize();
-            s_window_title = title;
             glfwMakeContextCurrent(s_window);
             if (const auto result = Renderer::Initialize(s_base_path, msaa, reinterpret_cast<void*(*)(const char*)>(glfwGetProcAddress)); !result.has_value()) {
                 glfwDestroyWindow(s_window);

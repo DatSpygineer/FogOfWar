@@ -5,7 +5,7 @@
 #include <fow/Shared/String.hpp>
 
 namespace fow {
-    FOW_SHARED_API HashMap<String, Vector<String>> ParseArgs(int argc, char** argv);
+    FOW_SHARED_API HashMap<String, Vector<String>> ParseArgs(int argc, os_char_t** argv);
 }
 
 #endif

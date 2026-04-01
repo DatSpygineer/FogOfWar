@@ -36,6 +36,14 @@ namespace fow {
     using SharedPtr = std::shared_ptr<T>;
     template<typename T>
     using UniquePtr = std::unique_ptr<T>;
+
+#if defined(_WIN32) && (defined(_UNICODE) || defined(UNICODE))
+    #define FOW_OS_USE_WCHAR 1
+    typedef wchar_t os_char_t;
+#else
+    #define FOW_OS_USE_WCHAR 0
+    typedef char os_char_t;
+#endif
 }
 
 #endif

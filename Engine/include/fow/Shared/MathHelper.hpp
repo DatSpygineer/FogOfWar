@@ -34,6 +34,40 @@ namespace fow {
     using Vector3u = glm::uvec3;
     using Vector4u = glm::uvec4;
 
+    template<FloatType T>
+    FOW_CONSTEXPR T Lerp(const T a, const T b, const T t) {
+        return a + (b - a) * t;
+    }
+    FOW_CONSTEXPR Vector2 Lerp(const Vector2 a, const Vector2 b, const float t) {
+        return a + (b - a) * t;
+    }
+    FOW_CONSTEXPR Vector3 Lerp(const Vector3 a, const Vector3 b, const float t) {
+        return a + (b - a) * t;
+    }
+    FOW_CONSTEXPR Vector4 Lerp(const Vector4 a, const Vector4 b, const float t) {
+        return a + (b - a) * t;
+    }
+    template<FloatType T>
+    FOW_CONSTEXPR T Normalize(const T value, const T min, const T max) {
+        return (value - min) / (max - min);
+    }
+    template<FloatType T>
+    FOW_CONSTEXPR T Remap(const T value, const T from_min, const T from_max, const T to_min, const T to_max) {
+        return Lerp(to_min, to_max, Normalize(value, from_min, from_max));
+    }
+    template<FloatType T>
+    FOW_CONSTEXPR T Min(const T a, const T b) {
+        return a < b ? a : b;
+    }
+    template<FloatType T>
+    FOW_CONSTEXPR T Max(const T a, const T b) {
+        return a > b ? a : b;
+    }
+    template<FloatType T>
+    FOW_CONSTEXPR T Clamp(const T value, const T min, const T max) {
+        return Min(Max(value, min), max);
+    }
+
     struct FOW_SHARED_API Color : public Vector4 {
         FOW_CONSTEXPR Color() : Vector4(0.0f, 0.0f, 0.0f, 1.0f) { }
         FOW_CONSTEXPR explicit Color(const float value) : Vector4(value, value, value, 1.0f) { }

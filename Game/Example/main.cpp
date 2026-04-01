@@ -3,20 +3,31 @@
 #include "imgui.h"
 #include "fow/Engine/Entity.hpp"
 
-#include "FlyCameraComponent.hpp"
+#include "Components.hpp"
 
 using namespace fow;
 
 class ExampleGame : public Game {
     Asset<Material> n_skyboxMaterial;
     ScenePtr m_pScene;
+
+    ComponentPtr<TransformComponent> m_pLight1Transform = nullptr;
+    ComponentPtr<LightComponent> m_pLight1 = nullptr;
+    ComponentPtr<TransformComponent> m_pLight2Transform = nullptr;
+    ComponentPtr<LightComponent> m_pLight2 = nullptr;
 public:
     ExampleGame() : Game() { }
 
     void on_init() override {
-        auto model = Assets::Load<Model>("/Models/Sphere.model.xml");
+        auto model = Assets::Load<Model>("/Models/Cube.model.xml");
         Debug::AssertFatal(model);
         if (!model.has_value()) {
+            return;
+        }
+
+        auto light_model = Assets::Load<Model>("/Models/Light.model.xml");
+        Debug::AssertFatal(light_model);
+        if (!light_model.has_value()) {
             return;
         }
 
@@ -38,31 +49,37 @@ public:
         m_pScene = std::make_shared<Scene>();
         const auto ent_camera = m_pScene->create_entity();
         const auto comp_camera_transform = ent_camera->add_component<TransformComponent>();
-        comp_camera_transform->transform().set_position(Vector3Constants::Forward * -5.0f);
+        comp_camera_transform->set_position(Vector3Constants::Forward * -2.5f);
         ent_camera->add_component<FlyCameraComponent>();
 
         const auto ent_model = m_pScene->create_entity();
         const auto comp_model_transform = ent_model->add_component<TransformComponent>();
+        comp_model_transform->set_position(Vector3Constants::Forward * 2.5f);
         const auto comp_model = ent_model->add_component<ModelRendererComponent>();
         comp_model->set_model(model.value().ptr());
+        ent_model->add_component<TestSphereComponent>();
 
         const auto ent_light_1 = m_pScene->create_entity();
-        const auto comp_light_1_transform = ent_light_1->add_component<TransformComponent>();
-        comp_light_1_transform->transform().set_position(Vector3 { -5.0f, -0.0f, 0.0f });
-        const auto comp_light_1 = ent_light_1->add_component<LightComponent>();
-        comp_light_1->set_color(Color { 1.0f, 1.0f, 1.0f });
-        comp_light_1->set_intensity(300.0f);
+        m_pLight1Transform = ent_light_1->add_component<TransformComponent>();
+        m_pLight1Transform->set_position(Vector3 { -5.0f, 1.0f, 5.0f });
+        m_pLight1 = ent_light_1->add_component<LightComponent>();
+        m_pLight1->set_color(Color { 1.0f, 1.0f, 1.0f });
+        m_pLight1->set_intensity(300.0f);
+        const auto comp_light_1_model = ent_light_1->add_component<ModelRendererComponent>();
+        comp_light_1_model->set_model(light_model.value().ptr());
 
         const auto ent_light_2 = m_pScene->create_entity();
-        const auto comp_light_2_transform = ent_light_2->add_component<TransformComponent>();
-        comp_light_2_transform->transform().set_position(Vector3 { 5.0f, 0.0f, 0.0f });
-        const auto comp_light_2 = ent_light_2->add_component<LightComponent>();
-        comp_light_2->set_color(Color { 1.0f, 1.0f, 1.0f });
-        comp_light_2->set_intensity(300.0f);
+        m_pLight2Transform = ent_light_2->add_component<TransformComponent>();
+        m_pLight2Transform->set_position(Vector3 { 5.0f, 1.0f, -5.0f });
+        m_pLight2 = ent_light_2->add_component<LightComponent>();
+        m_pLight2->set_color(Color { 1.0f, 1.0f, 1.0f });
+        m_pLight2->set_intensity(300.0f);
+        const auto comp_light_2_model = ent_light_2->add_component<ModelRendererComponent>();
+        comp_light_2_model->set_model(light_model.value().ptr());
 
         const auto ent_env = m_pScene->create_entity();
         const auto comp_env_transform = ent_light_2->add_component<TransformComponent>();
-        comp_env_transform->transform().set_rotation_deg(Vector3Constants::UnitX * 180.0f);
+        comp_env_transform->set_rotation_deg(Vector3Constants::UnitX * 180.0f);
         const auto comp_env = ent_env->add_component<EnvironmentComponent>();
         comp_env->set_sunlight_color(Color { 1.0f, 1.0f, 1.0f });
         comp_env->set_sunlight_intensity(100.0f);
@@ -90,11 +107,4 @@ public:
     }
 };
 
-int main(const int argc, char** argv) {
-    Debug::AssertFatal(Engine::Initialize(argc, argv, "Example", []() -> std::shared_ptr<Game> {
-        return std::make_shared<ExampleGame>();
-    }));
-    Engine::SetBackgroundColor(Color { 0.25f, 0.5f, 1.0f });
-    Engine::Run();
-    return 0;
-}
+FOW_ENTRY_POINT(ExampleGame)

@@ -12,6 +12,28 @@ namespace fow {
         FOW_CONSTEXPR Transform& transform() { return m_transform; }
         FOW_CONSTEXPR const Transform& transform() const { return m_transform; }
 
+        void set_position(const Vector3& position);
+        void set_rotation(const Vector3& rotation);
+        void set_rotation_deg(const Vector3& rotation);
+        void set_rotation(const Quat& rotation);
+        void set_scale(const Vector3& scale);
+
+        void set_local_position(const Vector3& position);
+        void set_local_rotation(const Vector3& rotation);
+        void set_local_rotation(const Quat& rotation);
+        void set_local_scale(const Vector3& scale);
+
+        void set_parent(Transform& transform);
+
+        Vector3 get_position() const;
+        Quat get_rotation() const;
+        Vector3 get_scale() const;
+        Vector3 get_local_position() const;
+        Quat get_local_rotation() const;
+        Vector3 get_local_scale() const;
+
+        const Transform& get_parent() const;
+
         void set_transform(const Transform& transform);
 
         void set_parameter(const String& name, const String& value) override;
@@ -19,6 +41,8 @@ namespace fow {
 
     class FOW_ENGINE_API EnvironmentComponent : public Component {
         SkyboxPtr m_pSkybox;
+        TextureCubeMapPtr m_pEnvMap, m_pEnvMapBlur;
+        float m_fEnvMapIntensity;
         Color m_sunLightColor;
         float m_sunLightIntensity;
     public:
@@ -33,6 +57,7 @@ namespace fow {
         void set_sunlight_color(const Color& color);
         void set_sunlight_intensity(float intensity);
         void set_skybox(const SkyboxPtr& skybox);
+        void set_env_map(const TextureCubeMapPtr& texture, const TextureCubeMapPtr& texture_blurred, float intensity);
 
         [[nodiscard]] FOW_CONSTEXPR const Color& sunlight_color() const { return m_sunLightColor; }
         [[nodiscard]] FOW_CONSTEXPR float sunlight_intensity() const { return m_sunLightIntensity; }

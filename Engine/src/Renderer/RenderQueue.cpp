@@ -16,6 +16,9 @@ namespace fow::RenderQueue {
     static bool s_sunlight_enabled = false;
     static const Transform* s_sunlight_transform = nullptr;
     static SkyboxPtr s_skybox = nullptr;
+    static TextureCubeMapPtr s_envMap = nullptr;
+    static TextureCubeMapPtr s_envMapBlur = nullptr;
+    static float s_envMapIntensity = 1.0f;
 
     void Enqueue(const MeshPtr& mesh, const Transform& transform) {
         s_render_queue.push_back({ mesh, transform });
@@ -31,6 +34,11 @@ namespace fow::RenderQueue {
     }
     void SetSkybox(const SkyboxPtr& skybox) {
         s_skybox = skybox;
+    }
+    void SetEnvMap(const TextureCubeMapPtr& texture, const TextureCubeMapPtr& texture_blurred, const float intensity) {
+        s_envMap = texture;
+        s_envMapBlur = texture_blurred;
+        s_envMapIntensity = intensity;
     }
 
     void SetSunlight(const Transform& transform, const Color& color, const float intensity, const bool is_enabled) {
@@ -89,20 +97,36 @@ namespace fow::RenderQueue {
         }
     }
 
+    static void applySceneParamsToMaterial(const MaterialPtr& mat, const Vector<LightInfoPtr>& lights) {
+        if (mat == nullptr) {
+            return;
+        }
+
+        size_t i = 0;
+        for (const auto& light : lights) {
+            mat->set_parameter(std::format("Lights[{}].Position", i), light->transform != nullptr ? light->transform->get_position() : Vector3Constants::Zero);
+            mat->set_parameter(std::format("Lights[{}].Color", i), Vector4(light->color, light->intensity));
+            ++i;
+        }
+        mat->set_parameter("LightCount", static_cast<GLuint>(lights.size()));
+        mat->set_parameter("SunLightColor", s_sunlight_color);
+        mat->set_parameter("SunLightDir", s_sunlight_transform->get_rotation() * Vector3Constants::Forward);
+        mat->set_parameter("ViewPos", Renderer::GetCameraPosition());
+
+        if (s_envMap != nullptr) {
+            mat->set_parameter("EnvMap", s_envMap);
+        }
+        if (s_envMapBlur != nullptr) {
+            mat->set_parameter("EnvMapBlur", s_envMapBlur);
+        }
+        mat->set_parameter("EnvMapStrength", s_envMapIntensity);
+    }
+
     inline void Renderable::draw(const Vector<LightInfoPtr>& lights) const {
         if (model.index() == 0) {
             const auto mesh = std::get<0>(model);
             if (const auto mat = mesh->material(); mat != nullptr) {
-                size_t i = 0;
-                for (const auto& light : lights) {
-                    mat->set_parameter(std::format("Light[{}].Position", i), light->transform != nullptr ? light->transform->get_position() : Vector3Constants::Zero);
-                    mat->set_parameter(std::format("Light[{}].Color", i), Vector4(light->color, light->enabled ? light->intensity : 0.0f));
-                    ++i;
-                }
-                mat->set_parameter("LightCount", static_cast<GLuint>(lights.size()));
-                mat->set_parameter("SunLightColor", s_sunlight_enabled ? s_sunlight_color : Vector4(0.0f));
-                mat->set_parameter("SunLightDir", s_sunlight_transform != nullptr ? (s_sunlight_transform->get_rotation() * Vector3Constants::Forward) : -Vector3Constants::Up);
-                mat->set_parameter("ViewPos", Renderer::GetCameraPosition());
+                applySceneParamsToMaterial(mat, lights);
             }
 
             if (transform.index() == 0) {
@@ -113,20 +137,7 @@ namespace fow::RenderQueue {
         } else {
             const auto mesh = std::get<1>(model);
             for (const auto mat : mesh->materials()) {
-                if (mat == nullptr) {
-                    continue;
-                }
-
-                size_t i = 0;
-                for (const auto& light : lights) {
-                    mat->set_parameter(std::format("Light[{}].Position", i), light->transform != nullptr ? light->transform->get_position() : Vector3Constants::Zero);
-                    mat->set_parameter(std::format("Light[{}].Color", i), Vector4(light->color, light->intensity));
-                    ++i;
-                }
-                mat->set_parameter("LightCount", static_cast<GLuint>(lights.size()));
-                mat->set_parameter("SunLightColor", s_sunlight_color);
-                mat->set_parameter("SunLightDir", s_sunlight_transform->get_rotation() * Vector3Constants::Forward);
-                mat->set_parameter("ViewPos", Renderer::GetCameraPosition());
+                applySceneParamsToMaterial(mat, lights);
             }
 
             if (transform.index() == 0) {
