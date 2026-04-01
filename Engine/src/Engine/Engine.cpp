@@ -64,11 +64,6 @@ namespace fow {
             return s_background_color;
         }
 
-        struct GameSettingsInternal {
-            std::vector<std::string> GameDataPacks;
-            bool AllowMods;
-        };
-
         Result<> Initialize(int argc, char** argv, const String& title, const Function<std::shared_ptr<Game>()>& game_class_ctor) {
             if (s_initialized) {
                 return Failure("Engine is already initialized!");
@@ -292,6 +287,8 @@ namespace fow {
                 if (s_game_class != nullptr) {
                     s_game_class->on_render(time - last_time);
                 }
+
+                RenderQueue::Render();
 
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

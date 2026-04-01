@@ -81,7 +81,6 @@ namespace fow {
     ComponentRegistryObject::ComponentRegistryObject(const std::type_index& type_index, const String& class_name, const ComponentFactory& factory, const Vector<String>& dependencies)
         : m_type_index(type_index), m_class_name(class_name), m_factory(factory), m_dependencies(dependencies) {
         if (s_registry.contains(class_name)) {
-            Debug::LogError(std::format("Component registry already contains component \"{}\"!", class_name));
             return;
         }
 
