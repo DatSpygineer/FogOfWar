@@ -994,6 +994,14 @@ namespace fow {
             rfl::enum_to_string(static_cast<MaterialParameterType>(value.index()))
         ));
     }
+
+    Result<> Material::set_parameter_optional(const String& name, const MaterialParameterValue& value) {
+        if (shader()->has_uniform(name)) {
+            return set_parameter(name, value);
+        }
+        return Success();
+    }
+
     Result<> Material::get_parameter(const String& name, MaterialParameterValue& value) const {
         if (const auto info = m_pShader->get_uniform_info(name); !info.has_value()) {
             return Failure(std::format("Shader has no parameter \"{}\"", name));

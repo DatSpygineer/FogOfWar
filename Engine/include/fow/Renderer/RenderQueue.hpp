@@ -5,6 +5,7 @@
 
 #include "Mesh.hpp"
 #include "Model.hpp"
+#include "Sprite.hpp"
 #include "Skybox.hpp"
 
 namespace fow {
@@ -19,8 +20,10 @@ namespace fow {
     namespace RenderQueue {
         FOW_RENDER_API void Enqueue(const MeshPtr& mesh, const Transform& transform);
         FOW_RENDER_API void Enqueue(const ModelPtr& model, const Transform& transform);
+        FOW_RENDER_API void Enqueue(const SpritePtr& sprite, const Transform& transform);
         FOW_RENDER_API void EnqueueInstanced(const MeshPtr& mesh, const Vector<Transform>& transforms);
         FOW_RENDER_API void EnqueueInstanced(const ModelPtr& model, const Vector<Transform>& transforms);
+        FOW_RENDER_API void EnqueueInstanced(const SpritePtr& sprite, const Vector<Transform>& transforms);
         FOW_RENDER_API void SetSkybox(const SkyboxPtr& skybox);
         FOW_RENDER_API void SetEnvMap(const TextureCubeMapPtr& texture, const TextureCubeMapPtr& texture_blurred, float intensity);
         FOW_RENDER_API void SetSunlight(const Transform& transform, const Color& color, float intensity, bool is_enabled = true);

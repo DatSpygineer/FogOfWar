@@ -5,9 +5,9 @@
       "vertex":   "src/Generic3D.vsh",
       "fragment": "src/PhongLitGeneric.fsh"
     },
-    "PBRGeneric": {
+    "PbrGeneric": {
       "vertex":   "src/Generic3D.vsh",
-      "fragment": "src/PBRGeneric.fsh"
+      "fragment": "src/PbrGeneric.fsh"
     },
     "UnlitGeneric": {
       "vertex":   "src/Generic3D.vsh",
@@ -16,6 +16,14 @@
     "Skybox": {
       "vertex":   "src/Sky.vsh",
       "fragment": "src/Sky.fsh"
+    },
+    "Sprite": {
+      "vertex":   "src/Sprite.vsh",
+      "fragment": "src/Sprite.fsh"
+    },
+    "PbrSprite": {
+      "vertex":   "src/PbrSprite.vsh",
+      "fragment": "src/PbrGeneric.fsh"
     }
   }
 }

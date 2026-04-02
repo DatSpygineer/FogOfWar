@@ -131,6 +131,7 @@ namespace fow {
 
         void draw() const;
         void draw(const Transform& transform) const;
+        void draw(const Matrix4& model_matrix) const;
         void draw_instances(const Vector<Transform>& transforms) const;
     };
 

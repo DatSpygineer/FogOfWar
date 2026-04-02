@@ -99,6 +99,7 @@ namespace fow {
         FOW_CONSTEXPR bool get_depth_test() const { return m_options.depth_test; }
 
         Result<> set_parameter(const String& name, const MaterialParameterValue& value);
+        Result<> set_parameter_optional(const String& name, const MaterialParameterValue& value);
         Result<> get_parameter(const String& name, MaterialParameterValue& value) const;
 
         Result<> apply() const;

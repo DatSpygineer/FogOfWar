@@ -4,6 +4,8 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include "fow/Renderer/TextSprite.hpp"
+
 namespace fow {
     namespace Renderer {
         static auto s_viewport = Rectangle { 0.0f, 0.0f, 1280.0f, 720.0f };

@@ -19,7 +19,7 @@ public:
     ExampleGame() : Game() { }
 
     void on_init() override {
-        auto model = Assets::Load<Model>("/Models/Cube.model.xml");
+        auto model = Assets::Load<Model>("/Models/Sphere.model.xml");
         Debug::AssertFatal(model);
         if (!model.has_value()) {
             return;
@@ -65,8 +65,6 @@ public:
         m_pLight1 = ent_light_1->add_component<LightComponent>();
         m_pLight1->set_color(Color { 1.0f, 1.0f, 1.0f });
         m_pLight1->set_intensity(300.0f);
-        const auto comp_light_1_model = ent_light_1->add_component<ModelRendererComponent>();
-        comp_light_1_model->set_model(light_model.value().ptr());
 
         const auto ent_light_2 = m_pScene->create_entity();
         m_pLight2Transform = ent_light_2->add_component<TransformComponent>();
@@ -74,8 +72,6 @@ public:
         m_pLight2 = ent_light_2->add_component<LightComponent>();
         m_pLight2->set_color(Color { 1.0f, 1.0f, 1.0f });
         m_pLight2->set_intensity(300.0f);
-        const auto comp_light_2_model = ent_light_2->add_component<ModelRendererComponent>();
-        comp_light_2_model->set_model(light_model.value().ptr());
 
         const auto ent_env = m_pScene->create_entity();
         const auto comp_env_transform = ent_light_2->add_component<TransformComponent>();

@@ -2,9 +2,13 @@
 
 #include "fow/Renderer.hpp"
 
+#define RENDERABLE_MESH   0
+#define RENDERABLE_MODEL  1
+#define RENDERABLE_SPRITE 2
+
 namespace fow::RenderQueue {
     struct Renderable {
-        std::variant<MeshPtr, ModelPtr> model;
+        std::variant<MeshPtr, ModelPtr, SpritePtr> model;
         std::variant<Transform, Vector<Transform>> transform;
 
         void draw(const Vector<LightInfoPtr>& lights) const;
@@ -26,12 +30,20 @@ namespace fow::RenderQueue {
     void Enqueue(const ModelPtr& model, const Transform& transform) {
         s_render_queue.push_back({ model, transform });
     }
+    void Enqueue(const SpritePtr& sprite, const Transform& transform) {
+        s_render_queue.push_back({ sprite, transform });
+    }
+
     void EnqueueInstanced(const MeshPtr& mesh, const Vector<Transform>& transforms) {
         s_render_queue.push_back({ mesh, transforms });
     }
     void EnqueueInstanced(const ModelPtr& model, const Vector<Transform>& transforms) {
         s_render_queue.push_back({ model, transforms });
     }
+    void EnqueueInstanced(const SpritePtr& sprite, const Vector<Transform>& transforms) {
+        s_render_queue.push_back({ sprite, transforms });
+    }
+
     void SetSkybox(const SkyboxPtr& skybox) {
         s_skybox = skybox;
     }
@@ -104,47 +116,63 @@ namespace fow::RenderQueue {
 
         size_t i = 0;
         for (const auto& light : lights) {
-            mat->set_parameter(std::format("Lights[{}].Position", i), light->transform != nullptr ? light->transform->get_position() : Vector3Constants::Zero);
-            mat->set_parameter(std::format("Lights[{}].Color", i), Vector4(light->color, light->intensity));
+            Debug::Assert(mat->set_parameter_optional(std::format("Lights[{}].Position", i), light->transform != nullptr ? light->transform->get_position() : Vector3Constants::Zero));
+            Debug::Assert(mat->set_parameter_optional(std::format("Lights[{}].Color", i), Vector4(light->color, light->intensity)));
             ++i;
         }
-        mat->set_parameter("LightCount", static_cast<GLuint>(lights.size()));
-        mat->set_parameter("SunLightColor", s_sunlight_color);
-        mat->set_parameter("SunLightDir", s_sunlight_transform->get_rotation() * Vector3Constants::Forward);
-        mat->set_parameter("ViewPos", Renderer::GetCameraPosition());
+        Debug::Assert(mat->set_parameter_optional("LightCount", static_cast<GLuint>(lights.size())));
+        Debug::Assert(mat->set_parameter_optional("SunLightColor", s_sunlight_color));
+        Debug::Assert(mat->set_parameter_optional("SunLightDir", s_sunlight_transform->get_rotation() * Vector3Constants::Forward));
+        Debug::Assert(mat->set_parameter_optional("ViewPos", Renderer::GetCameraPosition()));
 
         if (s_envMap != nullptr) {
-            mat->set_parameter("EnvMap", s_envMap);
+            Debug::Assert(mat->set_parameter_optional("EnvMap", s_envMap));
         }
         if (s_envMapBlur != nullptr) {
-            mat->set_parameter("EnvMapBlur", s_envMapBlur);
+            Debug::Assert(mat->set_parameter_optional("EnvMapBlur", s_envMapBlur));
         }
-        mat->set_parameter("EnvMapStrength", s_envMapIntensity);
+        Debug::Assert(mat->set_parameter_optional("EnvMapStrength", s_envMapIntensity));
     }
 
     inline void Renderable::draw(const Vector<LightInfoPtr>& lights) const {
-        if (model.index() == 0) {
-            const auto mesh = std::get<0>(model);
-            if (const auto mat = mesh->material(); mat != nullptr) {
-                applySceneParamsToMaterial(mat, lights);
-            }
+        switch (model.index()) {
+            case RENDERABLE_MESH: {
+                const auto mesh = std::get<RENDERABLE_MESH>(model);
+                if (const auto& mat = mesh->material(); mat != nullptr) {
+                    applySceneParamsToMaterial(mat, lights);
+                }
 
-            if (transform.index() == 0) {
-                mesh->draw(std::get<0>(transform));
-            } else {
-                mesh->draw_instances(std::get<1>(transform));
-            }
-        } else {
-            const auto mesh = std::get<1>(model);
-            for (const auto mat : mesh->materials()) {
-                applySceneParamsToMaterial(mat, lights);
-            }
+                if (transform.index() == 0) {
+                    mesh->draw(std::get<0>(transform));
+                } else {
+                    mesh->draw_instances(std::get<1>(transform));
+                }
+            } break;
+            case RENDERABLE_MODEL: {
+                const auto mesh = std::get<RENDERABLE_MODEL>(model);
+                for (const auto& mat : mesh->materials()) {
+                    applySceneParamsToMaterial(mat, lights);
+                }
 
-            if (transform.index() == 0) {
-                mesh->draw(std::get<0>(transform));
-            } else {
-                mesh->draw_instances(std::get<1>(transform));
-            }
+                if (transform.index() == 0) {
+                    mesh->draw(std::get<0>(transform));
+                } else if (transform.index() == 1) {
+                    mesh->draw_instances(std::get<1>(transform));
+                }
+            } break;
+            case RENDERABLE_SPRITE: {
+                const auto sprite = std::get<RENDERABLE_SPRITE>(model);
+                if (const auto& mat = sprite->material(); mat != nullptr) {
+                    applySceneParamsToMaterial(mat, lights);
+                }
+
+                if (transform.index() == 0) {
+                    sprite->draw(std::get<0>(transform));
+                } else {
+                    sprite->draw_instances(std::get<1>(transform));
+                }
+            } break;
+            default: /* Nothing to draw */ break;
         }
     }
 }

@@ -3,6 +3,81 @@
 
 #include <fstream>
 
+#ifndef _WIN32
+
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+
+static void X11DrawWrappedText(Display* display, const Window window, const GC gc, const int x, const int y, const int maxWidth, const fow::String& text) {
+    const auto fontInfo = XQueryFont(display, XGContextFromGC(gc));
+    const int lineHeight = fontInfo->ascent + fontInfo->descent + 5; // Font height + spacing
+
+    std::stringstream ss(text.as_std_str());
+    std::string word;
+    std::string line;
+    auto currentY = y;
+
+    while (ss >> word) {
+        std::string testLine = line + (line.empty() ? "" : " ") + word;
+        const int width = XTextWidth(fontInfo, testLine.c_str(), testLine.length());
+
+        if (width > maxWidth && !line.empty()) {
+            XDrawString(display, window, gc, x, currentY, line.c_str(), line.length());
+            line = word;
+            currentY += lineHeight;
+        } else {
+            line = testLine;
+        }
+    }
+    XDrawString(display, window, gc, x, currentY, line.c_str(), line.length());
+}
+
+static void X11ShowPopupMessage(const fow::String& message) {
+    Display* display = XOpenDisplay(nullptr);
+    if (display == nullptr) {
+        return;
+    }
+
+    constexpr auto width = 600;
+    constexpr auto height = 400;
+    constexpr auto text_x = 5;
+    constexpr auto text_y = 15;
+
+    const auto screen = DefaultScreen(display);
+    const auto window = XCreateSimpleWindow(
+        display, RootWindow(display, screen),
+        100, 100, width, height, 1,
+        BlackPixel(display, screen), WhitePixel(display, screen)
+    );
+
+    XSelectInput(display, window, ExposureMask | KeyPressMask);
+    XMapWindow(display, window);
+    XStoreName(display, window, "Fatal Error");
+
+    XEvent event;
+    bool running = true;
+
+    auto gc = DefaultGC(display, screen);
+
+    while (running) {
+        XNextEvent(display, &event);
+
+        if (event.type == Expose) {
+            X11DrawWrappedText(display, window, gc, text_x, text_y, width - text_x, message);
+
+            XDrawString(display, window, gc, 5, height - 20, "Press any key to close this message", 35);
+        }
+
+        if (event.type == KeyPress) {
+            running = false;
+        }
+    }
+
+    XCloseDisplay(display);
+}
+
+#endif
+
 namespace fow::Debug {
     static std::ofstream s_log_output;
     static LogMessageCallback s_message_sent_callback;
@@ -97,8 +172,12 @@ namespace fow::Debug {
             s_message_sent_callback(level, timestamp, message, location);
         }
         if (level == LogLevel::Fatal) {
-#ifdef _WIN32
+#ifndef NDEBUG
+    #ifdef _WIN32
             MessageBoxA(nullptr, message.as_cstr(), "Fatal error!", MB_OK | MB_ICONERROR);
+    #else
+            X11ShowPopupMessage(message);
+    #endif
 #endif
             CrashGame(1);
         }

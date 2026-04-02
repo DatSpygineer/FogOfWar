@@ -11,7 +11,6 @@ layout (location = 4) in vec2 VERTEX_TEXTURE_COORDS;
 uniform mat4 MATRIX_PROJECTION;
 uniform mat4 MATRIX_VIEW;
 uniform mat4 MATRIX_MODEL[MAX_INSTANCE_COUNT];
-uniform int  INSTANCE_COUNT;
 
 out vec3 FRAGMENT_WORLD_POSITION;
 out vec2 FRAGMENT_TEXTURE_COORDS;
