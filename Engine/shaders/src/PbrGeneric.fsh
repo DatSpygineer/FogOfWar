@@ -16,7 +16,6 @@ uniform sampler2D EmissionMap;
 uniform sampler2D BrdfLut;
 uniform samplerCube EnvMap;
 uniform samplerCube EnvMapBlur;
-uniform vec3 ViewPos;
 uniform vec4 ColorTint = vec4(1.0);
 uniform bool  AlphaScissor = false;
 uniform float AlphaScissorThreshold = 0.5;
@@ -35,6 +34,7 @@ in vec3 FRAGMENT_WORLD_POSITION;
 in vec2 FRAGMENT_TEXTURE_COORDS;
 in vec3 FRAGMENT_NORMAL;
 in mat3 FRAGMENT_TBN;
+in vec3 CAMERA_POSITION;
 
 out vec4 FRAGMENT_COLOR;
 
@@ -143,7 +143,7 @@ vec3 pbr_light(vec3 normal, vec3 view, vec3 base_reflectivity, vec3 albedo, floa
 
 void main() {
     vec3 normal = extractNormalFromNormalMap();
-    vec3 view = normalize(ViewPos - FRAGMENT_WORLD_POSITION);
+    vec3 view = normalize(CAMERA_POSITION - FRAGMENT_WORLD_POSITION);
     vec3 refl = reflect(-view, normal);
 
     vec4 mainTex   = texture(MainTexture, FRAGMENT_TEXTURE_COORDS) * ColorTint;
