@@ -134,10 +134,9 @@ namespace fow {
     };
 
     class FOW_ENGINE_API Scene final {
-        SkyboxPtr m_pSkybox;
         Vector<EntityPtr> m_Entities;
     public:
-        explicit Scene(const size_t entity_capacity = 128) : m_pSkybox(nullptr), m_Entities() { m_Entities.reserve(entity_capacity); }
+        explicit Scene(const size_t entity_capacity = 128) : m_Entities() { m_Entities.reserve(entity_capacity); }
         Scene(const Scene&) = delete;
         Scene(Scene&&) noexcept = default;
         ~Scene() = default;
@@ -156,10 +155,6 @@ namespace fow {
         void disable_entity(EntityId id);
 
         void clear();
-
-        void set_skybox(const SkyboxPtr& skybox);
-        [[nodiscard]] FOW_CONSTEXPR const SkyboxPtr& skybox() const { return m_pSkybox; }
-        [[nodiscard]] FOW_CONSTEXPR SkyboxPtr& skybox() { return m_pSkybox; }
 
         void spawn();
         void update(double dt) const;

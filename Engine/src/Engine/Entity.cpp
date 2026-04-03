@@ -164,11 +164,6 @@ namespace fow {
         m_Entities.clear();
     }
 
-    void Scene::set_skybox(const SkyboxPtr& skybox) {
-        m_pSkybox = skybox;
-        RenderQueue::SetSkybox(m_pSkybox);
-    }
-
     void Scene::spawn() {
         for (auto& entity : m_Entities) {
             if (entity != nullptr) {
@@ -212,13 +207,6 @@ namespace fow {
         }
 
         Scene scene;
-        SkyboxPtr skybox = nullptr;
-        if (const auto skybox_node = root.child("Skybox"); skybox_node) {
-            if (const auto skybox_mat = Assets::Load<Material>(skybox_node.child_value()); skybox_mat.has_value()) {
-                skybox = std::make_shared<Skybox>(skybox_mat.value().ptr());
-            }
-        }
-        scene.set_skybox(skybox);
 
         if (const auto entities_node = root.child("Entities"); entities_node) {
             for (const auto entity_node : entities_node.children()) {

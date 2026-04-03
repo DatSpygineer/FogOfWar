@@ -1,3 +1,4 @@
+#define FOW_INCLUDE_IMGUI
 #include "fow/Engine.hpp"
 #include "fow/Engine/Convar.hpp"
 
@@ -6,8 +7,6 @@
 #include <GLFW/glfw3.h>
 
 #include "SOIL2.h"
-
-#include <fow/Engine/ImGui.hpp>
 
 #include "rfl/json/write.hpp"
 
