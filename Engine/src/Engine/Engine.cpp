@@ -28,17 +28,17 @@ namespace fow {
     static void GLDebugMessageCallback(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 #endif
 
-    const auto vid_resolution  = CVar::Create("vid_resolution",  Vector2(1280, 720),    CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
-    const auto vid_window_mode = CVar::Create("vid_window_mode", "Windowed",            CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateWindowMode);
-    const auto vid_monitor_idx = CVar::Create("vid_monitor_idx", 0,                     CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMonitorIndex);
-    const auto vid_vsync       = CVar::Create("vid_vsync",       false,                 CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateVSync);
-    const auto r_msaa          = CVar::Create("r_msaa",          0,                     CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMSAA);
-    const auto cl_lang         = CVar::Create("cl_lang",         "en_us",               CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateLanguage);
-    const auto quit            = CVar::Create("quit",            &QuitCommand,          CVarFlags::Default);
-    const auto create_action   = CVar::Create("create_action",   &CreateActionCommand,  CVarFlags::Default);
-    const auto remove_action   = CVar::Create("remove_action",   &RemoveActionCommand,  CVarFlags::Default);
-    const auto toggle_console  = CVar::Create("toggle_console",  &ToggleConsoleCommand, CVarFlags::Default);
-    const auto set_scene       = CVar::Create("set_scene",       &SetSceneCommand,      CVarFlags::Default);
+    const auto vid_resolution      = CVar::Create("vid_resolution",      Vector2(1280, 720),    CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
+    const auto vid_window_mode     = CVar::Create("vid_window_mode",     "Windowed",            CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateWindowMode);
+    const auto vid_monitor_idx     = CVar::Create("vid_monitor_idx",     0,                     CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMonitorIndex);
+    const auto vid_vsync           = CVar::Create("vid_vsync",           false,                 CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateVSync);
+    const auto r_msaa              = CVar::Create("r_msaa",              0,                     CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateMSAA);
+    const auto cl_lang             = CVar::Create("cl_lang",             "en_us",               CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateLanguage);
+    const auto quit                = CVar::Create("quit",                &QuitCommand,          CVarFlags::Default);
+    const auto input_create_action = CVar::Create("input_create_action", &CreateActionCommand,  CVarFlags::Default);
+    const auto input_remove_action = CVar::Create("input_remove_action", &RemoveActionCommand,  CVarFlags::Default);
+    const auto toggle_console      = CVar::Create("toggle_console",      &ToggleConsoleCommand, CVarFlags::Default);
+    const auto set_scene           = CVar::Create("set_scene",           &SetSceneCommand,      CVarFlags::Default);
 
     namespace Engine {
         static bool s_initialized = false;
@@ -462,6 +462,7 @@ namespace fow {
         static glm::dvec2    s_mouse_position_delta;
         static glm::dvec2    s_mouse_scroll;
         static bool          s_initialized = false;
+        static bool          s_mouse_position_set = false;
 
         void Initialize() {
             if (s_initialized) return;
@@ -480,12 +481,20 @@ namespace fow {
             s_mouse_scroll         = glm::dvec2 { 0.0f };
             s_initialized          = true;
 
+            if (glfwRawMouseMotionSupported()) {
+                glfwSetInputMode(Engine::s_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+            }
+
             glfwSetScrollCallback(Engine::s_window, [](GLFWwindow* window, const double x, const double y) {
                 FOW_DISCARD(window);
                 s_mouse_scroll = glm::dvec2 { x, y };
             });
         }
         void Poll() {
+            const auto prev_pos = s_mouse_position;
+            glfwGetCursorPos(Engine::s_window, &s_mouse_position.x, &s_mouse_position.y);
+            s_mouse_position_delta = s_mouse_position - prev_pos;
+
             for (int i = 0; i < GLFW_KEY_LAST + 1; ++i) {
                 const auto state = glfwGetKey(Engine::s_window, i);
                 auto& kb_state = s_keyboard_state.at(i);
@@ -520,10 +529,6 @@ namespace fow {
                     }
                 }
             }
-
-            const auto prev_mouse_pos = s_mouse_position;
-            glfwGetCursorPos(Engine::s_window, &s_mouse_position.x, &s_mouse_position.y);
-            s_mouse_position_delta = s_mouse_position - prev_mouse_pos;
         }
 
         Result<> CreateAction(const String& name, const Action action) {

@@ -1,10 +1,14 @@
-#ifndef FLY_CAMERA_COMPONENTS_HPP
-#define FLY_CAMERA_COMPONENTS_HPP
+#ifndef COMPONENTS_HPP
+#define COMPONENTS_HPP
 
 #include "fow/Engine.hpp"
 
 class FlyCameraComponent : public fow::Component {
     fow::ComponentPtr<fow::CameraComponent> m_pCamera = nullptr;
+    fow::ComponentPtr<fow::TransformComponent> m_pTransform = nullptr;
+    bool m_bFreeLook = false;
+    float m_fPitch = 0;
+    float m_fYaw = 0;
 public:
     FOW_COMPONENT_CLASS(FlyCameraComponent, fow::Component)
 
@@ -14,8 +18,7 @@ public:
 
 class TestSphereComponent : public fow::Component {
     fow::ComponentPtr<fow::TransformComponent> m_pTransform = nullptr;
-    int m_iDirection = 0;
-    float m_fProgress = 0.0f;
+    float m_fRotation = 0;
 public:
     FOW_COMPONENT_CLASS(TestSphereComponent, fow::Component)
 

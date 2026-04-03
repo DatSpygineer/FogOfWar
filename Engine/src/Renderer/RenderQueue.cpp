@@ -122,7 +122,7 @@ namespace fow::RenderQueue {
         }
         Debug::Assert(mat->set_parameter_optional("LightCount", static_cast<GLuint>(lights.size())));
         Debug::Assert(mat->set_parameter_optional("SunLightColor", s_sunlight_color));
-        Debug::Assert(mat->set_parameter_optional("SunLightDir", s_sunlight_transform->get_rotation() * Vector3Constants::Forward));
+        Debug::Assert(mat->set_parameter_optional("SunLightDir", s_sunlight_transform->get_forward()));
 
         if (s_envMap != nullptr) {
             Debug::Assert(mat->set_parameter_optional("EnvMap", s_envMap));

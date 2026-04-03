@@ -249,6 +249,19 @@ namespace fow {
         }
     }
 
+    void SpriteRendererComponent::on_spawn() {
+        FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(ModelRendererComponent, TransformComponent);
+    }
+
+    void SpriteRendererComponent::on_update(const double dt) {
+        const auto transform = entity().get_component<TransformComponent>();
+        RenderQueue::Enqueue(m_pSprite, transform->transform());
+    }
+
+    void SpriteRendererComponent::set_sprite(const SpritePtr& sprite) {
+        m_pSprite = sprite;
+    }
+
     void ModelRendererComponent::on_spawn() {
         FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(ModelRendererComponent, TransformComponent);
     }

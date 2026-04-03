@@ -13,6 +13,9 @@ namespace fow {
         BillboardSpherical
     };
 
+    class Sprite;
+    using SpritePtr = SharedPtr<Sprite>;
+
     class FOW_RENDER_API Sprite {
         MaterialPtr m_pMaterial;
         MeshPtr m_pMesh;
@@ -30,8 +33,9 @@ namespace fow {
 
         void draw(const Transform& transform);
         void draw_instances(const Vector<Transform>& transforms);
+
+        static Result<SpritePtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
     };
-    using SpritePtr = SharedPtr<Sprite>;
 }
 
 #endif

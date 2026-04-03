@@ -31,6 +31,12 @@ public:
             return;
         }
 
+        auto light_sprite = Assets::Load<Sprite>("/Sprites/Light.sprite.xml");
+        Debug::AssertFatal(light_sprite);
+        if (!light_sprite.has_value()) {
+            return;
+        }
+
         auto material = Assets::Load<Material>("/Materials/SkyTest.material.xml");
         Debug::AssertFatal(material);
         if (material.has_value()) {
@@ -65,6 +71,8 @@ public:
         m_pLight1 = ent_light_1->add_component<LightComponent>();
         m_pLight1->set_color(Color { 1.0f, 1.0f, 1.0f });
         m_pLight1->set_intensity(300.0f);
+        const auto comp_light_1_spr = ent_light_1->add_component<SpriteRendererComponent>();
+        comp_light_1_spr->set_sprite(light_sprite.value().ptr());
 
         const auto ent_light_2 = m_pScene->create_entity();
         m_pLight2Transform = ent_light_2->add_component<TransformComponent>();
@@ -72,13 +80,15 @@ public:
         m_pLight2 = ent_light_2->add_component<LightComponent>();
         m_pLight2->set_color(Color { 1.0f, 1.0f, 1.0f });
         m_pLight2->set_intensity(300.0f);
+        const auto comp_light_2_spr = ent_light_2->add_component<SpriteRendererComponent>();
+        comp_light_2_spr->set_sprite(light_sprite.value().ptr());
 
         const auto ent_env = m_pScene->create_entity();
-        const auto comp_env_transform = ent_light_2->add_component<TransformComponent>();
-        comp_env_transform->set_rotation_deg(Vector3Constants::UnitX * 180.0f);
+        const auto comp_env_transform = ent_env->add_component<TransformComponent>();
+        comp_env_transform->set_rotation_deg(Vector3Constants::UnitX * 60.0f);
         const auto comp_env = ent_env->add_component<EnvironmentComponent>();
-        comp_env->set_sunlight_color(Color { 1.0f, 1.0f, 1.0f });
-        comp_env->set_sunlight_intensity(100.0f);
+        comp_env->set_sunlight_color(Color::FromInt(0xE64120FF));
+        comp_env->set_sunlight_intensity(300.0f);
         comp_env->set_skybox(std::make_shared<Skybox>(n_skyboxMaterial.ptr()));
 
         Engine::SetScene(m_pScene);
