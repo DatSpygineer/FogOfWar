@@ -4,7 +4,9 @@
 
 #include "fow/Renderer/GL.hpp"
 #include "fow/Renderer.hpp"
-#include <GLFW/glfw3.h>
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
 
 #include "SOIL2.h"
 
@@ -39,9 +41,14 @@ namespace fow {
     const auto toggle_console      = CVar::Create("toggle_console",      &ToggleConsoleCommand, CVarFlags::Default);
     const auto set_scene           = CVar::Create("set_scene",           &SetSceneCommand,      CVarFlags::Default);
 
+    namespace Input {
+        static void UpdateMouseWheel(float x, float y);
+    }
+
     namespace Engine {
         static bool s_initialized = false;
-        static GLFWwindow* s_window = nullptr;
+        static SDL_Window* s_window = nullptr;
+        static SDL_GLContext s_glContext = nullptr;
         static String s_window_title = "FogOfWar";
         static Color s_background_color = { 0.25f, 0.5f, 1.0f };
         static SharedPtr<Game> s_game_class = nullptr;
@@ -81,15 +88,14 @@ namespace fow {
             Path::CurrentDir(s_base_path);
 
             Debug::AssertFatal(Assets::Initialize(s_base_path / "data", s_game_class->game_data_archives(), s_game_class->allow_mods() ? Some(s_base_path / "mods") : None()));
+
             Debug::Assert(Console::Initialize());
 
             HashMap<String, Vector<String>> args = ParseArgs(argc, argv);
             Debug::Assert(LoadLanguageFiles());
 
-            if (glfwInit() != GLFW_TRUE) {
-                const char* message;
-                int code = glfwGetError(&message);
-                return Failure(std::format("Failed to initialize GLFW: \"{}\" (code {})", message, code));
+            if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS)) {
+                return Failure(std::format("Failed to initialize SDL: {}", SDL_GetError()));
             }
 
             Vector2 resolution   = vid_resolution->as_vec2().value_or(Vector2 { 1280, 720 });
@@ -161,81 +167,78 @@ namespace fow {
                 Console::SetConsoleVisible(true);
             }
 
-            GLFWmonitor* monitor = nullptr;
-            if (window_mode == WindowMode::Fullscreen) {
-                if (monitor_index < 0) {
-                    monitor = glfwGetPrimaryMonitor();
-                } else {
-                    int monitor_count = 0;
-                    GLFWmonitor** monitors = glfwGetMonitors(&monitor_count);
-                    if (monitor_index < monitor_count) {
-                        monitor = monitors[monitor_index];
-                    } else {
-                        Debug::LogWarning(std::format("Minitor index {} is out of range! Defaulting to primary monitor!", monitor_index));
-                        monitor = glfwGetPrimaryMonitor();
-                        monitor_index = -1;
-                    }
-                }
-            }
-
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifndef NDEBUG
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-#endif
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
             const auto msaa = std::min(r_msaa->as_int().value_or(0), 16);
             if (msaa > 0) {
-                glfwWindowHint(GLFW_SAMPLES, msaa);
+                SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaa);
             }
-            s_window = glfwCreateWindow(resolution.x, resolution.y, s_window_title.as_cstr(), monitor, nullptr);
+
+            SDL_WindowFlags flags = SDL_WINDOW_OPENGL;
+
+            if (window_mode == WindowMode::Fullscreen) {
+                flags |= SDL_WINDOW_FULLSCREEN;
+            }
+
+            s_window = SDL_CreateWindow(s_window_title.as_cstr(), resolution.x, resolution.y,
+                flags
+            );
 
             if (s_window == nullptr) {
-                const char* message;
-                int code = glfwGetError(&message);
-                glfwTerminate();
-                return Failure(std::format("Failed to create window: \"{}\" (code {})", message, code));
+                String error = SDL_GetError();
+                SDL_Quit();
+                return Failure(std::format("Failed to create window: \"{}\"", error));
+            }
+
+            if (monitor_index < 0) {
+                monitor_index = 0;
+            }
+
+            SDL_Rect display_rect;
+            if (SDL_GetDisplayBounds(monitor_index, &display_rect)) {
+                SDL_SetWindowPosition(s_window, display_rect.x, display_rect.y);
+            }
+
+            s_glContext = SDL_GL_CreateContext(s_window);
+            if (s_glContext == nullptr) {
+                String error = SDL_GetError();
+                SDL_DestroyWindow(s_window);
+                SDL_Quit();
+                return Failure(std::format("Failed to create OpenGL context: \"{}\"", error));
             }
 
             Input::Initialize();
-            glfwMakeContextCurrent(s_window);
-            if (const auto result = Renderer::Initialize(s_base_path, msaa, reinterpret_cast<void*(*)(const char*)>(glfwGetProcAddress)); !result.has_value()) {
-                glfwDestroyWindow(s_window);
-                glfwTerminate();
+            if (const auto result = Renderer::Initialize(s_base_path, msaa, reinterpret_cast<void*(*)(const char*)>(SDL_GL_GetProcAddress)); !result.has_value()) {
+                SDL_GL_DestroyContext(s_glContext);
+                SDL_DestroyWindow(s_window);
+                SDL_Quit();
                 return Failure(result.error());
             }
             Renderer::EnableBlend(true);
             Renderer::SetViewport(0.0f, 0.0f, resolution.x, resolution.y);
-            glfwSetWindowSizeCallback(s_window, [](GLFWwindow* window, const int width, const int height) {
-                FOW_DISCARD(window);
-                Renderer::SetViewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height));
-                if (s_game_class != nullptr) {
-                    s_game_class->on_window_resized(Vector2i { width, height });
-                }
-            });
 
-            glfwSwapInterval(vsync_enabled ? 1 : 0);
+            SDL_GL_SetSwapInterval(vsync_enabled ? 1 : 0);
 
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
             ImGui::StyleColorsDark();
 
-            ImGui_ImplGlfw_InitForOpenGL(s_window, true);
+            ImGui_ImplSDL3_InitForOpenGL(s_window, s_glContext);
             ImGui_ImplOpenGL3_Init("#version 330 core");
 
             if ((GetResourcesPath() / "icon.png").exists()) {
                 int w, h;
                 const auto icon_data = SOIL_load_image((GetResourcesPath() / "icon.png").as_cstr(), &w, &h, nullptr, SOIL_LOAD_RGBA);
-                GLFWimage icon_image = {
-                    w, h, icon_data
-                };
-                glfwSetWindowIcon(s_window, 1, &icon_image);
+                SDL_Surface* icon_surf = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA8888);
+                icon_surf->pixels = icon_data;
+                SDL_SetWindowIcon(s_window, icon_surf);
                 SOIL_free_image_data(icon_data);
             }
 
 #ifndef NDEBUG
             const auto debug_title = std::format("{} | FogOfWar Engine - {}", s_window_title, GetVersion().to_string());
-            glfwSetWindowTitle(s_window, debug_title.c_str());
+            SDL_SetWindowTitle(s_window, debug_title.c_str());
 
             glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
 #endif
@@ -247,7 +250,7 @@ namespace fow {
             return Success();
         }
         void Run() {
-            double last_time = glfwGetTime();
+            double last_time = Time();
             double time = 0.0;
 
             SetGameStateRunning();
@@ -260,16 +263,28 @@ namespace fow {
                 s_scene->spawn();
             }
 
+            SDL_Event e;
             while (GetGameState() == GameState::Running) {
-                glfwPollEvents();
+                while (SDL_PollEvent(&e)) {
+                    switch (e.type) {
+                        case SDL_EVENT_QUIT: SetGameStateClosing(); break;
+                        case SDL_EVENT_WINDOW_RESIZED:
+                        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
+                            const auto width = e.window.data1;
+                            const auto height = e.window.data2;
+                            Renderer::SetViewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height));
+                            if (s_game_class != nullptr) {
+                                s_game_class->on_window_resized(Vector2i { width, height });
+                            }
+                        } break;
+                        case SDL_EVENT_MOUSE_WHEEL: {
+                            Input::UpdateMouseWheel(e.wheel.x, e.wheel.y);
+                        } break;
+                    }
+                }
                 Input::Poll();
 
-                if (glfwGetWindowAttrib(s_window, GLFW_ICONIFIED) != 0) {
-                    ImGui_ImplGlfw_Sleep(10);
-                    continue;
-                }
-
-                time = glfwGetTime();
+                time = Time();
 
                 if (s_game_class != nullptr) {
                     s_game_class->on_update(time - last_time);
@@ -279,7 +294,7 @@ namespace fow {
                 }
 
                 ImGui_ImplOpenGL3_NewFrame();
-                ImGui_ImplGlfw_NewFrame();
+                ImGui_ImplSDL3_NewFrame();
                 ImGui::NewFrame();
 
                 if (s_game_class != nullptr) {
@@ -290,7 +305,7 @@ namespace fow {
 
                 ImGui::Render();
                 int display_w, display_h;
-                glfwGetFramebufferSize(s_window, &display_w, &display_h);
+                SDL_GetWindowSize(s_window, &display_w, &display_h);
                 Renderer::Clear(s_background_color);
 
                 if (s_game_class != nullptr) {
@@ -301,12 +316,8 @@ namespace fow {
 
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-                glfwSwapBuffers(s_window);
+                SDL_GL_SwapWindow(s_window);
                 last_time = time;
-
-                if (glfwWindowShouldClose(s_window)) {
-                    SetGameStateClosing();
-                }
             }
 
             if (s_scene != nullptr) {
@@ -330,16 +341,20 @@ namespace fow {
             Assets::ClearCache();
 
             ImGui_ImplOpenGL3_Shutdown();
-            ImGui_ImplGlfw_Shutdown();
+            ImGui_ImplSDL3_Shutdown();
             ImGui::DestroyContext();
 
             SetGameStateTerminated();
 
+            if (s_glContext != nullptr) {
+                SDL_GL_DestroyContext(s_glContext);
+                s_glContext = nullptr;
+            }
             if (s_window != nullptr) {
-                glfwDestroyWindow(s_window);
+                SDL_DestroyWindow(s_window);
                 s_window = nullptr;
             }
-            glfwTerminate();
+            SDL_Quit();
 
             if (GetGameState() == GameState::Crashed) {
                 exit(GetGameExitCode());
@@ -350,28 +365,28 @@ namespace fow {
             s_window_title = title;
 #ifndef NDEBUG
             const auto debug_title = std::format("{} | FogOfWar Engine - {}", s_window_title, GetVersion().to_string());
-            glfwSetWindowTitle(s_window, debug_title.c_str());
+            SDL_SetWindowTitle(s_window, debug_title.c_str());
 #else
-            glfwSetWindowTitle(s_window, title.as_cstr());
+            SDL_SetWindowTitle(s_window, title.as_cstr());
 #endif
         }
         void SetWindowPosition(const Vector2i& value) {
-            glfwSetWindowPos(s_window, value.x, value.y);
+            SDL_SetWindowPosition(s_window, value.x, value.y);
         }
         void SetWindowSize(const Vector2i& value) {
-            glfwSetWindowSize(s_window, value.x, value.y);
+            SDL_SetWindowSize(s_window, value.x, value.y);
         }
         String GetWindowTitle() {
             return s_window_title;
         }
         Vector2i GetWindowPosition() {
             Vector2i result;
-            glfwGetWindowPos(s_window, &result.x, &result.y);
+            SDL_GetWindowPosition(s_window, &result.x, &result.y);
             return result;
         }
         Vector2i GetWindowSize() {
             Vector2i result;
-            glfwGetWindowSize(s_window, &result.x, &result.y);
+            SDL_GetWindowSize(s_window, &result.x, &result.y);
             return result;
         }
 
@@ -390,6 +405,10 @@ namespace fow {
                 s_scene->spawn();
             }
         }
+
+        double Time() {
+            return static_cast<double>(SDL_GetTicks()) / 1000.0;
+        }
     }
 
     static void UpdateResolution(const CVarPtr& self) {
@@ -398,7 +417,7 @@ namespace fow {
         }
 
         if (const auto res = self->as_vec2(); res.has_value()) {
-            glfwSetWindowSize(Engine::s_window, res->x, res->y);
+            SDL_SetWindowSize(Engine::s_window, res->x, res->y);
         }
     }
     static void UpdateWindowMode(const CVarPtr& self) {
@@ -447,7 +466,9 @@ namespace fow {
         if (Engine::s_window == nullptr) {
             exit(GetGameExitCode());
         } else {
-            glfwSetWindowShouldClose(Engine::s_window, GLFW_TRUE);
+            SDL_Event e;
+            e.type = SDL_EVENT_QUIT;
+            SDL_PushEvent(&e);
         }
         return Success();
     }
@@ -457,16 +478,19 @@ namespace fow {
         static Vector<State> s_mouse_btn_state;
         static HashMap<String, Action> s_actions;
 
-        static glm::dvec2    s_mouse_position;
-        static glm::dvec2    s_mouse_position_delta;
-        static glm::dvec2    s_mouse_scroll;
-        static bool          s_initialized = false;
-        static bool          s_mouse_position_set = false;
+        static Vector2 s_mouse_position;
+        static Vector2 s_mouse_position_delta;
+        static Vector2 s_mouse_scroll;
+        static bool    s_initialized = false;
+
+        static void UpdateMouseWheel(const float x, const float y) {
+            s_mouse_scroll = Vector2(x, y);
+        }
 
         void Initialize() {
             if (s_initialized) return;
 
-            s_keyboard_state.reserve(GLFW_KEY_LAST + 1);
+            s_keyboard_state.reserve(SDL_SCANCODE_COUNT + 1);
             for (int i = 0; i < s_keyboard_state.capacity(); ++i) {
                 s_keyboard_state.emplace_back(State::Up);
             }
@@ -474,30 +498,23 @@ namespace fow {
             for (int i = 0; i < s_mouse_btn_state.capacity(); ++i) {
                 s_mouse_btn_state.emplace_back(State::Up);
             }
-            glfwGetCursorPos(Engine::s_window, &s_mouse_position.x, &s_mouse_position.y);
+            SDL_GetMouseState(&s_mouse_position.x, &s_mouse_position.y);
 
-            s_mouse_position_delta = glm::dvec2 { 0.0f };
-            s_mouse_scroll         = glm::dvec2 { 0.0f };
+            s_mouse_position_delta = Vector2(0.0);
+            s_mouse_scroll         = Vector2(0.0);
             s_initialized          = true;
-
-            if (glfwRawMouseMotionSupported()) {
-                glfwSetInputMode(Engine::s_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-            }
-
-            glfwSetScrollCallback(Engine::s_window, [](GLFWwindow* window, const double x, const double y) {
-                FOW_DISCARD(window);
-                s_mouse_scroll = glm::dvec2 { x, y };
-            });
         }
         void Poll() {
             const auto prev_pos = s_mouse_position;
-            glfwGetCursorPos(Engine::s_window, &s_mouse_position.x, &s_mouse_position.y);
+            const auto mouse_state = SDL_GetMouseState(&s_mouse_position.x, &s_mouse_position.y);
             s_mouse_position_delta = s_mouse_position - prev_pos;
 
-            for (int i = 0; i < GLFW_KEY_LAST + 1; ++i) {
-                const auto state = glfwGetKey(Engine::s_window, i);
+            int key_count;
+            const auto key_states = SDL_GetKeyboardState(&key_count);
+            for (int i = 0; i < key_count + 1; ++i) {
+                const auto state = key_states[i];
                 auto& kb_state = s_keyboard_state.at(i);
-                if (state == GLFW_PRESS || state == GLFW_REPEAT) {
+                if (state) {
                     if (kb_state == State::Pressed) {
                         kb_state = State::Down;
                     } else if (kb_state > State::Down) {
@@ -511,10 +528,11 @@ namespace fow {
                     }
                 }
             }
+
             for (int i = 0; i < 8; ++i) {
-                const auto state = glfwGetMouseButton(Engine::s_window, i);
+                const auto state = (mouse_state >> i) & 1;
                 auto& mb_state = s_mouse_btn_state.at(i);
-                if (state == GLFW_PRESS || state == GLFW_REPEAT) {
+                if (state) {
                     if (mb_state == State::Pressed) {
                         mb_state = State::Down;
                     } else if (mb_state > State::Down) {
@@ -577,224 +595,224 @@ namespace fow {
             if (key.starts_with("kp_", StringCompareType::CaseInsensitive)) {
                 const auto result = StringToInt<unsigned>(String(key).remove_prefix("kp_"));
                 if (result.has_value() && result.value() < 10) {
-                    return Success<Action>(Action { Type::KeyboardKey, static_cast<int>(GLFW_KEY_KP_0 + result.value()) });
+                    return Success<Action>(Action { Type::KeyboardKey, static_cast<int>(SDL_SCANCODE_KP_0 + result.value()) });
                 }
                 if (key.equals("kp_decimal", StringCompareType::CaseInsensitive)) {
-                    return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_KP_DECIMAL });
+                    return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_KP_DECIMAL });
                 }
                 if (key.equals("kp_divide", StringCompareType::CaseInsensitive)) {
-                    return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_KP_DIVIDE });
+                    return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_KP_DIVIDE });
                 }
                 if (key.equals("kp_multiply", StringCompareType::CaseInsensitive)) {
-                    return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_KP_MULTIPLY });
+                    return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_KP_MULTIPLY });
                 }
                 if (key.equals("kp_subtract", StringCompareType::CaseInsensitive)) {
-                    return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_KP_SUBTRACT });
+                    return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_KP_MINUS });
                 }
                 if (key.equals("kp_add", StringCompareType::CaseInsensitive)) {
-                    return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_KP_ADD });
+                    return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_KP_PLUS });
                 }
                 if (key.equals("kp_enter", StringCompareType::CaseInsensitive)) {
-                    return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_KP_ENTER });
+                    return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_KP_ENTER });
                 }
                 if (key.equals_any({ "kp_equal", "kp_equals" }, StringCompareType::CaseInsensitive)) {
-                    return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_KP_EQUAL });
+                    return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_KP_EQUALS });
                 }
             }
             if (key.size() == 1) {
                 if (std::isdigit(key[0])) {
-                    return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_0 + (key[0] - '0') });
+                    return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_0 + (key[0] - '0') });
                 }
                 if (std::isalpha(key[0])) {
-                    return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_A + (std::toupper(key[0]) - 'A') });
+                    return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_A + (std::toupper(key[0]) - 'A') });
                 }
                 return Failure(std::format("Invalid key code \"{}\"", key));
             }
             if (key[0] == 'F' || key[0] == 'f') {
                 const auto result = StringToInt<int>(key.substr(1));
                 if (result.has_value() && result.value() > 0 && result.value() <= 25) {
-                    return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_F1 + result.value() });
+                    return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_F1 + result.value() });
                 }
             }
 
             if (key.equals("space", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_SPACE });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_SPACE });
             }
             if (key.equals_any({ "enter", "return" }, StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_ENTER });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_RETURN });
             }
             if (key.equals("apostrophe", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_APOSTROPHE });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_APOSTROPHE });
             }
             if (key.equals("comma", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_COMMA });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_COMMA });
             }
             if (key.equals_any({ "minus", "negative" }, StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_MINUS });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_MINUS });
             }
             if (key.equals("period", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_PERIOD });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_PERIOD });
             }
             if (key.equals("slash", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_SLASH });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_SLASH });
             }
             if (key.equals("semicolon", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_SEMICOLON });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_SEMICOLON });
             }
             if (key.equals_any({ "equal", "equals" }, StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_EQUAL });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_EQUALS });
             }
             if (key.equals("left_bracket", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_LEFT_BRACKET });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_LEFTBRACKET });
             }
             if (key.equals("right_bracket", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_RIGHT_BRACKET });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_RIGHTBRACKET });
             }
             if (key.equals("grave_accent", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_GRAVE_ACCENT });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_GRAVE });
             }
             if (key.equals("backslash", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_BACKSLASH });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_BACKSLASH });
             }
             if (key.equals("escape", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_ESCAPE });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_ESCAPE });
             }
             if (key.equals("tab", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_TAB });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_TAB });
             }
             if (key.equals("backspace", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_BACKSPACE });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_BACKSPACE });
             }
             if (key.equals("insert", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_INSERT });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_INSERT });
             }
             if (key.equals("delete", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_DELETE });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_DELETE });
             }
             if (key.equals("right", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_RIGHT });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_RIGHT });
             }
             if (key.equals("left", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_LEFT });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_LEFT });
             }
             if (key.equals("down", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_DOWN });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_DOWN });
             }
             if (key.equals("up", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_UP });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_UP });
             }
             if (key.equals("page_up", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_PAGE_UP });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_PAGEUP });
             }
             if (key.equals("page_down", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_PAGE_DOWN });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_PAGEDOWN });
             }
             if (key.equals("home", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_HOME });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_HOME });
             }
             if (key.equals("end", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_END });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_END });
             }
             if (key.equals_any({ "caps_lock", "capslock" }, StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_CAPS_LOCK });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_CAPSLOCK });
             }
             if (key.equals_any({ "scroll_lock", "scrolllock" }, StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_SCROLL_LOCK });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_SCROLLLOCK });
             }
             if (key.equals_any({ "num_lock", "numlock" }, StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_NUM_LOCK });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_NUMLOCKCLEAR });
             }
             if (key.equals("printscreen", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_PRINT_SCREEN });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_PRINTSCREEN });
             }
             if (key.equals("pause", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_PAUSE });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_PAUSE });
             }
             if (key.equals("left_shift", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_LEFT_SHIFT });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_LSHIFT });
             }
             if (key.equals("left_ctrl", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_LEFT_CONTROL });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_LCTRL });
             }
             if (key.equals("left_alt", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_LEFT_ALT });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_LALT });
             }
             if (key.equals("right_shift", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_RIGHT_SHIFT });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_RSHIFT });
             }
             if (key.equals("right_ctrl", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_RIGHT_CONTROL });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_RCTRL });
             }
             if (key.equals("right_alt", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_RIGHT_ALT });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_RALT });
             }
             if (key.equals("menu", StringCompareType::CaseInsensitive)) {
-                return Success<Action>(Action { Type::KeyboardKey, GLFW_KEY_MENU });
+                return Success<Action>(Action { Type::KeyboardKey, SDL_SCANCODE_MENU });
             }
             return Failure(std::format("Invalid key code \"{}\"", key));
         }
         Result<String> ActionToString(Action action) {
             switch (action.type) {
                 case Type::KeyboardKey: {
-                    if (action.keycode >= GLFW_KEY_0 && action.keycode <= GLFW_KEY_9) {
-                        return Success<String>(std::to_string(action.keycode - GLFW_KEY_0));
+                    if (action.keycode >= SDL_SCANCODE_0 && action.keycode <= SDL_SCANCODE_9) {
+                        return Success<String>(std::to_string(action.keycode - SDL_SCANCODE_0));
                     }
-                    if (action.keycode >= GLFW_KEY_A && action.keycode <= GLFW_KEY_Z) {
-                        return Success<String>(String { static_cast<char>(action.keycode - GLFW_KEY_A + 'A'), 1 });
+                    if (action.keycode >= SDL_SCANCODE_A && action.keycode <= SDL_SCANCODE_Z) {
+                        return Success<String>(String { static_cast<char>(action.keycode - SDL_SCANCODE_A + 'A'), 1 });
                     }
-                    if (action.keycode >= GLFW_KEY_KP_0 && action.keycode <= GLFW_KEY_KP_9) {
-                        return Success<String>(std::format("kp_{}", action.keycode - GLFW_KEY_KP_0));
+                    if (action.keycode >= SDL_SCANCODE_KP_0 && action.keycode <= SDL_SCANCODE_KP_9) {
+                        return Success<String>(std::format("kp_{}", action.keycode - SDL_SCANCODE_KP_0));
                     }
-                    if (action.keycode >= GLFW_KEY_F1 && action.keycode <= GLFW_KEY_F25) {
-                        return Success<String>(std::format("F{}", action.keycode - GLFW_KEY_F1 + 1));
+                    if (action.keycode >= SDL_SCANCODE_F1 && action.keycode <= SDL_SCANCODE_F12) {
+                        return Success<String>(std::format("F{}", action.keycode - SDL_SCANCODE_F1 + 1));
                     }
 
                     switch (action.keycode) {
-                        case GLFW_KEY_SPACE: return Success<String>("space");
-                        case GLFW_KEY_APOSTROPHE: return Success<String>("apostrophe");
-                        case GLFW_KEY_COMMA: return Success<String>("comma");
-                        case GLFW_KEY_MINUS: return Success<String>("minus");
-                        case GLFW_KEY_PERIOD: return Success<String>("period");
-                        case GLFW_KEY_SLASH: return Success<String>("slash");
-                        case GLFW_KEY_SEMICOLON: return Success<String>("semicolon");
-                        case GLFW_KEY_EQUAL: return Success<String>("equal");
-                        case GLFW_KEY_LEFT_BRACKET: return Success<String>("left_bracket");
-                        case GLFW_KEY_BACKSLASH: return Success<String>("backslash");
-                        case GLFW_KEY_RIGHT_BRACKET: return Success<String>("right_bracket");
-                        case GLFW_KEY_GRAVE_ACCENT: return Success<String>("grave_accent");
-                        case GLFW_KEY_ESCAPE: return Success<String>("escape");
-                        case GLFW_KEY_ENTER: return Success<String>("enter");
-                        case GLFW_KEY_TAB: return Success<String>("tab");
-                        case GLFW_KEY_BACKSPACE: return Success<String>("backspace");
-                        case GLFW_KEY_INSERT: return Success<String>("insert");
-                        case GLFW_KEY_DELETE: return Success<String>("delete");
-                        case GLFW_KEY_RIGHT: return Success<String>("right");
-                        case GLFW_KEY_LEFT: return Success<String>("left");
-                        case GLFW_KEY_DOWN: return Success<String>("down");
-                        case GLFW_KEY_UP: return Success<String>("up");
-                        case GLFW_KEY_PAGE_UP: return Success<String>("page_up");
-                        case GLFW_KEY_PAGE_DOWN: return Success<String>("page_down");
-                        case GLFW_KEY_HOME: return Success<String>("home");
-                        case GLFW_KEY_END: return Success<String>("end");
-                        case GLFW_KEY_CAPS_LOCK: return Success<String>("caps_lock");
-                        case GLFW_KEY_SCROLL_LOCK: return Success<String>("scroll_lock");
-                        case GLFW_KEY_NUM_LOCK: return Success<String>("num_lock");
-                        case GLFW_KEY_PRINT_SCREEN: return Success<String>("printscreen");
-                        case GLFW_KEY_PAUSE: return Success<String>("pause");
-                        case GLFW_KEY_KP_DECIMAL: return Success<String>("kp_decimal");
-                        case GLFW_KEY_KP_DIVIDE: return Success<String>("kp_divide");
-                        case GLFW_KEY_KP_MULTIPLY: return Success<String>("kp_multiply");
-                        case GLFW_KEY_KP_SUBTRACT: return Success<String>("kp_subtract");
-                        case GLFW_KEY_KP_ADD: return Success<String>("kp_add");
-                        case GLFW_KEY_KP_ENTER: return Success<String>("kp_enter");
-                        case GLFW_KEY_KP_EQUAL: return Success<String>("kp_equal");
-                        case GLFW_KEY_LEFT_SHIFT: return Success<String>("left_shift");
-                        case GLFW_KEY_LEFT_CONTROL: return Success<String>("left_ctrl");
-                        case GLFW_KEY_LEFT_ALT: return Success<String>("left_alt");
-                        case GLFW_KEY_RIGHT_SHIFT: return Success<String>("right_shift");
-                        case GLFW_KEY_RIGHT_CONTROL: return Success<String>("right_ctrl");
-                        case GLFW_KEY_RIGHT_ALT: return Success<String>("right_alt");
-                        case GLFW_KEY_MENU: return Success<String>("menu");
+                        case SDL_SCANCODE_SPACE: return Success<String>("space");
+                        case SDL_SCANCODE_APOSTROPHE: return Success<String>("apostrophe");
+                        case SDL_SCANCODE_COMMA: return Success<String>("comma");
+                        case SDL_SCANCODE_MINUS: return Success<String>("minus");
+                        case SDL_SCANCODE_PERIOD: return Success<String>("period");
+                        case SDL_SCANCODE_SLASH: return Success<String>("slash");
+                        case SDL_SCANCODE_SEMICOLON: return Success<String>("semicolon");
+                        case SDL_SCANCODE_EQUALS: return Success<String>("equal");
+                        case SDL_SCANCODE_LEFTBRACKET: return Success<String>("left_bracket");
+                        case SDL_SCANCODE_BACKSLASH: return Success<String>("backslash");
+                        case SDL_SCANCODE_RIGHTBRACKET: return Success<String>("right_bracket");
+                        case SDL_SCANCODE_GRAVE: return Success<String>("grave_accent");
+                        case SDL_SCANCODE_ESCAPE: return Success<String>("escape");
+                        case SDL_SCANCODE_RETURN: return Success<String>("enter");
+                        case SDL_SCANCODE_TAB: return Success<String>("tab");
+                        case SDL_SCANCODE_BACKSPACE: return Success<String>("backspace");
+                        case SDL_SCANCODE_INSERT: return Success<String>("insert");
+                        case SDL_SCANCODE_DELETE: return Success<String>("delete");
+                        case SDL_SCANCODE_RIGHT: return Success<String>("right");
+                        case SDL_SCANCODE_LEFT: return Success<String>("left");
+                        case SDL_SCANCODE_DOWN: return Success<String>("down");
+                        case SDL_SCANCODE_UP: return Success<String>("up");
+                        case SDL_SCANCODE_PAGEUP: return Success<String>("page_up");
+                        case SDL_SCANCODE_PAGEDOWN: return Success<String>("page_down");
+                        case SDL_SCANCODE_HOME: return Success<String>("home");
+                        case SDL_SCANCODE_END: return Success<String>("end");
+                        case SDL_SCANCODE_CAPSLOCK: return Success<String>("caps_lock");
+                        case SDL_SCANCODE_SCROLLLOCK: return Success<String>("scroll_lock");
+                        case SDL_SCANCODE_NUMLOCKCLEAR: return Success<String>("num_lock");
+                        case SDL_SCANCODE_PRINTSCREEN: return Success<String>("printscreen");
+                        case SDL_SCANCODE_PAUSE: return Success<String>("pause");
+                        case SDL_SCANCODE_KP_DECIMAL: return Success<String>("kp_decimal");
+                        case SDL_SCANCODE_KP_DIVIDE: return Success<String>("kp_divide");
+                        case SDL_SCANCODE_KP_MULTIPLY: return Success<String>("kp_multiply");
+                        case SDL_SCANCODE_KP_MINUS: return Success<String>("kp_subtract");
+                        case SDL_SCANCODE_KP_PLUS: return Success<String>("kp_add");
+                        case SDL_SCANCODE_KP_ENTER: return Success<String>("kp_enter");
+                        case SDL_SCANCODE_KP_EQUALS: return Success<String>("kp_equal");
+                        case SDL_SCANCODE_LSHIFT: return Success<String>("left_shift");
+                        case SDL_SCANCODE_LCTRL: return Success<String>("left_ctrl");
+                        case SDL_SCANCODE_LALT: return Success<String>("left_alt");
+                        case SDL_SCANCODE_RSHIFT: return Success<String>("right_shift");
+                        case SDL_SCANCODE_RCTRL: return Success<String>("right_ctrl");
+                        case SDL_SCANCODE_RALT: return Success<String>("right_alt");
+                        case SDL_SCANCODE_MENU: return Success<String>("menu");
                         default: return Failure(std::format("Invalid key code {}", action.keycode));
                     }
                 }
@@ -812,10 +830,10 @@ namespace fow {
         }
 
         void SetCursorMode(const CursorMode mode) {
-            glfwSetInputMode(Engine::s_window, GLFW_CURSOR, mode);
+            SDL_SetWindowRelativeMouseMode(Engine::s_window, mode == CursorMode::Locked);
         }
         CursorMode GetCursorMode() {
-            return static_cast<CursorMode>(glfwGetInputMode(Engine::s_window, GLFW_CURSOR));
+            return SDL_GetWindowRelativeMouseMode(Engine::s_window) ? CursorMode::Locked : CursorMode::Unlocked;
         }
 
         bool ActionIsPressed(const String& action) {

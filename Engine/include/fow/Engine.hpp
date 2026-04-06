@@ -75,6 +75,7 @@ namespace fow {
         FOW_ENGINE_API Vector2i GetWindowSize();
         FOW_ENGINE_API const Version& GetVersion();
         FOW_ENGINE_API void SetScene(const ScenePtr& scene);
+        FOW_ENGINE_API double Time();
     }
 
     namespace Input {
@@ -102,11 +103,9 @@ namespace fow {
             int keycode;
         };
 
-        enum CursorMode {
-            Normal   = GLFW_CURSOR_NORMAL,
-            Hidden   = GLFW_CURSOR_HIDDEN,
-            Disabled = GLFW_CURSOR_DISABLED,
-            Captured = GLFW_CURSOR_CAPTURED
+        enum class CursorMode {
+            Unlocked,
+            Locked
         };
 
         FOW_ENGINE_API void Initialize();

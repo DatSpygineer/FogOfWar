@@ -78,7 +78,7 @@ public:
         m_pLight2Transform = ent_light_2->add_component<TransformComponent>();
         m_pLight2Transform->set_position(Vector3 { 5.0f, 1.0f, -5.0f });
         m_pLight2 = ent_light_2->add_component<LightComponent>();
-        m_pLight2->set_color(Color { 1.0f, 1.0f, 1.0f });
+        m_pLight2->set_color(Color { 1.0f, 0.0f, 1.0f });
         m_pLight2->set_intensity(300.0f);
         const auto comp_light_2_spr = ent_light_2->add_component<SpriteRendererComponent>();
         comp_light_2_spr->set_sprite(light_sprite.value().ptr());

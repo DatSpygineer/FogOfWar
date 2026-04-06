@@ -3,6 +3,8 @@
     <Material shader="Sprite">
         <Parameters>
             <MainTexture>/Sprites/Light.texture.xml</MainTexture>
+            <ColorTintMask>/Sprites/LightTint.texture.xml</ColorTintMask>
+            <UseColorTintMask>true</UseColorTintMask>
             <AlphaScissor>true</AlphaScissor>
         </Parameters>
     </Material>

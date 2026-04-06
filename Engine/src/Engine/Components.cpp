@@ -171,6 +171,10 @@ namespace fow {
         FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(LightComponent, TransformComponent);
         const auto transform = entity().get_component<TransformComponent>();
         m_pLightInfo = RenderQueue::AddLight(transform->transform(), m_color, m_intensity, entity().is_enabled());
+
+        if (const auto renderer = entity().get_component<SpriteRendererComponent>()) {
+            renderer->get_sprite()->material()->set_parameter("ColorTint", m_color);
+        }
     }
 
     void LightComponent::on_destroy() {
@@ -196,6 +200,9 @@ namespace fow {
         m_color = color;
         if (m_pLightInfo != nullptr) {
             m_pLightInfo->color = color.to_vec3();
+            if (const auto renderer = entity().get_component<SpriteRendererComponent>()) {
+                renderer->get_sprite()->material()->set_parameter("ColorTint", color);
+            }
         }
     }
     void LightComponent::set_intensity(const float intensity) {
@@ -208,7 +215,7 @@ namespace fow {
     void LightComponent::set_parameter(const String& name, const String& value) {
         if (name.equals("color", StringCompareType::CaseInsensitive)) {
             if (const auto result = StringToColor(value); result.has_value()) {
-                m_color = result.value();
+                set_color(result.value());
             } else {
                 Debug::LogError(std::format("Failed to parse color value \"{}\": {}", value, result.error().message));
             }

@@ -25,6 +25,3 @@
 [submodule "ThirdParty/sol2"]
 	path = ThirdParty/sol2
 	url = https://github.com/ThePhD/sol2.git
-[submodule "ThirdParty/msdf-atlas-gen"]
-	path = ThirdParty/msdf-atlas-gen
-	url = https://github.com/Chlumsky/msdf-atlas-gen.git

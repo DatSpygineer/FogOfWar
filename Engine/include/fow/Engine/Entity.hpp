@@ -120,7 +120,7 @@ namespace fow {
 
         static Result<ComponentRegistryObject> GetComponentRegistry(const String& class_name);
     public:
-        ComponentRegistryObject(const std::type_index& type_index, const String& class_name, const ComponentFactory& factory, const Vector<String>& dependencies);
+        ComponentRegistryObject(const std::type_index& type_index, const String& class_name, const ComponentFactory& factory, const Vector<String>& dependűencies);
 
         const std::type_index& type_index() const { return m_type_index; }
         const String& class_name() const { return m_class_name; }

@@ -16,6 +16,8 @@ uniform sampler2D EmissionMap;
 uniform sampler2D BrdfLut;
 uniform samplerCube EnvMap;
 uniform samplerCube EnvMapBlur;
+uniform sampler2D ColorTintMask;
+uniform bool UseColorTintMask;
 uniform vec4 ColorTint = vec4(1.0);
 uniform bool  AlphaScissor = false;
 uniform float AlphaScissorThreshold = 0.5;
@@ -146,14 +148,20 @@ void main() {
     vec3 view = normalize(CAMERA_POSITION - FRAGMENT_WORLD_POSITION);
     vec3 refl = reflect(-view, normal);
 
-    vec4 mainTex   = texture(MainTexture, FRAGMENT_TEXTURE_COORDS) * ColorTint;
-    vec3 emission  = texture(EmissionMap, FRAGMENT_TEXTURE_COORDS).rgb;
-    vec3 albedo    = pow(mainTex.rgb, vec3(2.2));
-    vec4 specular  = texture(SpecularMap, FRAGMENT_TEXTURE_COORDS);
-    float metallic  = specular.r * Metallicness;
-    float roughness = clamp(specular.g * Roughness, 0.05, 0.9);
-    float envmap_mask = normalize(specular.b) * EnvMapStrength;
-    float ao        = specular.a * AmbientOcclusion;
+    float color_tint_mask = 1.0;
+    if (UseColorTintMask) {
+        color_tint_mask = texture(ColorTintMask, FRAGMENT_TEXTURE_COORDS).r;
+    }
+
+    vec4 mainTex_tinted = texture(MainTexture, FRAGMENT_TEXTURE_COORDS) * ColorTint;
+    vec4 mainTex        = mix(texture(MainTexture, FRAGMENT_TEXTURE_COORDS), mainTex_tinted, color_tint_mask);
+    vec3 emission       = texture(EmissionMap, FRAGMENT_TEXTURE_COORDS).rgb;
+    vec3 albedo         = pow(mainTex.rgb, vec3(2.2));
+    vec4 specular       = texture(SpecularMap, FRAGMENT_TEXTURE_COORDS);
+    float metallic      = specular.r * Metallicness;
+    float roughness     = clamp(specular.g * Roughness, 0.05, 0.9);
+    float envmap_mask   = normalize(specular.b) * EnvMapStrength;
+    float ao            = specular.a * AmbientOcclusion;
 
     vec3 base_reflectivity = vec3(0.04);
 

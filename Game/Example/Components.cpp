@@ -18,7 +18,7 @@ void FlyCameraComponent::on_spawn() {
 void FlyCameraComponent::on_update(const double dt) {
     if (Input::KeyIsPressed(KeyCode::Escape)) {
         m_bFreeLook = !m_bFreeLook;
-        Input::SetCursorMode(m_bFreeLook ? Input::Disabled : Input::Normal);
+        Input::SetCursorMode(m_bFreeLook ? Input::CursorMode::Locked : Input::CursorMode::Unlocked);
     }
 
     if (m_bFreeLook) {
