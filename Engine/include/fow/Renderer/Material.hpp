@@ -74,7 +74,7 @@ namespace fow {
             m_pShader(shader), m_mParams(params), m_options(options) { }
         explicit Material(ShaderPtr&& shader, const HashMap<String, MaterialParameterValue>& params = { }, const MaterialOptions options = { }) :
             m_pShader(std::move(shader)), m_mParams(params), m_options(options) { }
-        Material(const Material& material) = delete;
+        Material(const Material& material) : m_pShader(material.m_pShader), m_mParams(material.m_mParams), m_options(material.m_options) { }
         Material(Material&& material) noexcept : m_pShader(std::move(material.m_pShader)), m_mParams(std::move(material.m_mParams)), m_options(std::move(material.m_options)) {
             material.m_pShader = nullptr;
             material.m_mParams = { };
@@ -112,6 +112,9 @@ namespace fow {
         static Result<MaterialPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
 
         static Result<MaterialPtr> New(const String& shader_name, const HashMap<String, MaterialParameterValue>& params = { });
+
+        Material create_instance() const;
+        Material create_instance(const HashMap<String, MaterialParameterValue>& params) const;
 
         static const Material Null;
     };

@@ -1480,5 +1480,12 @@ namespace fow {
         return std::make_shared<Material>(shader, params);
     }
 
+    Material Material::create_instance() const {
+        return std::move(Material(*this));
+    }
+    Material Material::create_instance(const HashMap<String, MaterialParameterValue>& params) const {
+        return std::move(Material(m_pShader, params));
+    }
+
     const Material Material::Null = { };
 }
