@@ -122,6 +122,21 @@ namespace fow {
         Rectangle& operator=(Rectangle&& other) noexcept = default;
     };
 
+    struct FOW_SHARED_API IntRectangle {
+        int x, y, width, height;
+
+        FOW_CONSTEXPR IntRectangle() : x(0), y(0), width(0), height(0) { }
+        FOW_CONSTEXPR IntRectangle(IntRectangle&& other) noexcept = default;
+        FOW_CONSTEXPR IntRectangle(const IntRectangle& other)     = default;
+        FOW_CONSTEXPR IntRectangle(const Vector2i& position, const Vector2i& size) : x(position.x), y(position.y), width(size.x), height(size.y) { }
+        FOW_CONSTEXPR IntRectangle(const int x, const int y, const int width, const int height) : x(x), y(y), width(width), height(height) { }
+        FOW_CONSTEXPR IntRectangle(const int x, const int y, const Vector2i& size) : x(x), y(y), width(size.x), height(size.y) { }
+        FOW_CONSTEXPR IntRectangle(const Vector2i& position, const int width, const int height) : x(position.x), y(position.y), width(width), height(height) { }
+
+        IntRectangle& operator=(const IntRectangle& other)     = default;
+        IntRectangle& operator=(IntRectangle&& other) noexcept = default;
+    };
+
     namespace Vector2Constants {
 #if !FOW_CONSTEXPR_ENABLED
         const Vector2 Up;

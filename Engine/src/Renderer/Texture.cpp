@@ -1,5 +1,7 @@
 #include "fow/Renderer/GL.hpp"
 #include "fow/Renderer/Texture.hpp"
+
+#include "image_array.h"
 #include "fow/Shared/StringConversion.hpp"
 
 #include "SOIL2.h"
@@ -421,7 +423,7 @@ namespace fow {
     static Result<GLuint> LoadOpenGLTexture(const Vector<uint8_t>& data, const TextureInfo& info) {
         Result<GLuint> result;
         GLuint id = 0;
-        unsigned flags = 0;
+        GLuint flags = 0;
 
         const auto mag_filter = info.MagFilter.value_or(TextureMagFilterMode::Linear);
         const auto min_filter = info.MinFilter.value_or(TextureMinFilterMode::Linear);
@@ -448,12 +450,12 @@ namespace fow {
             flags |= SOIL_FLAG_SRGB_COLOR_SPACE;
         }
 
-        if (target == TextureTarget::TextureCubeMap) {
-            id = SOIL_load_OGL_single_cubemap_from_memory(data.data(), data.size(), SOIL_DDS_CUBEMAP_FACE_ORDER, SOIL_LOAD_AUTO, id, flags);
-        } else if (target == TextureTarget::Texture2D) {
+        if (target == TextureTarget::Texture2D) {
             id = SOIL_load_OGL_texture_from_memory(data.data(), data.size(), SOIL_LOAD_AUTO, id, flags);
         } else if (target == TextureTarget::Texture2DArray) {
             id = SOIL_load_OGL_texture_array_from_atlas_grid_from_memory(data.data(), data.size(), frame_count, 1, SOIL_LOAD_AUTO, id, flags);
+        } else if (target == TextureTarget::TextureCubeMap) {
+            id = SOIL_load_OGL_single_cubemap_from_memory(data.data(), data.size(), SOIL_DDS_CUBEMAP_FACE_ORDER, SOIL_LOAD_AUTO, id, flags);
         } else {
             result = Failure("Failed to load OpenGL texture data: Unsupported texture target");
             goto LOAD_GL_TEXTURE_END;
@@ -473,6 +475,66 @@ namespace fow {
             glDeleteTextures(1, &id);
         }
         return result;
+    }
+
+    static Result<GLuint> CreateOpenGLTexture(const void* data, int w, int h, const int c, const GLuint reuse_id, const TextureInfo& info) {
+        auto id = reuse_id;
+        GLuint flags = 0;
+
+        const auto mag_filter = info.MagFilter.value_or(TextureMagFilterMode::Linear);
+        const auto min_filter = info.MinFilter.value_or(TextureMinFilterMode::Linear);
+        const auto wrap_s = info.WrapS.value_or(TextureWrapMode::Repeat);
+        const auto wrap_t = info.WrapT.value_or(TextureWrapMode::Repeat);
+        const auto frame_count = info.FrameCount.value_or(1);
+        const auto target = info.Target.value_or(TextureTarget::Texture2D);
+        const auto gl_target = static_cast<GLenum>(target);
+
+        glGenTextures(1, &id);
+        if (id == 0) {
+            return Failure(std::format("Failed to generate OpenGL texture handle: GL error \"{}\"", glGetError()));
+        }
+
+        if (info.GenerateMipMaps) {
+            flags |= SOIL_FLAG_MIPMAPS;
+        }
+        if (info.CoCg.value_or(false)) {
+            flags |= SOIL_FLAG_CoCg_Y;
+        }
+        if (info.SRgb.value_or(false)) {
+            flags |= SOIL_FLAG_SRGB_COLOR_SPACE;
+        }
+
+        if (target == TextureTarget::Texture2D) {
+            id = SOIL_create_OGL_texture(static_cast<const unsigned char*>(data), &w, &h, c, id, flags);
+        } else if (target == TextureTarget::Texture2DArray) {
+            auto array = extract_image_array_from_atlas_grid(static_cast<const unsigned char*>(data),
+                w, h,
+                frame_count, 1,
+                c
+            );
+            id = SOIL_upload_image_array_to_gl(&array, id, flags);
+            SOIL_image_array_free(&array);
+        } else if (target == TextureTarget::TextureCubeMap) {
+            id = SOIL_create_OGL_single_cubemap(static_cast<const unsigned char*>(data),
+                w, h, c,
+                SOIL_DDS_CUBEMAP_FACE_ORDER,
+                id, flags
+            );
+        } else {
+            if (id != 0) {
+                glDeleteTextures(1, &id);
+            }
+            return Failure("Failed to load OpenGL texture data: Unsupported texture target");
+        }
+
+        glBindTexture(gl_target, id);
+        glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(mag_filter));
+        glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(min_filter));
+        glTextureParameteri(id, GL_TEXTURE_WRAP_S,     static_cast<GLint>(wrap_s)    );
+        glTextureParameteri(id, GL_TEXTURE_WRAP_T,     static_cast<GLint>(wrap_t)    );
+        glBindTexture(gl_target, 0);
+
+        return Success<GLuint>(id);
     }
 
     Result<Texture2DPtr> Texture2D::Load(const TextureInfo& info) {
@@ -511,6 +573,26 @@ namespace fow {
         return Failure(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
     }
 
+    Result<Texture2DPtr> Texture2D::FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info) {
+        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, surface->pitch, 0u, info);
+        if (id_result.has_value()) {
+            return Success<Texture2DPtr>(std::make_shared<Texture2D>(std::move(Texture2D(id_result.value()))));
+        }
+
+        return Failure(id_result.error());
+    }
+
+    Result<Texture2DPtr> Texture2D::FromSDLSurface(const SDL_Surface* surface, const Texture& reuse, const TextureInfo& info) {
+        const GLuint id = reuse.id();
+
+        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, surface->pitch, id, info);
+        if (id_result.has_value()) {
+            return Success<Texture2DPtr>(std::make_shared<Texture2D>(std::move(Texture2D(id_result.value()))));
+        }
+
+        return Failure(id_result.error());
+    }
+
     Result<Texture2DArrayPtr> Texture2DArray::Load(const TextureInfo& info) {
         const auto image_data = Assets::LoadAsBytes(info.Source.c_str());
         if (!image_data.has_value()) {
@@ -547,6 +629,26 @@ namespace fow {
         return Failure(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
     }
 
+    Result<Texture2DArrayPtr> Texture2DArray::FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info) {
+        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, surface->pitch, 0u, info);
+        if (id_result.has_value()) {
+            return Success<Texture2DArrayPtr>(std::make_shared<Texture2DArray>(std::move(Texture2DArray(id_result.value()))));
+        }
+
+        return Failure(id_result.error());
+    }
+
+    Result<Texture2DArrayPtr> Texture2DArray::FromSDLSurface(const SDL_Surface* surface, const Texture& reuse, const TextureInfo& info) {
+        const GLuint id = reuse.id();
+
+        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, surface->pitch, id, info);
+        if (id_result.has_value()) {
+            return Success<Texture2DArrayPtr>(std::make_shared<Texture2DArray>(std::move(Texture2DArray(id_result.value()))));
+        }
+
+        return Failure(id_result.error());
+    }
+
     Result<TextureCubeMapPtr> TextureCubeMap::Load(const TextureInfo& info) {
         const auto image_data = Assets::LoadAsBytes(info.Source.c_str());
         if (!image_data.has_value()) {
@@ -581,5 +683,25 @@ namespace fow {
             return LoadFromMemory(image_data.value(), info_value.value());
         }
         return Failure(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
+    }
+
+    Result<TextureCubeMapPtr> TextureCubeMap::FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info) {
+        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, surface->pitch, 0u, info);
+        if (id_result.has_value()) {
+            return Success<TextureCubeMapPtr>(std::make_shared<TextureCubeMap>(std::move(TextureCubeMap(id_result.value()))));
+        }
+
+        return Failure(id_result.error());
+    }
+
+    Result<TextureCubeMapPtr> TextureCubeMap::FromSDLSurface(const SDL_Surface* surface, const Texture& reuse, const TextureInfo& info) {
+        const GLuint id = reuse.id();
+
+        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, surface->pitch, id, info);
+        if (id_result.has_value()) {
+            return Success<TextureCubeMapPtr>(std::make_shared<TextureCubeMap>(std::move(TextureCubeMap(id_result.value()))));
+        }
+
+        return Failure(id_result.error());
     }
 }

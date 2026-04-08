@@ -43,6 +43,9 @@ namespace fow {
         }
 
         const auto root = xml->child("Sprite");
+        if (!root) {
+            return Failure(std::format("Failed to load Sprite \"{}\": Expected root node \"Sprite\"", path));
+        }
         const auto mat_node = root.child("Material");
         if (!mat_node) {
             return Failure(std::format("Expected child node \"Material\" in root node \"Sprite\""));
@@ -52,13 +55,13 @@ namespace fow {
         if (const auto src_attrib = mat_node.attribute("src"); src_attrib) {
             auto mat_result = Assets::Load<Material>(src_attrib.value(), flags);
             if (!mat_result.has_value()) {
-                return Failure(std::format("Failed to load sprite \"{}\": {}", path, mat_result.error().message));
+                return Failure(std::format("Failed to load Sprite \"{}\": {}", path, mat_result.error().message));
             }
             material = std::move(mat_result.value().ptr());
         } else {
             auto mat_result = Material::ParseXml(std::format("{}:internal", path), mat_node, flags);
             if (!mat_result.has_value()) {
-                return Failure(std::format("Failed to load sprite \"{}\": {}", path, mat_result.error().message));
+                return Failure(std::format("Failed to load Sprite \"{}\": {}", path, mat_result.error().message));
             }
             material = std::move(mat_result.value());
         }

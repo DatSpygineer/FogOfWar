@@ -7,6 +7,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "SOIL2.h"
 
@@ -98,6 +99,11 @@ namespace fow {
                 return Failure(std::format("Failed to initialize SDL: {}", SDL_GetError()));
             }
 
+            if (!TTF_Init()) {
+                SDL_Quit();
+                return Failure(std::format("Failed to initialize SDL_ttf: {}", SDL_GetError()));
+            }
+
             Vector2 resolution   = vid_resolution->as_vec2().value_or(Vector2 { 1280, 720 });
             WindowMode window_mode = rfl::string_to_enum<WindowMode>(vid_window_mode->as_string().value_or("Windowed").as_std_str())
                                         .value_or(WindowMode::Windowed);
@@ -187,6 +193,7 @@ namespace fow {
 
             if (s_window == nullptr) {
                 String error = SDL_GetError();
+                TTF_Quit();
                 SDL_Quit();
                 return Failure(std::format("Failed to create window: \"{}\"", error));
             }
@@ -204,6 +211,7 @@ namespace fow {
             if (s_glContext == nullptr) {
                 String error = SDL_GetError();
                 SDL_DestroyWindow(s_window);
+                TTF_Quit();
                 SDL_Quit();
                 return Failure(std::format("Failed to create OpenGL context: \"{}\"", error));
             }
@@ -212,6 +220,7 @@ namespace fow {
             if (const auto result = Renderer::Initialize(s_base_path, msaa, reinterpret_cast<void*(*)(const char*)>(SDL_GL_GetProcAddress)); !result.has_value()) {
                 SDL_GL_DestroyContext(s_glContext);
                 SDL_DestroyWindow(s_window);
+                TTF_Quit();
                 SDL_Quit();
                 return Failure(result.error());
             }
@@ -354,6 +363,8 @@ namespace fow {
                 SDL_DestroyWindow(s_window);
                 s_window = nullptr;
             }
+
+            TTF_Quit();
             SDL_Quit();
 
             if (GetGameState() == GameState::Crashed) {
