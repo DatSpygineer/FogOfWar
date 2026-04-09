@@ -108,6 +108,20 @@ macro(add_game TARGET_NAME)
     )
     add_dependencies(${TARGET_NAME}_ShaderLib ${TARGET_NAME}_ShaderLibGenerate)
 
+    add_custom_target(${TARGET_NAME}_RebuildShaders)
+    add_custom_command(
+        TARGET ${TARGET_NAME}_RebuildShaders
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Removing ${CMAKE_SHARED_LIBRARY_PREFIX}shaderlib${CMAKE_SHARED_LIBRARY_SUFFIX}..."
+        COMMAND ${CMAKE_COMMAND} -E remove ${GAME_BASE_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}shaderlib${CMAKE_SHARED_LIBRARY_SUFFIX}
+    )
+    add_custom_command(
+        TARGET ${TARGET_NAME}_RebuildShaders
+        POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E echo "Building ${CMAKE_SHARED_LIBRARY_PREFIX}shaderlib${CMAKE_SHARED_LIBRARY_SUFFIX}..."
+        COMMAND ${CMAKE_COMMAND} --build . --target ${TARGET_NAME}_ShaderLib
+    )
+
     if (NOT EXISTS ${GAME_BASE_DIR}/res)
         file(MAKE_DIRECTORY ${GAME_BASE_DIR}/res)
     endif()
