@@ -17,14 +17,14 @@
     const ::fow::ComponentRegistryObject FOW_UNIQUE(__ComponentRegistryObjectVar) = \
     ::fow::ComponentRegistryObject(typeid(__component_type), __component_class_name, \
     [](::fow::Entity& entity) { \
-        return std::dynamic_pointer_cast<::fow::Component>(std::make_shared<__component_type>(entity));\
+        return CastRef<::fow::Component>(CreateRef<__component_type>(entity));\
     }, { })
 
 #define FOW_REGISTER_COMPONENT_WITH_DEPENDENCIES(__component_type, __component_class_name, ...) \
     const ::fow::ComponentRegistryObject FOW_UNIQUE(__ComponentRegistryObjectVar) = \
     ::fow::ComponentRegistryObject(typeid(__component_type), __component_class_name, \
     [](::fow::Entity& entity) { \
-        return std::dynamic_pointer_cast<::fow::Component>(std::make_shared<__component_type>(entity));\
+        return CastRef<::fow::Component>(CreateRef<__component_type>(entity));\
     }, { __VA_ARGS__ })
 
 #define FOW_ASSERT_COMPONENT_DEPENDENCY(__component, __required_component) \
@@ -37,16 +37,16 @@ namespace fow {
     using EntityId = uint64_t;
 
     class Entity;
-    using EntityPtr = SharedPtr<Entity>;
+    using EntityPtr = Ref<Entity>;
     class Component;
     class Scene;
-    using ScenePtr = SharedPtr<Scene>;
+    using ScenePtr = Ref<Scene>;
 
     template<typename T>
     concept ComponentType = std::is_base_of_v<Component, T>;
 
     template<ComponentType T>
-    using ComponentPtr = SharedPtr<T>;
+    using ComponentPtr = Ref<T>;
 
     class FOW_ENGINE_API Entity {
         Scene& m_rScene;
@@ -173,10 +173,10 @@ namespace fow {
         std::type_index type_index = typeid(T);
         const String type_name = type_index.name();
         if (m_components.contains(type_index)) {
-            return std::dynamic_pointer_cast<T>(m_components.at(type_index));
+            return CastRef<T>(m_components.at(type_index));
         }
 
-        auto component = std::make_shared<T>(*this);
+        auto component = CreateRef<T>(*this);
 
         const auto registry_object = ComponentRegistryObject::GetComponentRegistryObject(type_index);
         Debug::Assert(registry_object);
@@ -203,7 +203,7 @@ namespace fow {
     template<ComponentType T>
     ComponentPtr<T> Entity::get_component() const {
         if (const std::type_index& type_index = typeid(T); m_components.contains(type_index)) {
-            return std::dynamic_pointer_cast<T>(m_components.at(type_index));
+            return CastRef<T>(m_components.at(type_index));
         }
         return nullptr;
     }

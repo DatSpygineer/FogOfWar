@@ -2,10 +2,6 @@
 #include "fow/Renderer.hpp"
 #include "fow/Renderer/ShaderLib.hpp"
 
-#include <glm/gtx/transform.hpp>
-
-#include "fow/Renderer/TextSprite.hpp"
-
 namespace fow {
     namespace Renderer {
         static auto s_viewport = Rectangle { 0.0f, 0.0f, 1280.0f, 720.0f };
@@ -17,6 +13,7 @@ namespace fow {
         static auto s_camera_target   = Vector3 { 0.0f, 0.0f, 0.0f };
         static auto s_camera_up       = Vector3 { 0.0f, 1.0f, 0.0f };
         static auto s_camera_forward  = Vector3 { 0.0f, 0.0f, 1.0f };
+        static TTF_TextEngine* s_pTextEngine = nullptr;
 
         static Result<> InitializeShared(const Path& app_base_path, const int msaa, const Function<Result<>()>& loader) {
             if (s_initialized) {
@@ -29,6 +26,12 @@ namespace fow {
             }
             if (const auto result = ShaderLib::Load(s_base_path); !result.has_value()) {
                 return result;
+            }
+
+            s_pTextEngine = TTF_CreateSurfaceTextEngine();
+            if (s_pTextEngine == nullptr) {
+                ShaderLib::Unload();
+                return Failure(std::format("Failed to initialize TextEngine: {}", SDL_GetError()));
             }
 
             Debug::LogInfo(std::format("Initialized OpenGL v{}", reinterpret_cast<const char*>(glGetString(GL_VERSION))));
@@ -81,6 +84,10 @@ namespace fow {
         }
 
         void Terminate() {
+            if (s_pTextEngine != nullptr) {
+                TTF_DestroySurfaceTextEngine(s_pTextEngine);
+                s_pTextEngine = nullptr;
+            }
             ShaderLib::Unload();
         }
 
@@ -174,6 +181,10 @@ namespace fow {
         }
         Vector3 GetCameraUp() {
             return s_camera_up;
+        }
+
+        TTF_TextEngine* TextEngine() {
+            return s_pTextEngine;
         }
     }
 }

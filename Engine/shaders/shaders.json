@@ -20,6 +20,10 @@
     "PbrSprite": {
       "vertex":   "src/PbrSprite.vsh",
       "fragment": "src/PbrGeneric.fsh"
+    },
+    "Generic2D": {
+      "vertex": "src/Generic2D.vsh",
+      "fragment": "src/Generic2D.fsh"
     }
   }
 }

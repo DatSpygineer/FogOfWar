@@ -17,7 +17,7 @@
 
 #define __FOW_SHARED_ENTRY_POINT(__game_class) \
     ::fow::Debug::AssertFatal(::fow::Engine::Initialize(argc, argv, []() -> std::shared_ptr<::fow::Game> { \
-        return std::make_shared<__game_class>(); \
+        return CreateRef<__game_class>(); \
     })); \
     ::fow::Engine::Run(); \
 

@@ -56,7 +56,7 @@ namespace fow {
     };
 
     class Material;
-    using MaterialPtr = SharedPtr<Material>;
+    using MaterialPtr = Ref<Material>;
 
     struct MaterialOptions {
         bool backface_culling = true;
@@ -80,14 +80,8 @@ namespace fow {
             material.m_mParams = { };
         }
 
-        Material& operator=(const Material& material) = delete;
-        Material& operator=(Material&& material) noexcept {
-            m_pShader = material.m_pShader;
-            m_mParams = material.m_mParams;
-            material.m_pShader = nullptr;
-            material.m_mParams = { };
-            return *this;
-        }
+        Material& operator=(const Material& material);
+        Material& operator=(Material&& material) noexcept;
 
         [[nodiscard]] FOW_CONSTEXPR const ShaderPtr& shader() const { return m_pShader; }
 
@@ -113,8 +107,10 @@ namespace fow {
 
         static Result<MaterialPtr> New(const String& shader_name, const HashMap<String, MaterialParameterValue>& params = { });
 
-        Material create_instance() const;
-        Material create_instance(const HashMap<String, MaterialParameterValue>& params) const;
+        Material make_unique() const;
+        Material make_unique(const HashMap<String, MaterialParameterValue>& params) const;
+        MaterialPtr make_unique_ptr() const;
+        MaterialPtr make_unique_ptr(const HashMap<String, MaterialParameterValue>& params) const;
 
         static const Material Null;
     };

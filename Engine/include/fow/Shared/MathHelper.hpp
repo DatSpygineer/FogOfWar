@@ -120,6 +120,14 @@ namespace fow {
 
         Rectangle& operator=(const Rectangle& other)     = default;
         Rectangle& operator=(Rectangle&& other) noexcept = default;
+
+        [[nodiscard]] FOW_CONSTEXPR bool is_point_inside(const Vector2& point) const {
+            return point.x >= x && point.x < x + width && point.y >= y && point.y < y + height;
+        }
+        [[nodiscard]] FOW_CONSTEXPR bool intersects(const Rectangle& rect) const;
+
+        [[nodiscard]] FOW_CONSTEXPR Vector2 position() const { return { x, y }; }
+        [[nodiscard]] FOW_CONSTEXPR Vector2 size() const { return { width, height }; }
     };
 
     struct FOW_SHARED_API IntRectangle {
@@ -132,10 +140,51 @@ namespace fow {
         FOW_CONSTEXPR IntRectangle(const int x, const int y, const int width, const int height) : x(x), y(y), width(width), height(height) { }
         FOW_CONSTEXPR IntRectangle(const int x, const int y, const Vector2i& size) : x(x), y(y), width(size.x), height(size.y) { }
         FOW_CONSTEXPR IntRectangle(const Vector2i& position, const int width, const int height) : x(position.x), y(position.y), width(width), height(height) { }
+        FOW_CONSTEXPR explicit IntRectangle(const Rectangle& other) :
+            x(static_cast<int>(other.x)), y(static_cast<int>(other.y)),
+            width(static_cast<int>(other.width)), height(static_cast<int>(other.height)) { }
 
         IntRectangle& operator=(const IntRectangle& other)     = default;
         IntRectangle& operator=(IntRectangle&& other) noexcept = default;
+
+        [[nodiscard]] FOW_CONSTEXPR bool is_point_inside(const Vector2i& point) const {
+            return point.x >= x && point.x < x + width && point.y >= y && point.y < y + height;
+        }
+        [[nodiscard]] FOW_CONSTEXPR bool intersects(const IntRectangle& rect) const;
+
+        [[nodiscard]] FOW_CONSTEXPR Vector2i position() const { return { x, y }; }
+        [[nodiscard]] FOW_CONSTEXPR Vector2i size() const { return { width, height }; }
+
+        [[nodiscard]] FOW_CONSTEXPR operator Rectangle() const { return Rectangle {
+                static_cast<float>(x), static_cast<float>(y),
+                static_cast<float>(width), static_cast<float>(height)
+            };
+        }
     };
+
+    namespace Vector2iConstants {
+#if !FOW_CONSTEXPR_ENABLED
+        const Vector2i Up;
+        const Vector2i Down;
+        const Vector2i Left;
+        const Vector2i Right;
+        const Vector2i Zero;
+        const Vector2i One;
+
+        const Vector2i UnitX;
+        const Vector2i UnitY;
+#else
+        constexpr Vector2i Up    = {  0,  1 };
+        constexpr Vector2i Down  = {  0, -1 };
+        constexpr Vector2i Left  = { -1,  0 };
+        constexpr Vector2i Right = {  1,  0 };
+        constexpr Vector2i Zero  = {  0,  0 };
+        constexpr Vector2i One   = {  1,  1 };
+
+        constexpr Vector2i UnitX = { 1, 0 };
+        constexpr Vector2i UnitY = { 0, 1 };
+#endif
+    }
 
     namespace Vector2Constants {
 #if !FOW_CONSTEXPR_ENABLED
@@ -267,6 +316,20 @@ namespace fow {
 
         constexpr Color NormalMap   = { 0.5f, 0.5f, 1.0f, 1.0f };
 #endif
+    }
+
+    FOW_CONSTEXPR bool Rectangle::intersects(const Rectangle& rect) const {
+        return  is_point_inside(rect.position()) ||
+                is_point_inside(rect.position() + Vector2Constants::UnitX * rect.width) ||
+                is_point_inside(rect.position() + Vector2Constants::UnitY * rect.height) ||
+                is_point_inside(rect.position() + rect.size());
+    }
+
+    FOW_CONSTEXPR bool IntRectangle::intersects(const IntRectangle& rect) const {
+        return  is_point_inside(rect.position()) ||
+                is_point_inside(rect.position() + Vector2iConstants::UnitX * rect.width) ||
+                is_point_inside(rect.position() + Vector2iConstants::UnitY * rect.height) ||
+                is_point_inside(rect.position() + rect.size());
     }
 }
 

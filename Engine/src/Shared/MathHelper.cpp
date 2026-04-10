@@ -2,6 +2,16 @@
 
 namespace fow {
 #if !FOW_CONSTEXPR_ENABLED
+    const Vector2i Vector2iConstants::Up    = {  0,  1 };
+    const Vector2i Vector2iConstants::Down  = {  0, -1 };
+    const Vector2i Vector2iConstants::Left  = { -1,  0 };
+    const Vector2i Vector2iConstants::Right = {  1,  0 };
+    const Vector2i Vector2iConstants::Zero  = {  0,  0 };
+    const Vector2i Vector2iConstants::One   = {  1,  1 };
+
+    const Vector2i Vector2iConstants::UnitX = { 1, 0 };
+    const Vector2i Vector2iConstants::UnitY = { 0, 1 };
+
     const Vector2 Vector2Constants::Up    = { 0.0f, 1.0f };
     const Vector2 Vector2Constants::Down  = { 0.0f, -1.0f };
     const Vector2 Vector2Constants::Left  = { -1.0f, 0.0f };

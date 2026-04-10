@@ -12,6 +12,13 @@ void FlyCameraComponent::on_spawn() {
     FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(FlyCameraComponent, TransformComponent);
     FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(FlyCameraComponent, CameraComponent);
 
+    Input::CreateAction("move_left",     Input::Type::KeyboardKey, KeyCode::A);
+    Input::CreateAction("move_right",    Input::Type::KeyboardKey, KeyCode::D);
+    Input::CreateAction("move_forward",  Input::Type::KeyboardKey, KeyCode::W);
+    Input::CreateAction("move_backward", Input::Type::KeyboardKey, KeyCode::S);
+    Input::CreateAction("move_up",       Input::Type::KeyboardKey, KeyCode::Space);
+    Input::CreateAction("move_down",     Input::Type::KeyboardKey, KeyCode::LeftControl);
+
     m_pTransform = entity().get_component<TransformComponent>();
     m_pCamera = entity().get_component<CameraComponent>();
 }

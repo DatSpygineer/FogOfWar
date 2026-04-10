@@ -46,6 +46,22 @@ namespace fow {
         void set_parameter(const String& name, const String& value) override;
     };
 
+    class FOW_ENGINE_API Transform2DComponent : public Component {
+        Rectangle m_rectangle;
+        float m_fRotation;
+    public:
+        FOW_COMPONENT_CLASS(Transform2DComponent, Component);
+
+        void set_rectangle(const Rectangle& rectangle);
+        [[nodiscard]] FOW_CONSTEXPR Rectangle& get_rectangle() { return m_rectangle; }
+        [[nodiscard]] FOW_CONSTEXPR const Rectangle& get_rectangle() const { return m_rectangle; }
+
+        void set_rotation(float angle_rad);
+        void set_rotation_deg(float angle_deg);
+        [[nodiscard]] FOW_CONSTEXPR float get_rotation() const { return m_fRotation; }
+        [[nodiscard]] FOW_CONSTEXPR float get_rotation_deg() const { return glm::degrees(m_fRotation); }
+    };
+
     class FOW_ENGINE_API EnvironmentComponent : public Component {
         SkyboxPtr m_pSkybox;
         TextureCubeMapPtr m_pEnvMap, m_pEnvMapBlur;
@@ -125,6 +141,8 @@ namespace fow {
         void set_sprite(const SpritePtr& sprite);
         [[nodiscard]] FOW_CONSTEXPR SpritePtr& get_sprite() { return m_pSprite; }
         [[nodiscard]] FOW_CONSTEXPR const SpritePtr& get_sprite() const { return m_pSprite; }
+
+        void set_parameter(const String& name, const String& value) override;
     };
 
     class FOW_ENGINE_API ModelRendererComponent : public Component {
@@ -137,6 +155,21 @@ namespace fow {
 
         void set_model(const ModelPtr& model);
         bool load_model(const Path& path);
+
+        void set_parameter(const String& name, const String& value) override;
+    };
+
+    class FOW_ENGINE_API Sprite2DRendererComponent : public Component {
+        Sprite2DPtr m_pSprite;
+    public:
+        FOW_COMPONENT_CLASS(Sprite2DRendererComponent, Component)
+
+        void on_spawn() override;
+        void on_update(double dt) override;
+
+        void set_sprite(const Sprite2DPtr& sprite);
+        [[nodiscard]] FOW_CONSTEXPR Sprite2DPtr& get_sprite() { return m_pSprite; }
+        [[nodiscard]] FOW_CONSTEXPR const Sprite2DPtr& get_sprite() const { return m_pSprite; }
 
         void set_parameter(const String& name, const String& value) override;
     };

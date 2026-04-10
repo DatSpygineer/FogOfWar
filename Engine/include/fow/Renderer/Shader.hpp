@@ -53,8 +53,8 @@ namespace fow {
 
     class Shader;
 
-    using ShaderPtr = SharedPtr<Shader>;
-    using ShaderPtr = SharedPtr<Shader>;
+    using ShaderPtr = Ref<Shader>;
+    using ShaderPtr = Ref<Shader>;
 
     class FOW_RENDER_API Shader final {
         GLuint m_uProgram;

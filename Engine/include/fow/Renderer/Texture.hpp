@@ -90,10 +90,10 @@ namespace fow {
     template<typename T>
     concept TextureType = std::is_assignable_v<Texture, T>;
 
-    using TexturePtr = SharedPtr<Texture>;
-    using Texture2DPtr = SharedPtr<Texture2D>;
-    using Texture2DArrayPtr = SharedPtr<Texture2DArray>;
-    using TextureCubeMapPtr = SharedPtr<TextureCubeMap>;
+    using TexturePtr = Ref<Texture>;
+    using Texture2DPtr = Ref<Texture2D>;
+    using Texture2DArrayPtr = Ref<Texture2DArray>;
+    using TextureCubeMapPtr = Ref<TextureCubeMap>;
 
     class FOW_RENDER_API Texture {
     protected:

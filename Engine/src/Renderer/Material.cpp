@@ -1013,6 +1013,20 @@ namespace fow {
         return Failure(std::format("Material has no parameter defined \"{}\"", name));
     }
 
+    Material& Material::operator=(const Material& material) {
+        m_pShader = material.m_pShader;
+        m_mParams = material.m_mParams;
+        return *this;
+    }
+
+    Material& Material::operator=(Material&& material) noexcept {
+        m_pShader = material.m_pShader;
+        m_mParams = material.m_mParams;
+        material.m_pShader = nullptr;
+        material.m_mParams = { };
+        return *this;
+    }
+
     void Material::set_opaque(const bool value) {
         m_options.opaque = value;
     }
@@ -1480,11 +1494,18 @@ namespace fow {
         return std::make_shared<Material>(shader, params);
     }
 
-    Material Material::create_instance() const {
+    Material Material::make_unique() const {
         return std::move(Material(*this));
     }
-    Material Material::create_instance(const HashMap<String, MaterialParameterValue>& params) const {
+    Material Material::make_unique(const HashMap<String, MaterialParameterValue>& params) const {
         return std::move(Material(m_pShader, params));
+    }
+
+    MaterialPtr Material::make_unique_ptr() const {
+        return std::make_shared<Material>(*this);
+    }
+    MaterialPtr Material::make_unique_ptr(const HashMap<String, MaterialParameterValue>& params) const {
+        return std::make_shared<Material>(m_pShader, params);
     }
 
     const Material Material::Null = { };

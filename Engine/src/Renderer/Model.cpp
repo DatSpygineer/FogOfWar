@@ -6,20 +6,53 @@
 #include <assimp/postprocess.h>
 
 namespace fow {
+    Model::Model(const Model& other) : m_meshes(other.meshes()) {
+        m_material_overrides.reserve(other.m_meshes.size());
+        for (const auto& material_override : other.m_material_overrides) {
+            m_material_overrides.emplace_back(std::make_shared<Material>(std::move(material_override->make_unique())));
+        }
+    }
+
     void Model::draw() const {
-        for (const auto& mesh : m_meshes) {
-            mesh->draw();
+        const size_t mesh_count = m_meshes.size();
+        for (size_t i = 0; i < mesh_count; ++i) {
+            if (MaterialPtr material_override = nullptr; m_material_overrides.size() > i && (material_override = m_material_overrides.at(i)) != nullptr) {
+                m_meshes.at(i)->draw(material_override);
+            } else {
+                m_meshes.at(i)->draw();
+            }
         }
     }
     void Model::draw(const Transform& transform) const {
-        for (const auto& mesh : m_meshes) {
-            mesh->draw(transform);
+        const size_t mesh_count = m_meshes.size();
+        for (size_t i = 0; i < mesh_count; ++i) {
+            if (MaterialPtr material_override = nullptr; m_material_overrides.size() > i && (material_override = m_material_overrides.at(i)) != nullptr) {
+                m_meshes.at(i)->draw(material_override, transform);
+            } else {
+                m_meshes.at(i)->draw(transform);
+            }
+        }
+    }
+
+    void Model::draw(const Matrix4& model_matrix) const {
+        const size_t mesh_count = m_meshes.size();
+        for (size_t i = 0; i < mesh_count; ++i) {
+            if (MaterialPtr material_override = nullptr; m_material_overrides.size() > i && (material_override = m_material_overrides.at(i)) != nullptr) {
+                m_meshes.at(i)->draw(material_override, model_matrix);
+            } else {
+                m_meshes.at(i)->draw(model_matrix);
+            }
         }
     }
 
     void Model::draw_instances(const Vector<Transform>& transforms) const {
-        for (const auto& mesh : m_meshes) {
-            mesh->draw_instances(transforms);
+        const size_t mesh_count = m_meshes.size();
+        for (size_t i = 0; i < mesh_count; ++i) {
+            if (MaterialPtr material_override = nullptr; m_material_overrides.size() > i && (material_override = m_material_overrides.at(i)) != nullptr) {
+                m_meshes.at(i)->draw_instances(material_override, transforms);
+            } else {
+                m_meshes.at(i)->draw_instances(transforms);
+            }
         }
     }
 
@@ -105,6 +138,18 @@ namespace fow {
             }
         }
         return Success();
+    }
+
+    void Model::set_material_overrides(const Vector<MaterialPtr>& material_overrides) {
+        m_material_overrides = material_overrides;
+        while (m_material_overrides.size() < m_meshes.size()) {
+            m_material_overrides.push_back(nullptr);
+        }
+    }
+    void Model::set_material_override(const MaterialPtr& material, const size_t index) {
+        if (index < m_material_overrides.size()) {
+            m_material_overrides.at(index) = material;
+        }
     }
 
     Result<ModelPtr> Model::Load(const String& source_path, const Vector<uint8_t>& data, const Vector<MaterialPtr>& materials) {

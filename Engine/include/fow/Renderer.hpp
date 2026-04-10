@@ -48,6 +48,8 @@ namespace fow {
         FOW_RENDER_API Vector3 GetCameraTarget();
         FOW_RENDER_API Vector3 GetCameraForward();
         FOW_RENDER_API Vector3 GetCameraUp();
+
+        FOW_RENDER_API TTF_TextEngine* TextEngine();
     }
 }
 

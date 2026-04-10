@@ -33,7 +33,15 @@ namespace fow {
     using Function = std::function<Signature>;
 
     template<typename T>
-    using SharedPtr = std::shared_ptr<T>;
+    using Ref = std::shared_ptr<T>;
+    template<typename T, typename... Args>
+    inline Ref<T> CreateRef(Args&&... args) {
+        return std::make_shared<T>(std::forward<Args>(args)...);
+    }
+    template<typename TTo, typename TFrom>
+    inline Ref<TTo> CastRef(const Ref<TFrom>& t) {
+        return std::dynamic_pointer_cast<TTo>(t);
+    }
     template<typename T>
     using UniquePtr = std::unique_ptr<T>;
 

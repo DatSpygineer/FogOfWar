@@ -52,7 +52,7 @@ namespace fow {
         static SDL_GLContext s_glContext = nullptr;
         static String s_window_title = "FogOfWar";
         static Color s_background_color = { 0.25f, 0.5f, 1.0f };
-        static SharedPtr<Game> s_game_class = nullptr;
+        static Ref<Game> s_game_class = nullptr;
         static Path s_base_path = Path::CurrentDir();
         static const auto s_version = Version { 0, 1, 0 };
         static ScenePtr s_scene = nullptr;
@@ -322,6 +322,7 @@ namespace fow {
                 }
 
                 RenderQueue::Render();
+                RenderQueue2D::Render();
 
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

@@ -269,6 +269,16 @@ namespace fow {
         m_pSprite = sprite;
     }
 
+    void SpriteRendererComponent::set_parameter(const String& name, const String& value) {
+        if (name.equals("sprite", StringCompareType::CaseInsensitive)) {
+            auto spr = Assets::Load<Sprite>(value);
+            Debug::Assert(spr);
+            if (spr.has_value()) {
+                m_pSprite = spr.value().ptr();
+            }
+        }
+    }
+
     void ModelRendererComponent::on_spawn() {
         FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(ModelRendererComponent, TransformComponent);
     }
@@ -297,6 +307,28 @@ namespace fow {
                 m_pModel = model.value().ptr();
             } else {
                 Debug::LogError(std::format("Failed to load model \"{}\": {}", value, model.error().message));
+            }
+        }
+    }
+
+    void Sprite2DRendererComponent::on_spawn() {
+        Component::on_spawn();
+    }
+
+    void Sprite2DRendererComponent::on_update(const double dt) {
+        RenderQueue2D::Enqueue(m_pSprite, )
+    }
+
+    void Sprite2DRendererComponent::set_sprite(const Sprite2DPtr& sprite) {
+        m_pSprite = sprite;
+    }
+
+    void Sprite2DRendererComponent::set_parameter(const String& name, const String& value) {
+        if (name.equals("sprite", StringCompareType::CaseInsensitive)) {
+            auto spr = Assets::Load<Sprite2D>(value);
+            Debug::Assert(spr);
+            if (spr.has_value()) {
+                m_pSprite = spr.value().ptr();
             }
         }
     }

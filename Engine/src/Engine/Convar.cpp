@@ -276,7 +276,7 @@ namespace fow {
         }
     }
 
-    HashMap<String, SharedPtr<CVar>> CVar::s_registry = { };
+    HashMap<String, Ref<CVar>> CVar::s_registry = { };
 
     Result<> CVar::call(const Vector<String>& args) const {
         if (!is_callable()) {
