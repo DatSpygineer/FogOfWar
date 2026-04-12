@@ -136,7 +136,7 @@ namespace fow {
 
     namespace RenderQueue2D {
         struct Renderable {
-            std::variant<Sprite2DPtr, TextSpritePtr> object;
+            std::variant<Sprite2DPtr, TextSprite2DPtr> object;
             Rectangle rectangle;
 
             void draw() const;
@@ -147,7 +147,7 @@ namespace fow {
         void Enqueue(const Sprite2DPtr& sprite, const Rectangle& rectangle) {
             s_render_queue.push_back(Renderable { sprite, rectangle });
         }
-        void Enqueue(const TextSpritePtr& sprite, const Rectangle& rectangle) {
+        void Enqueue(const TextSprite2DPtr& sprite, const Rectangle& rectangle) {
             s_render_queue.push_back(Renderable { sprite, rectangle });
         }
 

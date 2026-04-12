@@ -66,7 +66,7 @@ namespace fow {
         TriangleFan   = GL_TRIANGLE_FAN
     };
 
-    class FOW_RENDER_API Mesh final : public IDrawable3D, IDrawable3DInstanced, IDrawable2D {
+    class FOW_RENDER_API Mesh final : public IDrawable3D, public IDrawable3DInstanced, public IDrawable2D {
         GLuint m_uVao, m_uVbo, m_uEbo;
         GLsizei m_iIndexCount;
         bool m_bInitialized;

@@ -489,6 +489,14 @@ namespace fow {
         const auto target = info.Target.value_or(TextureTarget::Texture2D);
         const auto gl_target = static_cast<GLenum>(target);
 
+        if (w <= 0 || h <= 0) {
+            return Failure(std::format("Failed to create OpenGL texture: Invalid texture size '{}x{}'", w, h));
+        }
+
+        if (c <= 0) {
+            return Failure(std::format("Failed to create OpenGL texture: Invalid number of channels '{}'", c));
+        }
+
         glGenTextures(1, &id);
         if (id == 0) {
             return Failure(std::format("Failed to generate OpenGL texture handle: GL error \"{}\"", glGetError()));
@@ -574,7 +582,7 @@ namespace fow {
     }
 
     Result<Texture2DPtr> Texture2D::FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info) {
-        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, surface->pitch, 0u, info);
+        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel, 0u, info);
         if (id_result.has_value()) {
             return Success<Texture2DPtr>(std::make_shared<Texture2D>(std::move(Texture2D(id_result.value()))));
         }
@@ -585,7 +593,7 @@ namespace fow {
     Result<Texture2DPtr> Texture2D::FromSDLSurface(const SDL_Surface* surface, const Texture& reuse, const TextureInfo& info) {
         const GLuint id = reuse.id();
 
-        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, surface->pitch, id, info);
+        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel, id, info);
         if (id_result.has_value()) {
             return Success<Texture2DPtr>(std::make_shared<Texture2D>(std::move(Texture2D(id_result.value()))));
         }
@@ -630,7 +638,7 @@ namespace fow {
     }
 
     Result<Texture2DArrayPtr> Texture2DArray::FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info) {
-        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, surface->pitch, 0u, info);
+        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel, 0u, info);
         if (id_result.has_value()) {
             return Success<Texture2DArrayPtr>(std::make_shared<Texture2DArray>(std::move(Texture2DArray(id_result.value()))));
         }
@@ -641,7 +649,7 @@ namespace fow {
     Result<Texture2DArrayPtr> Texture2DArray::FromSDLSurface(const SDL_Surface* surface, const Texture& reuse, const TextureInfo& info) {
         const GLuint id = reuse.id();
 
-        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, surface->pitch, id, info);
+        const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel, id, info);
         if (id_result.has_value()) {
             return Success<Texture2DArrayPtr>(std::make_shared<Texture2DArray>(std::move(Texture2DArray(id_result.value()))));
         }

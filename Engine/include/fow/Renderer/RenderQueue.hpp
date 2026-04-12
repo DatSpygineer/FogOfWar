@@ -48,7 +48,7 @@ namespace fow {
 
     namespace RenderQueue2D {
         FOW_RENDER_API void Enqueue(const Sprite2DPtr& sprite, const Rectangle& rectangle);
-        FOW_RENDER_API void Enqueue(const TextSpritePtr& sprite, const Rectangle& rectangle);
+        FOW_RENDER_API void Enqueue(const TextSprite2DPtr& sprite, const Rectangle& rectangle);
         FOW_RENDER_API void Render();
     }
 }

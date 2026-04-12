@@ -176,6 +176,9 @@ namespace fow {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#ifndef NDEBUG
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
             const auto msaa = std::min(r_msaa->as_int().value_or(0), 16);
             if (msaa > 0) {
                 SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaa);
@@ -842,7 +845,7 @@ namespace fow {
         }
 
         void SetCursorMode(const CursorMode mode) {
-            SDL_SetWindowRelativeMouseMode(Engine::s_window, mode == CursorMode::Locked);
+            Debug::Assert(SDL_SetWindowRelativeMouseMode(Engine::s_window, mode == CursorMode::Locked), std::format("Failed to set cursor mode to \"{}\": {}", mode == CursorMode::Locked ? "Locked" : "Unlocked", SDL_GetError()));
         }
         CursorMode GetCursorMode() {
             return SDL_GetWindowRelativeMouseMode(Engine::s_window) ? CursorMode::Locked : CursorMode::Unlocked;

@@ -7,6 +7,7 @@ namespace fow {
         static auto s_viewport = Rectangle { 0.0f, 0.0f, 1280.0f, 720.0f };
         static auto s_view_matrix = Matrix4 { 1.0f };
         static auto s_proj_matrix = Matrix4 { 1.0f };
+        static auto s_proj_matrix_ui = Matrix4 { 1.0f };
         static Path s_base_path = Path::CurrentDir();
         static bool s_initialized = false;
         static auto s_camera_position = Vector3 { 0.0f, 0.0f, 0.0f };
@@ -14,6 +15,7 @@ namespace fow {
         static auto s_camera_up       = Vector3 { 0.0f, 1.0f, 0.0f };
         static auto s_camera_forward  = Vector3 { 0.0f, 0.0f, 1.0f };
         static TTF_TextEngine* s_pTextEngine = nullptr;
+        static FontPtr s_pDefaultFont = nullptr;
 
         static Result<> InitializeShared(const Path& app_base_path, const int msaa, const Function<Result<>()>& loader) {
             if (s_initialized) {
@@ -155,12 +157,16 @@ namespace fow {
         Matrix4 GetProjectionMatrix() {
             return s_proj_matrix;
         }
+        Matrix4 GetUIProjectionMatrix() {
+            return s_proj_matrix_ui;
+        }
         void SetViewport(const Rectangle& rect) {
             s_viewport = rect;
+            glViewport(static_cast<GLint>(s_viewport.x), static_cast<GLint>(s_viewport.y), static_cast<GLint>(s_viewport.width), static_cast<GLint>(s_viewport.height));
+            s_proj_matrix_ui = glm::ortho(s_viewport.x, s_viewport.x + s_viewport.width, s_viewport.y + s_viewport.height, s_viewport.y);
         }
         void SetViewport(const float x, const float y, const float width, const float height) {
-            s_viewport = Rectangle { x, y, width, height };
-            glViewport(static_cast<GLint>(x), static_cast<GLint>(y), static_cast<GLint>(width), static_cast<GLint>(height));
+            SetViewport(Rectangle { x, y, width, height });
         }
         Rectangle GetViewport() {
             return s_viewport;
@@ -168,6 +174,18 @@ namespace fow {
         void Clear(const Color& color) {
             glClearColor(color.r, color.g, color.b, color.a);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        }
+
+        void SetDefaultFont(const Path& font_path, float size) {
+            if (s_pDefaultFont != nullptr) {
+                Debug::Assert(s_pDefaultFont->change_font(font_path, size));
+            } else {
+                s_pDefaultFont = CreateRef<Font>(font_path, size);
+                Debug::Assert(s_pDefaultFont == nullptr || s_pDefaultFont->is_valid(), std::format("Failed to load font \"{}\"!", font_path));
+            }
+        }
+        FontPtr GetDefaultFont() {
+            return s_pDefaultFont;
         }
 
         Vector3 GetCameraPosition() {

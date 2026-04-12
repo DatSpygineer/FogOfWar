@@ -9,7 +9,7 @@ namespace fow {
     class Model;
     using ModelPtr = Ref<Model>;
 
-    class FOW_RENDER_API Model final : public IDrawable3D, IDrawable3DInstanced {
+    class FOW_RENDER_API Model final : public IDrawable3D, public IDrawable3DInstanced {
         Vector<MeshPtr> m_meshes;
         Vector<MaterialPtr> m_material_overrides;
     public:

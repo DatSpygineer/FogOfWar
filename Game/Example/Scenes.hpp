@@ -8,16 +8,11 @@ using namespace fow;
 class Scene3DExample {
     SkyboxPtr m_pSkybox;
     ScenePtr m_pScene;
-
-    ComponentPtr<TransformComponent> m_pLight1Transform = nullptr;
-    ComponentPtr<LightComponent> m_pLight1 = nullptr;
-    ComponentPtr<TransformComponent> m_pLight2Transform = nullptr;
-    ComponentPtr<LightComponent> m_pLight2 = nullptr;
 public:
     Scene3DExample() {
-        auto model = Assets::Load<Model>("/Models/Sphere.model.xml");
-        Debug::AssertFatal(model);
-        if (!model.has_value()) {
+        auto sphere_model = Assets::Load<Model>("/Models/Sphere.model.xml");
+        Debug::AssertFatal(sphere_model);
+        if (!sphere_model.has_value()) {
             return;
         }
 
@@ -33,10 +28,10 @@ public:
             return;
         }
 
-        auto material = Assets::Load<Material>("/Materials/SkyTest.material.xml");
-        Debug::AssertFatal(material);
-        if (material.has_value()) {
-            m_pSkybox = CreateRef<Skybox>(std::move(material.value().ptr()));
+        auto sky_material = Assets::Load<Material>("/Materials/SkyTest.material.xml");
+        Debug::AssertFatal(sky_material);
+        if (sky_material.has_value()) {
+            m_pSkybox = CreateRef<Skybox>(std::move(sky_material.value().ptr()));
         }
 
         m_pScene = CreateRef<Scene>();
@@ -49,24 +44,32 @@ public:
         const auto comp_model_transform = ent_model->add_component<TransformComponent>();
         comp_model_transform->set_position(Vector3Constants::Forward * 2.5f);
         const auto comp_model = ent_model->add_component<ModelRendererComponent>();
-        comp_model->set_model(model.value().ptr());
+        comp_model->set_model(sphere_model.value().ptr());
         ent_model->add_component<TestSphereComponent>();
 
+        const auto ent_text = m_pScene->create_entity();
+        const auto comp_text_transform = ent_text->add_component<TransformComponent>();
+        const auto comp_text = ent_text->add_component<TextRendererComponent>();
+        comp_text->set_font(CreateRef<Font>("Roboto-Regular.ttf", 42));
+        comp_text->set_text("Hello World!");
+        comp_text->set_text_rect(IntRectangle { 0, 0, 512, 512 });
+        comp_text->set_billboard_mode(BillboardMode::BillboardSpherical);
+
         const auto ent_light_1 = m_pScene->create_entity();
-        m_pLight1Transform = ent_light_1->add_component<TransformComponent>();
-        m_pLight1Transform->set_position(Vector3 { -5.0f, 1.0f, 5.0f });
-        m_pLight1 = ent_light_1->add_component<LightComponent>();
-        m_pLight1->set_color(Color { 1.0f, 1.0f, 1.0f });
-        m_pLight1->set_intensity(300.0f);
+        auto comp_light_1_transform = ent_light_1->add_component<TransformComponent>();
+        comp_light_1_transform->set_position(Vector3 { -5.0f, 1.0f, 5.0f });
+        auto comp_light_1 = ent_light_1->add_component<LightComponent>();
+        comp_light_1->set_color(Color { 1.0f, 1.0f, 1.0f });
+        comp_light_1->set_intensity(300.0f);
         const auto comp_light_1_spr = ent_light_1->add_component<SpriteRendererComponent>();
         comp_light_1_spr->set_sprite(light_sprite.value().ptr());
 
         const auto ent_light_2 = m_pScene->create_entity();
-        m_pLight2Transform = ent_light_2->add_component<TransformComponent>();
-        m_pLight2Transform->set_position(Vector3 { 5.0f, 1.0f, -5.0f });
-        m_pLight2 = ent_light_2->add_component<LightComponent>();
-        m_pLight2->set_color(Color { 1.0f, 0.0f, 1.0f });
-        m_pLight2->set_intensity(300.0f);
+        auto comp_light_2_transform = ent_light_2->add_component<TransformComponent>();
+        comp_light_2_transform->set_position(Vector3 { 5.0f, 1.0f, -5.0f });
+        auto comp_light_2 = ent_light_2->add_component<LightComponent>();
+        comp_light_2->set_color(Color { 1.0f, 0.0f, 1.0f });
+        comp_light_2->set_intensity(300.0f);
         const auto comp_light_2_spr = ent_light_2->add_component<SpriteRendererComponent>();
         comp_light_2_spr->set_sprite(light_sprite.value().ptr());
 
@@ -87,13 +90,5 @@ class Scene2DExample {
 public:
     Scene2DExample() {
         m_pScene = CreateRef<Scene>();
-
-        const auto light_sprite = Assets::Load<Sprite2D>("/Sprites/Light.sprite.xml");
-        Debug::AssertFatal(light_sprite);
-        if (!light_sprite.has_value()) {
-            return;
-        }
-
-
     }
 };
