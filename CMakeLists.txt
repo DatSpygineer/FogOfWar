@@ -118,8 +118,9 @@ macro(add_game TARGET_NAME)
     add_custom_command(
         TARGET ${TARGET_NAME}_RebuildShaders
         POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E echo "Building ${CMAKE_SHARED_LIBRARY_PREFIX}shaderlib${CMAKE_SHARED_LIBRARY_SUFFIX}..."
-        COMMAND ${CMAKE_COMMAND} --build . --target ${TARGET_NAME}_ShaderLib
+        COMMAND ${CMAKE_COMMAND} ${CMAKE_BINARY_DIR}
+        COMMAND ${CMAKE_COMMAND} -E echo "Building ${CMAKE_SHARED_LIBRARY_PREFIX}shaderlib${CMAKE_SHARED_LIBRARY_SUFFIX}..."
+        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${TARGET_NAME}_ShaderLib
     )
 
     if (NOT EXISTS ${GAME_BASE_DIR}/res)
