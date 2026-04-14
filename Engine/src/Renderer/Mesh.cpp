@@ -45,7 +45,7 @@ namespace fow {
         m_pMaterial = material;
     }
 
-    Result<MeshPtr> Mesh::Create(const MaterialPtr& material, const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, MeshPrimitive primitive, MeshDrawMode draw_mode) {
+    Result<MeshPtr> Mesh::Create(const MaterialPtr& material, const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, const MeshPrimitive primitive, MeshDrawMode draw_mode) {
         GLuint vao, vbo, ebo;
         glGenVertexArrays(1, &vao);
         if (vao == 0) {
@@ -91,7 +91,7 @@ namespace fow {
         return Success<MeshPtr>(std::move(std::make_shared<Mesh>(std::move(Mesh { vao, vbo, ebo, static_cast<GLsizei>(indices.size()), material, primitive }))));
     }
 
-    Result<MeshPtr> Mesh::Create2D(const MaterialPtr& material, const std::vector<Vertex2D>& vertices, const std::vector<GLuint>& indices, MeshPrimitive primitive, MeshDrawMode draw_mode) {
+    Result<MeshPtr> Mesh::Create2D(const MaterialPtr& material, const std::vector<Vertex2D>& vertices, const std::vector<GLuint>& indices, const MeshPrimitive primitive, MeshDrawMode draw_mode) {
         GLuint vao, vbo, ebo;
         glGenVertexArrays(1, &vao);
         if (vao == 0) {
@@ -118,8 +118,10 @@ namespace fow {
 
         // Position
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), reinterpret_cast<void*>(0));
+        glEnableVertexAttribArray(0);
         // UV
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), reinterpret_cast<void*>(2 * sizeof(float)));
+        glEnableVertexAttribArray(1);
 
         glBindVertexArray(0);
 

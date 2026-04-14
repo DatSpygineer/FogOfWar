@@ -12,7 +12,5 @@ out vec2 FRAGMENT_TEXTURE_COORDS;
 
 void main() {
     FRAGMENT_TEXTURE_COORDS = VERTEX_TEXTURE_COORDS;
-    vec3 position = vec3(VERTEX_POSITION.xy * AreaSize + AreaPosition, float(DEPTH));
-
-    gl_Position = MATRIX_PROJECTION * vec4(position, 0.0);
+    gl_Position = MATRIX_PROJECTION * vec4(VERTEX_POSITION.xy * AreaSize + AreaPosition, float(DEPTH), 0.0);
 }

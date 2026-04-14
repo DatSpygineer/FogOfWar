@@ -90,5 +90,16 @@ class Scene2DExample {
 public:
     Scene2DExample() {
         m_pScene = CreateRef<Scene>();
+
+        auto light_sprite = Assets::Load<Sprite2D>("/Sprites/Light.sprite2d.xml");
+        Debug::AssertFatal(light_sprite);
+
+        const auto ent_sprite = m_pScene->create_entity();
+        const auto comp_sprite_transform = ent_sprite->add_component<Transform2DComponent>();
+        comp_sprite_transform->set_rectangle(Rectangle { 0.0, 0.0, 1.0, 1.0 });
+        const auto comp_sprite = ent_sprite->add_component<Sprite2DRendererComponent>();
+        comp_sprite->set_sprite(light_sprite.value().ptr());
+
+        Engine::SetScene(m_pScene);
     }
 };
