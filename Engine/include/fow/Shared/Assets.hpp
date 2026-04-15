@@ -47,11 +47,11 @@ namespace fow {
     template<typename T>
     class Asset {
         Path m_sPath;
-        SharedPtr<T> m_pData;
+        Ref<T> m_pData;
     public:
         Asset() : m_sPath(), m_pData(nullptr) { }
-        Asset(const Path& path, const SharedPtr<T>& data) : m_sPath(path), m_pData(data) { }
-        Asset(const Path& path, SharedPtr<T>&& data) : m_sPath(path), m_pData(std::move(data)) {
+        Asset(const Path& path, const Ref<T>& data) : m_sPath(path), m_pData(data) { }
+        Asset(const Path& path, Ref<T>&& data) : m_sPath(path), m_pData(std::move(data)) {
             data = nullptr;
         }
         Asset(const Asset& other) : m_sPath(other.m_sPath), m_pData(other.m_pData) { }
@@ -76,8 +76,8 @@ namespace fow {
         [[nodiscard]] FOW_CONSTEXPR const Path& path() const { return m_sPath; }
         [[nodiscard]] FOW_CONSTEXPR bool is_valid() const { return !m_sPath.is_empty() && m_pData != nullptr; }
 
-        [[nodiscard]] FOW_CONSTEXPR SharedPtr<T>& ptr() { return m_pData; }
-        [[nodiscard]] FOW_CONSTEXPR const SharedPtr<T>& ptr() const { return m_pData; }
+        [[nodiscard]] FOW_CONSTEXPR Ref<T>& ptr() { return m_pData; }
+        [[nodiscard]] FOW_CONSTEXPR const Ref<T>& ptr() const { return m_pData; }
         [[nodiscard]] FOW_CONSTEXPR T& value() { return *m_pData.get(); }
         [[nodiscard]] FOW_CONSTEXPR const T& value() const { return *m_pData.get(); }
 

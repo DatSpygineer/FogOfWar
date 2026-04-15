@@ -18,6 +18,15 @@ namespace fow {
         return vertices;
     }
 
+    Vector<Vertex2D> Vertex2D::CreateVertexArrayFromBuffers(const Vector<Vector2>& positions, const Vector<Vector2>& uvs) {
+        Vector<Vertex2D> vertices;
+        vertices.reserve(positions.size());
+        for (size_t i = 0; i < positions.size(); ++i) {
+            vertices.emplace_back(positions.at(i), uvs.at(i));
+        }
+        return vertices;
+    }
+
     Mesh::~Mesh() {
         if (m_bInitialized) {
             if (m_uVao != 0) {
@@ -32,7 +41,11 @@ namespace fow {
         }
     }
 
-    Result<MeshPtr> Mesh::Create(const MaterialPtr& material, const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, MeshPrimitive primitive, MeshDrawMode draw_mode) {
+    void Mesh::set_material(const MaterialPtr& material) {
+        m_pMaterial = material;
+    }
+
+    Result<MeshPtr> Mesh::Create(const MaterialPtr& material, const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, const MeshPrimitive primitive, MeshDrawMode draw_mode) {
         GLuint vao, vbo, ebo;
         glGenVertexArrays(1, &vao);
         if (vao == 0) {
@@ -78,6 +91,43 @@ namespace fow {
         return Success<MeshPtr>(std::move(std::make_shared<Mesh>(std::move(Mesh { vao, vbo, ebo, static_cast<GLsizei>(indices.size()), material, primitive }))));
     }
 
+    Result<MeshPtr> Mesh::Create2D(const MaterialPtr& material, const std::vector<Vertex2D>& vertices, const std::vector<GLuint>& indices, const MeshPrimitive primitive, MeshDrawMode draw_mode) {
+        GLuint vao, vbo, ebo;
+        glGenVertexArrays(1, &vao);
+        if (vao == 0) {
+            return Failure(std::format("Failed to generate vertex array handle: GL error {}", glGetError()));
+        }
+        glBindVertexArray(vao);
+
+        glGenBuffers(1, &vbo);
+        if (vbo == 0) {
+            glDeleteVertexArrays(1, &vao);
+            return Failure(std::format("Failed to generate vertex buffer object handle: GL error {}", glGetError()));
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertices.size() * sizeof(Vertex)), vertices.data(), static_cast<GLenum>(draw_mode));
+
+        glGenBuffers(1, &ebo);
+        if (ebo == 0) {
+            glDeleteVertexArrays(1, &vao);
+            glDeleteBuffers(1, &vbo);
+            return Failure(std::format("Failed to generate element buffer object handle: GL error {}", glGetError()));
+        }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)), indices.data(), static_cast<GLenum>(draw_mode));
+
+        // Position
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), reinterpret_cast<void*>(0));
+        glEnableVertexAttribArray(0);
+        // UV
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), reinterpret_cast<void*>(2 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        glBindVertexArray(0);
+
+        return Success<MeshPtr>(std::move(std::make_shared<Mesh>(std::move(Mesh { vao, vbo, ebo, static_cast<GLsizei>(indices.size()), material, primitive }))));
+    }
+
     Result<MeshPtr> Mesh::CreateQuad(const MaterialPtr& material, const Vector2& scale, const MeshDrawMode draw_mode) {
         const Vector vertices = {
             Vertex { Vector3 { scale.x *  0.5f, scale.y * -0.5f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector3{ 0.0f, 1.0f, 0.0f },   Vector2 { 1.0f, 1.0f } },
@@ -104,51 +154,47 @@ namespace fow {
         return Failure("Not implemented");
     }
 
+    Result<MeshPtr> Mesh::CreateQuad2D(const MaterialPtr& material, const MeshDrawMode draw_mode) {
+        const Vector vertices = {
+            Vertex2D { Vector2 { 1.0f, 0.0f }, Vector2 { 1.0f, 1.0f } },
+            Vertex2D { Vector2 { 1.0f, 1.0f }, Vector2 { 1.0f, 0.0f } },
+            Vertex2D { Vector2 { 0.0f, 1.0f }, Vector2 { 0.0f, 0.0f } },
+            Vertex2D { Vector2 { 0.0f, 0.0f }, Vector2 { 0.0f, 1.0f } }
+        };
+        const Vector indices = {
+            0u, 1u, 2u,
+            0u, 2u, 3u
+        };
+        return Create2D(material, vertices, indices, MeshPrimitive::Triangles, draw_mode);
+    }
+
     const Mesh Mesh::Null = Mesh { };
 
-    void Mesh::draw() const {
-        if (m_pMaterial != nullptr && m_pMaterial->is_valid()) {
-            Debug::Assert(m_pMaterial->apply());
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_MODEL[0]", Matrix4 { 1.0f }), "Error while applying uniform \"MATRIX_MODEL\"");
-            Debug::Assert(m_pMaterial->shader()->set_uniform("INSTANCE_COUNT", 1), "Error while applying uniform \"INSTANCE_COUNT\"");
+    static void MeshDraw(const GLuint vao, const GLsizei index_count, const MaterialPtr& material, const Matrix4& model_matrix) {
+        if (material != nullptr && material->is_valid()) {
+            Debug::Assert(material->apply());
+            Debug::Assert(material->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
+            Debug::Assert(material->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
+            Debug::Assert(material->shader()->set_uniform("MATRIX_MODEL[0]", model_matrix), "Error while applying uniform \"MATRIX_MODEL\"");
         } else {
             Shader::PlaceHolder()->use();
             Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL[0]", Matrix4 { 1.0f }), "Error while applying uniform \"MATRIX_MODEL\"");
-            Debug::Assert(Shader::PlaceHolder()->set_uniform("INSTANCE_COUNT", 1), "Error while applying uniform \"INSTANCE_COUNT\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL[0]", model_matrix), "Error while applying uniform \"MATRIX_MODEL\"");
         }
-        glBindVertexArray(m_uVao);
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_iIndexCount), GL_UNSIGNED_INT, nullptr);
+        RenderQueue::ApplyCurrentSceneParamsToMaterial(material);
+        glBindVertexArray(vao);
+        glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0);
     }
-    void Mesh::draw(const Transform& transform) const {
-        if (m_pMaterial != nullptr && m_pMaterial->is_valid()) {
-            Debug::Assert(m_pMaterial->apply());
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_MODEL[0]", transform.matrix()), "Error while applying uniform \"MATRIX_MODEL\"");
-        } else {
-            Shader::PlaceHolder()->use();
-            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
-            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
-            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_MODEL[0]", transform.matrix()), "Error while applying uniform \"MATRIX_MODEL\"");
-        }
-        glBindVertexArray(m_uVao);
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_iIndexCount), GL_UNSIGNED_INT, nullptr);
-        glBindVertexArray(0);
-    }
-
-    void Mesh::draw_instances(const Vector<Transform>& transforms) const {
-        if (m_pMaterial != nullptr && m_pMaterial->is_valid()) {
-            Debug::Assert(m_pMaterial->apply());
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
-            Debug::Assert(m_pMaterial->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
+    static void MeshDrawInstances(const GLuint vao, const GLsizei index_count, const MaterialPtr& material, const Vector<Transform>& transforms) {
+        if (material != nullptr && material->is_valid()) {
+            Debug::Assert(material->apply());
+            Debug::Assert(material->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
+            Debug::Assert(material->shader()->set_uniform("MATRIX_VIEW", Renderer::GetViewMatrix()), "Error while applying uniform \"MATRIX_VIEW\"");
             auto i = 0;
             for (const auto& transform : transforms) {
-                Debug::Assert(m_pMaterial->shader()->set_uniform(
+                Debug::Assert(material->shader()->set_uniform(
                     std::format("MATRIX_MODEL[{}]", i),
                     transform.matrix()),
                     std::format("Error while applying uniform \"MATRIX_MODEL[{}]\"", i)
@@ -170,9 +216,60 @@ namespace fow {
             }
         }
 
-        glBindVertexArray(m_uVao);
-        glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(m_iIndexCount), GL_UNSIGNED_INT, nullptr, static_cast<GLsizei>(transforms.size()));
+        glBindVertexArray(vao);
+        glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(index_count), GL_UNSIGNED_INT, nullptr, static_cast<GLsizei>(transforms.size()));
         glBindVertexArray(0);
+    }
+
+    static void MeshDraw2D(const GLuint vao, const GLsizei index_count, const MaterialPtr& material, const Rectangle& rect) {
+        if (material != nullptr && material->is_valid()) {
+            Debug::Assert(material->apply());
+            Debug::Assert(material->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix2D()), "Error while applying uniform \"MATRIX_PROJECTION\"");
+            Debug::Assert(material->shader()->set_uniform("AreaPosition", rect.position()), "Error while applying uniform \"AreaPosition\"");
+            Debug::Assert(material->shader()->set_uniform("AreaSize", rect.size()), "Error while applying uniform \"AreaSize\"");
+        } else {
+            Shader::PlaceHolder()->use();
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix2D()), "Error while applying uniform \"MATRIX_PROJECTION\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("AreaPosition", rect.position()), "Error while applying uniform \"AreaPosition\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("AreaSize", rect.size()), "Error while applying uniform \"AreaSize\"");
+        }
+        glBindVertexArray(vao);
+        glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, nullptr);
+        glBindVertexArray(0);
+    }
+
+    void Mesh::draw() const {
+        draw(Matrix4Constants::Identity);
+    }
+    void Mesh::draw(const Transform& transform) const {
+        draw(transform.matrix());
+    }
+
+    void Mesh::draw(const Matrix4& model_matrix) const {
+        MeshDraw(m_uVao, m_iIndexCount, m_pMaterial, model_matrix);
+    }
+    void Mesh::draw(const MaterialPtr& override_material) const {
+        draw(override_material, Matrix4Constants::Identity);
+    }
+    void Mesh::draw(const MaterialPtr& override_material, const Transform& transform) const {
+        draw(override_material, transform.matrix());
+    }
+    void Mesh::draw(const MaterialPtr& override_material, const Matrix4& model_matrix) const {
+        MeshDraw(m_uVao, m_iIndexCount, override_material, model_matrix);
+    }
+
+    void Mesh::draw_instances(const Vector<Transform>& transforms) const {
+        MeshDrawInstances(m_uVao, m_iIndexCount, m_pMaterial, transforms);
+    }
+    void Mesh::draw_instances(const MaterialPtr& override_material, const Vector<Transform>& transforms) const {
+        MeshDrawInstances(m_uVao, m_iIndexCount, override_material, transforms);
+    }
+
+    void Mesh::draw_2d(const Rectangle& rect) const {
+        MeshDraw2D(m_uVao, m_iIndexCount, m_pMaterial, rect);
+    }
+    void Mesh::draw_2d(const Rectangle& rect, const MaterialPtr& override_material) const {
+        MeshDraw2D(m_uVao, m_iIndexCount, override_material, rect);
     }
 
     void MeshBuilder::append(const Vertex& vertex) {

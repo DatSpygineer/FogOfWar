@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Sprite>
+    <Material shader="Sprite">
+        <Parameters>
+            <MainTexture>/Sprites/Light.texture.xml</MainTexture>
+            <ColorTintMask>/Sprites/LightTint.texture.xml</ColorTintMask>
+            <UseColorTintMask>true</UseColorTintMask>
+            <AlphaScissor>true</AlphaScissor>
+        </Parameters>
+    </Material>
+    <Billboard>spherical</Billboard>
+</Sprite>

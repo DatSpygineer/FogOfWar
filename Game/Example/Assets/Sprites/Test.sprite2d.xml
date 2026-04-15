@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Sprite>
+    <Material shader="Generic2D">
+        <Parameters>
+            <MainTexture>/Textures/test.texture.xml</MainTexture>
+            <AlphaScissor>true</AlphaScissor>
+        </Parameters>
+    </Material>
+</Sprite>

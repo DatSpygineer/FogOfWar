@@ -58,12 +58,11 @@ namespace fow {
             }
             ofs << std::endl;
 
-            const auto actions = Input::AvailableActions();
-            if (!actions.empty()) {
+            if (const auto actions = Input::AvailableActions(); !actions.empty()) {
                 ofs << "# Key actions" << std::endl;
                 for (const auto& [ name, action ] : actions) {
                     if (const auto result = Input::ActionToString(action); result.has_value()) {
-                        ofs << "create_action \"" << name << "\" " << result.value() << std::endl;
+                        ofs << "input_create_action \"" << name << "\" " << result.value() << std::endl;
                     }
                 }
             }
@@ -277,7 +276,7 @@ namespace fow {
         }
     }
 
-    HashMap<String, SharedPtr<CVar>> CVar::s_registry = { };
+    HashMap<String, Ref<CVar>> CVar::s_registry = { };
 
     Result<> CVar::call(const Vector<String>& args) const {
         if (!is_callable()) {

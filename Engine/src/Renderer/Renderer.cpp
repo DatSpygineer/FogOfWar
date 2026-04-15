@@ -2,19 +2,20 @@
 #include "fow/Renderer.hpp"
 #include "fow/Renderer/ShaderLib.hpp"
 
-#include <glm/gtx/transform.hpp>
-
 namespace fow {
     namespace Renderer {
         static auto s_viewport = Rectangle { 0.0f, 0.0f, 1280.0f, 720.0f };
         static auto s_view_matrix = Matrix4 { 1.0f };
         static auto s_proj_matrix = Matrix4 { 1.0f };
+        static auto s_proj_matrix_2d = Matrix4 { 1.0f };
         static Path s_base_path = Path::CurrentDir();
         static bool s_initialized = false;
         static auto s_camera_position = Vector3 { 0.0f, 0.0f, 0.0f };
         static auto s_camera_target   = Vector3 { 0.0f, 0.0f, 0.0f };
         static auto s_camera_up       = Vector3 { 0.0f, 1.0f, 0.0f };
         static auto s_camera_forward  = Vector3 { 0.0f, 0.0f, 1.0f };
+        static TTF_TextEngine* s_pTextEngine = nullptr;
+        static FontPtr s_pDefaultFont = nullptr;
 
         static Result<> InitializeShared(const Path& app_base_path, const int msaa, const Function<Result<>()>& loader) {
             if (s_initialized) {
@@ -27,6 +28,12 @@ namespace fow {
             }
             if (const auto result = ShaderLib::Load(s_base_path); !result.has_value()) {
                 return result;
+            }
+
+            s_pTextEngine = TTF_CreateSurfaceTextEngine();
+            if (s_pTextEngine == nullptr) {
+                ShaderLib::Unload();
+                return Failure(std::format("Failed to initialize TextEngine: {}", SDL_GetError()));
             }
 
             Debug::LogInfo(std::format("Initialized OpenGL v{}", reinterpret_cast<const char*>(glGetString(GL_VERSION))));
@@ -79,6 +86,10 @@ namespace fow {
         }
 
         void Terminate() {
+            if (s_pTextEngine != nullptr) {
+                TTF_DestroySurfaceTextEngine(s_pTextEngine);
+                s_pTextEngine = nullptr;
+            }
             ShaderLib::Unload();
         }
 
@@ -146,12 +157,16 @@ namespace fow {
         Matrix4 GetProjectionMatrix() {
             return s_proj_matrix;
         }
+        Matrix4 GetProjectionMatrix2D() {
+            return s_proj_matrix_2d;
+        }
         void SetViewport(const Rectangle& rect) {
             s_viewport = rect;
+            s_proj_matrix_2d = glm::ortho(s_viewport.x, s_viewport.x + s_viewport.width, s_viewport.y + s_viewport.height, s_viewport.y);
+            glViewport(static_cast<GLint>(s_viewport.x), static_cast<GLint>(s_viewport.y), static_cast<GLint>(s_viewport.width), static_cast<GLint>(s_viewport.height));
         }
         void SetViewport(const float x, const float y, const float width, const float height) {
-            s_viewport = Rectangle { x, y, width, height };
-            glViewport(static_cast<GLint>(x), static_cast<GLint>(y), static_cast<GLint>(width), static_cast<GLint>(height));
+            SetViewport(Rectangle { x, y, width, height });
         }
         Rectangle GetViewport() {
             return s_viewport;
@@ -159,6 +174,18 @@ namespace fow {
         void Clear(const Color& color) {
             glClearColor(color.r, color.g, color.b, color.a);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        }
+
+        void SetDefaultFont(const Path& font_path, float size) {
+            if (s_pDefaultFont != nullptr) {
+                Debug::Assert(s_pDefaultFont->change_font(font_path, size));
+            } else {
+                s_pDefaultFont = CreateRef<Font>(font_path, size);
+                Debug::Assert(s_pDefaultFont == nullptr || s_pDefaultFont->is_valid(), std::format("Failed to load font \"{}\"!", font_path));
+            }
+        }
+        FontPtr GetDefaultFont() {
+            return s_pDefaultFont;
         }
 
         Vector3 GetCameraPosition() {
@@ -172,6 +199,10 @@ namespace fow {
         }
         Vector3 GetCameraUp() {
             return s_camera_up;
+        }
+
+        TTF_TextEngine* TextEngine() {
+            return s_pTextEngine;
         }
     }
 }

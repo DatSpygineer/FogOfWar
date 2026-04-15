@@ -83,6 +83,25 @@ namespace fow {
         }
         void set_rotation(const Quat& rotation);
 
+        [[nodiscard]] FOW_CONSTEXPR Vector3 get_forward() const {
+            return get_rotation() * Vector3Constants::Forward;
+        }
+        [[nodiscard]] FOW_CONSTEXPR Vector3 get_backward() const {
+            return get_rotation() * Vector3Constants::Backward;
+        }
+        [[nodiscard]] FOW_CONSTEXPR Vector3 get_up() const {
+            return get_rotation() * Vector3Constants::Up;
+        }
+        [[nodiscard]] FOW_CONSTEXPR Vector3 get_down() const {
+            return get_rotation() * Vector3Constants::Down;
+        }
+        [[nodiscard]] FOW_CONSTEXPR Vector3 get_left() const {
+            return get_rotation() * Vector3Constants::Left;
+        }
+        [[nodiscard]] FOW_CONSTEXPR Vector3 get_right() const {
+            return get_rotation() * Vector3Constants::Right;
+        }
+
         [[nodiscard]] FOW_CONSTEXPR Matrix4 matrix() const {
             auto matrix = Matrix4 { 1.0f };
             matrix = glm::translate(matrix, get_position());

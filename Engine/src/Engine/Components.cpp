@@ -95,6 +95,17 @@ namespace fow {
         }
     }
 
+    void Transform2DComponent::set_rectangle(const Rectangle& rectangle) {
+        m_rectangle = rectangle;
+    }
+
+    void Transform2DComponent::set_rotation(const float angle_rad) {
+        m_fRotation = angle_rad;
+    }
+    void Transform2DComponent::set_rotation_deg(const float angle_deg) {
+        set_rotation(glm::radians(angle_deg));
+    }
+
     void EnvironmentComponent::on_spawn() {
         FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(EnvironmentComponent, TransformComponent);
         const auto transform = entity().get_component<TransformComponent>();
@@ -208,7 +219,7 @@ namespace fow {
     void LightComponent::set_parameter(const String& name, const String& value) {
         if (name.equals("color", StringCompareType::CaseInsensitive)) {
             if (const auto result = StringToColor(value); result.has_value()) {
-                m_color = result.value();
+                set_color(result.value());
             } else {
                 Debug::LogError(std::format("Failed to parse color value \"{}\": {}", value, result.error().message));
             }
@@ -249,6 +260,147 @@ namespace fow {
         }
     }
 
+    void SpriteRendererComponent::on_spawn() {
+        FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(ModelRendererComponent, TransformComponent);
+    }
+
+    void SpriteRendererComponent::on_update(const double dt) {
+        const auto transform = entity().get_component<TransformComponent>();
+        RenderQueue::Enqueue(m_pSprite, transform->transform());
+    }
+
+    void SpriteRendererComponent::set_sprite(const SpritePtr& sprite) {
+        m_pSprite = sprite;
+    }
+
+    void SpriteRendererComponent::set_parameter(const String& name, const String& value) {
+        if (name.equals("sprite", StringCompareType::CaseInsensitive)) {
+            auto spr = Assets::Load<Sprite>(value);
+            Debug::Assert(spr);
+            if (spr.has_value()) {
+                m_pSprite = spr.value().ptr();
+            }
+        }
+    }
+
+    void TextRendererComponent::on_spawn() {
+        FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(TextRendererComponent, TransformComponent);
+        if (m_pText == nullptr) {
+            const auto transform = entity().get_component<TransformComponent>();
+
+            if (m_pMaterial == nullptr) {
+                if (const auto material = Material::New("Sprite"); material.has_value()) {
+                    m_pMaterial = material.value();
+                } else {
+                    Debug::LogError("Failed to create material with shader \"Sprite\"");
+                }
+            }
+
+            m_pText = CreateRef<TextSprite>(m_sText, m_pFont, m_pMaterial, m_TextRect);
+            m_pText->set_text_wrap_width(m_iTextWrapWidth);
+            m_pText->set_billboard_mode(m_eBillboardMode);
+        }
+    }
+
+    void TextRendererComponent::on_update(double dt) {
+        if (m_pText == nullptr) return;
+        const auto transform = entity().get_component<TransformComponent>();
+        RenderQueue::Enqueue(m_pText, transform->transform());
+    }
+
+    void TextRendererComponent::set_material(const MaterialPtr& material) {
+        m_pMaterial = material;
+        if (m_pText == nullptr) return;
+        m_pText->set_material(m_pMaterial);
+    }
+
+    void TextRendererComponent::set_font(const Font& font) {
+        m_pFont = CreateRef<Font>(font);
+        if (m_pText == nullptr) return;
+        m_pText->set_font(m_pFont);
+    }
+    void TextRendererComponent::set_font(const FontPtr& font) {
+        m_pFont = font;
+        if (m_pText == nullptr) return;
+        m_pText->set_font(m_pFont);
+    }
+
+    void TextRendererComponent::set_billboard_mode(const BillboardMode mode) {
+        m_eBillboardMode = mode;
+        if (m_pText == nullptr) return;
+        m_pText->set_billboard_mode(m_eBillboardMode);
+    }
+
+    void TextRendererComponent::set_text(const String& text) {
+        m_sText = text;
+        if (m_pText == nullptr) return;
+        m_pText->set_text(m_sText);
+    }
+
+    String TextRendererComponent::get_text() const {
+        return m_pText != nullptr ? m_pText->text() : m_sText;
+    }
+
+    void TextRendererComponent::set_text_wrap_width(const int width) {
+        m_iTextWrapWidth = width;
+        if (m_pText == nullptr) return;
+        m_pText->set_text_wrap_width(m_iTextWrapWidth);
+    }
+
+    int TextRendererComponent::get_text_wrap_width() const {
+        return m_pText != nullptr ? m_pText->text_wrap_width() : m_iTextWrapWidth;
+    }
+
+    void TextRendererComponent::set_text_sprite(const TextSpritePtr& text) {
+        m_pText = text;
+        m_pMaterial = m_pText->material();
+        m_iTextWrapWidth = m_pText->text_wrap_width();
+        m_sText = m_pText->text();
+    }
+
+    void TextRendererComponent::set_text_rect(const IntRectangle& rect) {
+        m_TextRect = rect;
+        if (m_pText == nullptr) return;
+        m_pText->set_text_area(m_TextRect);
+    }
+
+    void TextRendererComponent::set_parameter(const String& name, const String& value) {
+        if (name.equals("font", StringCompareType::CaseInsensitive)) {
+            Path path;
+            float size;
+            if (value.find(';') != String::NotFound) {
+                path = value.substr(0, value.find(';'));
+                size = StringToFloat<float>(value.substr(value.find(';') + 1)).value_or(12.0f);
+            } else {
+                path = value;
+                size = 12.0f;
+            }
+            m_pFont = CreateRef<Font>(path, size);
+        }
+        if (name.equals("text", StringCompareType::CaseInsensitive)) {
+            m_sText = value;
+        }
+        if (name.equals("text_wrap_width", StringCompareType::CaseInsensitive)) {
+            m_iTextWrapWidth = StringToInt<int>(value).value_or(0);
+        }
+        if (name.equals("material", StringCompareType::CaseInsensitive)) {
+            auto mat = Assets::Load<Material>(value);
+            Debug::Assert(mat);
+            if (mat.has_value()) {
+                m_pText->set_material(mat.value().ptr());
+            }
+        }
+        if (name.equals("billboard_mode", StringCompareType::CaseInsensitive)) {
+            if (value.equals_any({ "yaligned", "y_aligned", "cylindrical" }, StringCompareType::CaseInsensitive)) {
+                m_eBillboardMode = BillboardMode::BillboardCylindrical;
+            } else if (value.equals_any({ "spherical" }, StringCompareType::CaseInsensitive)) {
+                m_eBillboardMode = BillboardMode::BillboardSpherical;
+            } else {
+                m_eBillboardMode = BillboardMode::None;
+            }
+        }
+    }
+
     void ModelRendererComponent::on_spawn() {
         FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(ModelRendererComponent, TransformComponent);
     }
@@ -277,6 +429,128 @@ namespace fow {
                 m_pModel = model.value().ptr();
             } else {
                 Debug::LogError(std::format("Failed to load model \"{}\": {}", value, model.error().message));
+            }
+        }
+    }
+
+    void Sprite2DRendererComponent::on_spawn() {
+        FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(Sprite2DRendererComponent, Transform2DComponent);
+    }
+
+    void Sprite2DRendererComponent::on_update(const double dt) {
+        const auto transform = entity().get_component<Transform2DComponent>();
+        RenderQueue2D::Enqueue(m_pSprite, transform->get_rectangle());
+    }
+
+    void Sprite2DRendererComponent::set_sprite(const Sprite2DPtr& sprite) {
+        m_pSprite = sprite;
+    }
+
+    void Sprite2DRendererComponent::set_parameter(const String& name, const String& value) {
+        if (name.equals("sprite", StringCompareType::CaseInsensitive)) {
+            auto spr = Assets::Load<Sprite2D>(value);
+            Debug::Assert(spr);
+            if (spr.has_value()) {
+                m_pSprite = spr.value().ptr();
+            }
+        }
+    }
+
+    void Text2DRendererComponent::on_spawn() {
+        FOW_ASSERT_COMPONENT_DEPENDENCY_FATAL(Text2DRendererComponent, Transform2DComponent);
+        if (m_pText == nullptr) {
+            const auto transform = entity().get_component<Transform2DComponent>();
+            if (m_pMaterial == nullptr) {
+                if (const auto material = Material::New("Generic2D"); material.has_value()) {
+                    m_pMaterial = material.value();
+                } else {
+                    Debug::LogError("Failed to create material with shader \"Generic2D\"");
+                }
+            }
+            m_pText = CreateRef<TextSprite2D>(m_sText, m_pFont, m_pMaterial, m_TextRect);
+            m_pText->set_text_wrap_width(m_iTextWrapWidth);
+        }
+    }
+
+    void Text2DRendererComponent::on_update(const double dt) {
+        if (m_pText == nullptr) return;
+        const auto transform = entity().get_component<Transform2DComponent>();
+        RenderQueue2D::Enqueue(m_pText, transform->get_rectangle());
+    }
+
+    void Text2DRendererComponent::set_material(const MaterialPtr& material) {
+        m_pMaterial = material;
+        if (m_pText == nullptr) return;
+        m_pText->set_material(m_pMaterial);
+    }
+
+    void Text2DRendererComponent::set_font(const Font& font) {
+        m_pFont = CreateRef<Font>(font);
+        if (m_pText == nullptr) return;
+        m_pText->set_font(m_pFont);
+    }
+    void Text2DRendererComponent::set_font(const FontPtr& font) {
+        m_pFont = font;
+        if (m_pText == nullptr) return;
+        m_pText->set_font(m_pFont);
+    }
+
+    void Text2DRendererComponent::set_text(const String& text) {
+        m_sText = text;
+        if (m_pText == nullptr) return;
+        m_pText->set_text(m_sText);
+    }
+    String Text2DRendererComponent::get_text() const {
+        return m_pText != nullptr ? m_pText->text() : m_sText;
+    }
+
+    void Text2DRendererComponent::set_text_wrap_width(const int width) {
+        m_iTextWrapWidth = width;
+        if (m_pText == nullptr) return;
+        m_pText->set_text_wrap_width(m_iTextWrapWidth);
+    }
+    int Text2DRendererComponent::get_text_wrap_width() const {
+        return m_pText != nullptr ? m_pText->text_wrap_width() : m_iTextWrapWidth;
+    }
+
+    void Text2DRendererComponent::set_text_sprite(const TextSprite2DPtr& text) {
+        m_pText = text;
+        m_pMaterial = m_pText->material();
+        m_iTextWrapWidth = m_pText->text_wrap_width();
+        m_sText = m_pText->text();
+    }
+
+    void Text2DRendererComponent::set_text_rect(const IntRectangle& rect) {
+        m_TextRect = rect;
+        if (m_pText == nullptr) return;
+        m_pText->set_text_area(m_TextRect);
+    }
+
+    void Text2DRendererComponent::set_parameter(const String& name, const String& value) {
+        if (name.equals("font", StringCompareType::CaseInsensitive)) {
+            Path path;
+            float size;
+            if (value.find(';') != String::NotFound) {
+                path = value.substr(0, value.find(';'));
+                size = StringToFloat<float>(value.substr(value.find(';') + 1)).value_or(12.0f);
+            } else {
+                path = value;
+                size = 12.0f;
+            }
+            m_pFont = CreateRef<Font>(path, size);
+        }
+
+        if (name.equals("text", StringCompareType::CaseInsensitive)) {
+            m_sText = value;
+        }
+        if (name.equals("text_wrap_width", StringCompareType::CaseInsensitive)) {
+            m_iTextWrapWidth = StringToInt<int>(value).value_or(0);
+        }
+        if (name.equals("material", StringCompareType::CaseInsensitive)) {
+            auto mat = Assets::Load<Material>(value);
+            Debug::Assert(mat);
+            if (mat.has_value()) {
+                m_pText->set_material(mat.value().ptr());
             }
         }
     }

@@ -74,7 +74,7 @@ namespace fow {
         CVarFlags::Type m_eFlags;
         CVarSetCallback m_fnSetCallback;
 
-        static HashMap<String, SharedPtr<CVar>> s_registry;
+        static HashMap<String, Ref<CVar>> s_registry;
 #if __cplusplus >= 202302L
         FOW_CONSTEXPR CVar(const String& name, const CVarValue& value, const CVarFlags::Type flags, const CVarSetCallback& callback) :
             m_sName(name), m_vValue(value), m_eFlags(flags), m_fnSetCallback(callback) { }
@@ -216,14 +216,14 @@ namespace fow {
             if (s_registry.contains(name)) {
                 throw CVarRedefinitionException(name);
             }
-            s_registry.emplace(name, std::make_shared<CVar>(std::move(CVar { name, value, flags, callback })));
+            s_registry.emplace(name, CreateRef<CVar>(std::move(CVar { name, value, flags, callback })));
             return s_registry.at(name);
         }
         static FOW_CONSTEXPR Result<CVarPtr> CreateOptional(const String& name, const CVarValue& value, const CVarFlags::Type flags, const CVarSetCallback& callback = nullptr) {
             if (s_registry.contains(name)) {
                 return Failure(std::format("CVar \"{}\" already defined!", name));
             }
-            s_registry.emplace(name, std::make_shared<CVar>(std::move(CVar { name, value, flags, callback })));
+            s_registry.emplace(name, CreateRef<CVar>(std::move(CVar { name, value, flags, callback })));
             return s_registry.at(name);
         }
 #if __cplusplus >= 202302L
@@ -232,7 +232,7 @@ namespace fow {
         inline static CVarPtr CreateOrGet(const String& name, const CVarValue& value, const CVarFlags::Type flags, const CVarSetCallback& callback = nullptr) {
 #endif
             if (!s_registry.contains(name)) {
-                s_registry.emplace(name, std::make_shared<CVar>(std::move(CVar { name, value, flags, callback })));
+                s_registry.emplace(name, CreateRef<CVar>(std::move(CVar { name, value, flags, callback })));
             }
             return s_registry.at(name);
         }

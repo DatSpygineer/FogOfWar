@@ -2,6 +2,7 @@
 #include "fow/Shared/GameState.hpp"
 
 #include <fstream>
+#include <SDL3/SDL_messagebox.h>
 
 namespace fow::Debug {
     static std::ofstream s_log_output;
@@ -97,9 +98,8 @@ namespace fow::Debug {
             s_message_sent_callback(level, timestamp, message, location);
         }
         if (level == LogLevel::Fatal) {
-#ifdef _WIN32
-            MessageBoxA(nullptr, message.as_cstr(), "Fatal error!", MB_OK | MB_ICONERROR);
-#endif
+            const auto popup_message = std::format("Fata error occurred at {}:{}\n\n{}", location.file_name(), location.line(), message);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", popup_message.c_str(), nullptr);
             CrashGame(1);
         }
     }

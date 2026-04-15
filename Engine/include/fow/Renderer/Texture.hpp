@@ -5,6 +5,7 @@
 #include <pugixml.hpp>
 #include <rfl.hpp>
 #include <rfl/xml.hpp>
+#include <SDL3/SDL_surface.h>
 
 #include "fow/Shared.hpp"
 
@@ -89,10 +90,10 @@ namespace fow {
     template<typename T>
     concept TextureType = std::is_assignable_v<Texture, T>;
 
-    using TexturePtr = SharedPtr<Texture>;
-    using Texture2DPtr = SharedPtr<Texture2D>;
-    using Texture2DArrayPtr = SharedPtr<Texture2DArray>;
-    using TextureCubeMapPtr = SharedPtr<TextureCubeMap>;
+    using TexturePtr = Ref<Texture>;
+    using Texture2DPtr = Ref<Texture2D>;
+    using Texture2DArrayPtr = Ref<Texture2DArray>;
+    using TextureCubeMapPtr = Ref<TextureCubeMap>;
 
     class FOW_RENDER_API Texture {
     protected:
@@ -182,6 +183,9 @@ namespace fow {
         static Result<Texture2DPtr> LoadFromMemory(const Vector<uint8_t>& data, const TextureInfo& info);
         static Result<Texture2DPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
 
+        static Result<Texture2DPtr> FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info);
+        static Result<Texture2DPtr> FromSDLSurface(const SDL_Surface* surface, const Texture& reuse, const TextureInfo& info);
+
         friend class Texture;
         friend class Shader;
     };
@@ -202,6 +206,9 @@ namespace fow {
         static Result<Texture2DArrayPtr> LoadFromMemory(const Vector<uint8_t>& data, const TextureInfo& info);
         static Result<Texture2DArrayPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
 
+        static Result<Texture2DArrayPtr> FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info);
+        static Result<Texture2DArrayPtr> FromSDLSurface(const SDL_Surface* surface, const Texture& reuse, const TextureInfo& info);
+
         friend class Texture;
         friend class Shader;
     };
@@ -221,6 +228,9 @@ namespace fow {
         static Result<TextureCubeMapPtr> Load(const TextureInfo& info);
         static Result<TextureCubeMapPtr> LoadFromMemory(const Vector<uint8_t>& data, const TextureInfo& info);
         static Result<TextureCubeMapPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
+
+        static Result<TextureCubeMapPtr> FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info);
+        static Result<TextureCubeMapPtr> FromSDLSurface(const SDL_Surface* surface, const Texture& reuse, const TextureInfo& info);
 
         friend class Texture;
         friend class Shader;

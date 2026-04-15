@@ -2,9 +2,9 @@
   "dependencies": [
     "libzip",
     "glew",
-    "glfw3",
+    "sdl3",
+    "sdl3-ttf",
     "assimp",
-    "freetype",
     "pugixml",
     "gtest",
     "qt"

@@ -17,14 +17,14 @@
     const ::fow::ComponentRegistryObject FOW_UNIQUE(__ComponentRegistryObjectVar) = \
     ::fow::ComponentRegistryObject(typeid(__component_type), __component_class_name, \
     [](::fow::Entity& entity) { \
-        return std::dynamic_pointer_cast<::fow::Component>(std::make_shared<__component_type>(entity));\
+        return CastRef<::fow::Component>(CreateRef<__component_type>(entity));\
     }, { })
 
 #define FOW_REGISTER_COMPONENT_WITH_DEPENDENCIES(__component_type, __component_class_name, ...) \
     const ::fow::ComponentRegistryObject FOW_UNIQUE(__ComponentRegistryObjectVar) = \
     ::fow::ComponentRegistryObject(typeid(__component_type), __component_class_name, \
     [](::fow::Entity& entity) { \
-        return std::dynamic_pointer_cast<::fow::Component>(std::make_shared<__component_type>(entity));\
+        return CastRef<::fow::Component>(CreateRef<__component_type>(entity));\
     }, { __VA_ARGS__ })
 
 #define FOW_ASSERT_COMPONENT_DEPENDENCY(__component, __required_component) \
@@ -37,16 +37,16 @@ namespace fow {
     using EntityId = uint64_t;
 
     class Entity;
-    using EntityPtr = SharedPtr<Entity>;
+    using EntityPtr = Ref<Entity>;
     class Component;
     class Scene;
-    using ScenePtr = SharedPtr<Scene>;
+    using ScenePtr = Ref<Scene>;
 
     template<typename T>
     concept ComponentType = std::is_base_of_v<Component, T>;
 
     template<ComponentType T>
-    using ComponentPtr = SharedPtr<T>;
+    using ComponentPtr = Ref<T>;
 
     class FOW_ENGINE_API Entity {
         Scene& m_rScene;
@@ -120,7 +120,7 @@ namespace fow {
 
         static Result<ComponentRegistryObject> GetComponentRegistry(const String& class_name);
     public:
-        ComponentRegistryObject(const std::type_index& type_index, const String& class_name, const ComponentFactory& factory, const Vector<String>& dependencies);
+        ComponentRegistryObject(const std::type_index& type_index, const String& class_name, const ComponentFactory& factory, const Vector<String>& dependűencies);
 
         const std::type_index& type_index() const { return m_type_index; }
         const String& class_name() const { return m_class_name; }
@@ -134,10 +134,9 @@ namespace fow {
     };
 
     class FOW_ENGINE_API Scene final {
-        SkyboxPtr m_pSkybox;
         Vector<EntityPtr> m_Entities;
     public:
-        explicit Scene(const size_t entity_capacity = 128) : m_pSkybox(nullptr), m_Entities() { m_Entities.reserve(entity_capacity); }
+        explicit Scene(const size_t entity_capacity = 128) : m_Entities() { m_Entities.reserve(entity_capacity); }
         Scene(const Scene&) = delete;
         Scene(Scene&&) noexcept = default;
         ~Scene() = default;
@@ -157,10 +156,6 @@ namespace fow {
 
         void clear();
 
-        void set_skybox(const SkyboxPtr& skybox);
-        [[nodiscard]] FOW_CONSTEXPR const SkyboxPtr& skybox() const { return m_pSkybox; }
-        [[nodiscard]] FOW_CONSTEXPR SkyboxPtr& skybox() { return m_pSkybox; }
-
         void spawn();
         void update(double dt) const;
         void render(double dt) const;
@@ -178,10 +173,10 @@ namespace fow {
         std::type_index type_index = typeid(T);
         const String type_name = type_index.name();
         if (m_components.contains(type_index)) {
-            return std::dynamic_pointer_cast<T>(m_components.at(type_index));
+            return CastRef<T>(m_components.at(type_index));
         }
 
-        auto component = std::make_shared<T>(*this);
+        auto component = CreateRef<T>(*this);
 
         const auto registry_object = ComponentRegistryObject::GetComponentRegistryObject(type_index);
         Debug::Assert(registry_object);
@@ -208,7 +203,7 @@ namespace fow {
     template<ComponentType T>
     ComponentPtr<T> Entity::get_component() const {
         if (const std::type_index& type_index = typeid(T); m_components.contains(type_index)) {
-            return std::dynamic_pointer_cast<T>(m_components.at(type_index));
+            return CastRef<T>(m_components.at(type_index));
         }
         return nullptr;
     }

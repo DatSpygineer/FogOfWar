@@ -39,15 +39,21 @@ namespace fow {
         FOW_RENDER_API void UpdateCameraPosition(const Vector3& position, const Vector3& forward, const Vector3& up, const Quat& rotation);
         FOW_RENDER_API Matrix4 GetViewMatrix();
         FOW_RENDER_API Matrix4 GetProjectionMatrix();
+        FOW_RENDER_API Matrix4 GetProjectionMatrix2D();
         FOW_RENDER_API void SetViewport(const Rectangle& rect);
         FOW_RENDER_API void SetViewport(float x, float y, float width, float height);
         FOW_RENDER_API Rectangle GetViewport();
         FOW_RENDER_API void Clear(const Color& color);
 
+        FOW_RENDER_API void SetDefaultFont(const Path& font_path, float size);
+        FOW_RENDER_API FontPtr GetDefaultFont();
+
         FOW_RENDER_API Vector3 GetCameraPosition();
         FOW_RENDER_API Vector3 GetCameraTarget();
         FOW_RENDER_API Vector3 GetCameraForward();
         FOW_RENDER_API Vector3 GetCameraUp();
+
+        FOW_RENDER_API TTF_TextEngine* TextEngine();
     }
 }
 

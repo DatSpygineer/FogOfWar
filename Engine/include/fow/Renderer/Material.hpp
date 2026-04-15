@@ -56,7 +56,7 @@ namespace fow {
     };
 
     class Material;
-    using MaterialPtr = SharedPtr<Material>;
+    using MaterialPtr = Ref<Material>;
 
     struct MaterialOptions {
         bool backface_culling = true;
@@ -74,20 +74,14 @@ namespace fow {
             m_pShader(shader), m_mParams(params), m_options(options) { }
         explicit Material(ShaderPtr&& shader, const HashMap<String, MaterialParameterValue>& params = { }, const MaterialOptions options = { }) :
             m_pShader(std::move(shader)), m_mParams(params), m_options(options) { }
-        Material(const Material& material) = delete;
+        Material(const Material& material) : m_pShader(material.m_pShader), m_mParams(material.m_mParams), m_options(material.m_options) { }
         Material(Material&& material) noexcept : m_pShader(std::move(material.m_pShader)), m_mParams(std::move(material.m_mParams)), m_options(std::move(material.m_options)) {
             material.m_pShader = nullptr;
             material.m_mParams = { };
         }
 
-        Material& operator=(const Material& material) = delete;
-        Material& operator=(Material&& material) noexcept {
-            m_pShader = material.m_pShader;
-            m_mParams = material.m_mParams;
-            material.m_pShader = nullptr;
-            material.m_mParams = { };
-            return *this;
-        }
+        Material& operator=(const Material& material);
+        Material& operator=(Material&& material) noexcept;
 
         [[nodiscard]] FOW_CONSTEXPR const ShaderPtr& shader() const { return m_pShader; }
 
@@ -99,6 +93,7 @@ namespace fow {
         FOW_CONSTEXPR bool get_depth_test() const { return m_options.depth_test; }
 
         Result<> set_parameter(const String& name, const MaterialParameterValue& value);
+        Result<> set_parameter_optional(const String& name, const MaterialParameterValue& value);
         Result<> get_parameter(const String& name, MaterialParameterValue& value) const;
 
         Result<> apply() const;
@@ -111,6 +106,11 @@ namespace fow {
         static Result<MaterialPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
 
         static Result<MaterialPtr> New(const String& shader_name, const HashMap<String, MaterialParameterValue>& params = { });
+
+        Material make_unique() const;
+        Material make_unique(const HashMap<String, MaterialParameterValue>& params) const;
+        MaterialPtr make_unique_ptr() const;
+        MaterialPtr make_unique_ptr(const HashMap<String, MaterialParameterValue>& params) const;
 
         static const Material Null;
     };

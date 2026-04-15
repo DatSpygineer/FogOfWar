@@ -6,6 +6,8 @@
 #include "fow/Shared.hpp"
 #include "fow/Renderer/Material.hpp"
 
+#include "fow/Renderer/RenderShared.hpp"
+
 namespace fow {
     struct FOW_RENDER_API Vertex {
         Vector3 position;
@@ -25,6 +27,20 @@ namespace fow {
         static Vector<Vertex> CreateVertexArrayFromBuffers(const Vector<Vector3>& positions, const Vector<Vector3>& normals, const Vector<Vector3>& tangents, const Vector<Vector3>& bitangents, const Vector<Vector2>& uvs);
     };
 
+    struct FOW_RENDER_API Vertex2D {
+        Vector2 position;
+        Vector2 uv;
+
+        Vertex2D(const Vertex2D& other) = default;
+        Vertex2D(Vertex2D&& other) noexcept = default;
+        Vertex2D(const Vector2& position, const Vector2& uv) : position(position), uv(uv) { }
+
+        Vertex2D& operator= (const Vertex2D& other) = default;
+        Vertex2D& operator= (Vertex2D&& other) noexcept = default;
+
+        static Vector<Vertex2D> CreateVertexArrayFromBuffers(const Vector<Vector2>& positions, const Vector<Vector2>& uvs);
+    };
+
     enum class MeshDrawMode : GLenum {
         StaticDraw  = GL_STATIC_DRAW,
         StaticRead  = GL_STATIC_READ,
@@ -38,7 +54,7 @@ namespace fow {
     };
 
     class Mesh;
-    using MeshPtr = SharedPtr<Mesh>;
+    using MeshPtr = Ref<Mesh>;
 
     enum class MeshPrimitive {
         Points        = GL_POINTS,
@@ -50,7 +66,7 @@ namespace fow {
         TriangleFan   = GL_TRIANGLE_FAN
     };
 
-    class FOW_RENDER_API Mesh final {
+    class FOW_RENDER_API Mesh final : public IDrawable3D, public IDrawable3DInstanced, public IDrawable2D {
         GLuint m_uVao, m_uVbo, m_uEbo;
         GLsizei m_iIndexCount;
         bool m_bInitialized;
@@ -75,9 +91,9 @@ namespace fow {
             mesh.m_uEbo = 0;
             mesh.m_iIndexCount = 0;
             mesh.m_bInitialized = false;
-            mesh.m_pMaterial = std::make_shared<Material>();
+            mesh.m_pMaterial = CreateRef<Material>();
         }
-        ~Mesh();
+        ~Mesh() override;
 
         Mesh& operator=(const Mesh& mesh) = delete;
         Mesh& operator=(Mesh&& mesh) noexcept {
@@ -106,7 +122,7 @@ namespace fow {
             mesh.m_uEbo = 0;
             mesh.m_iIndexCount = 0;
             mesh.m_bInitialized = false;
-            mesh.m_pMaterial = std::make_shared<Material>();
+            mesh.m_pMaterial = CreateRef<Material>();
 
             return *this;
         }
@@ -118,20 +134,31 @@ namespace fow {
         [[nodiscard]] FOW_CONSTEXPR bool is_valid() const { return m_uVao != 0 && m_uVbo != 0 && m_uEbo != 0; }
         [[nodiscard]] FOW_CONSTEXPR MaterialPtr& material() { return m_pMaterial; }
         [[nodiscard]] FOW_CONSTEXPR const MaterialPtr& material() const { return m_pMaterial; }
+        void set_material(const MaterialPtr& material);
         [[nodiscard]] FOW_CONSTEXPR MeshPrimitive primitive_type() const { return m_ePrimitive; }
 
         static Result<MeshPtr> Create(const MaterialPtr& material, const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, MeshPrimitive primitive = MeshPrimitive::Triangles, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+        static Result<MeshPtr> Create2D(const MaterialPtr& material, const std::vector<Vertex2D>& vertices, const std::vector<GLuint>& indices, MeshPrimitive primitive = MeshPrimitive::Triangles, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
         static Result<MeshPtr> CreateQuad(const MaterialPtr& material, const Vector2& scale = Vector2(1.0f), MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
         static Result<MeshPtr> CreateCube(const MaterialPtr& material, const Vector3& mins, const Vector3& maxs, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
         static Result<MeshPtr> CreateCylinder(const MaterialPtr& material, float radius, float height, uint32_t segments, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
         static Result<MeshPtr> CreateCapsule(const MaterialPtr& material, float radius, float height, uint32_t segments, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
         static Result<MeshPtr> CreateSphere(const MaterialPtr& material, float radius, uint32_t segments, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
 
+        static Result<MeshPtr> CreateQuad2D(const MaterialPtr& material, MeshDrawMode draw_mode = MeshDrawMode::StaticDraw);
+
         static const Mesh Null;
 
         void draw() const;
-        void draw(const Transform& transform) const;
-        void draw_instances(const Vector<Transform>& transforms) const;
+        void draw(const Transform& transform) const override;
+        void draw(const Matrix4& model_matrix) const;
+        void draw(const MaterialPtr& override_material) const;
+        void draw(const MaterialPtr& override_material, const Transform& transform) const;
+        void draw(const MaterialPtr& override_material, const Matrix4& model_matrix) const;
+        void draw_instances(const Vector<Transform>& transforms) const override;
+        void draw_instances(const MaterialPtr& override_material, const Vector<Transform>& transforms) const;
+        void draw_2d(const Rectangle& rect) const override;
+        void draw_2d(const Rectangle& rect, const MaterialPtr& override_material) const;
     };
 
     class FOW_RENDER_API MeshBuilder final {
@@ -142,7 +169,7 @@ namespace fow {
     public:
         MeshBuilder(const MeshPrimitive primitive, const MaterialPtr& material) : m_ePrimitive(primitive), m_pMaterial(material)         { }
         MeshBuilder(const MeshPrimitive primitive, MaterialPtr&& material)      : m_ePrimitive(primitive), m_pMaterial(std::move(material)) { }
-        explicit MeshBuilder(const MeshPrimitive primitive)                  : m_ePrimitive(primitive), m_pMaterial(std::make_shared<Material>())   { }
+        explicit MeshBuilder(const MeshPrimitive primitive)                  : m_ePrimitive(primitive), m_pMaterial(CreateRef<Material>())   { }
 
         void append(const Vertex& vertex);
         inline void append(const Vector3& position, const Vector2& uv) {

@@ -6,7 +6,7 @@
 
 namespace fow {
     class Skybox;
-    using SkyboxPtr = SharedPtr<Skybox>;
+    using SkyboxPtr = Ref<Skybox>;
 
     class FOW_RENDER_API Skybox {
         MaterialPtr m_pMaterial;
