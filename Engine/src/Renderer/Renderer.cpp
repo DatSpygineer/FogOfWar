@@ -7,7 +7,7 @@ namespace fow {
         static auto s_viewport = Rectangle { 0.0f, 0.0f, 1280.0f, 720.0f };
         static auto s_view_matrix = Matrix4 { 1.0f };
         static auto s_proj_matrix = Matrix4 { 1.0f };
-        static auto s_proj_matrix_ui = Matrix4 { 1.0f };
+        static auto s_proj_matrix_2d = Matrix4 { 1.0f };
         static Path s_base_path = Path::CurrentDir();
         static bool s_initialized = false;
         static auto s_camera_position = Vector3 { 0.0f, 0.0f, 0.0f };
@@ -157,13 +157,13 @@ namespace fow {
         Matrix4 GetProjectionMatrix() {
             return s_proj_matrix;
         }
-        Matrix4 GetUIProjectionMatrix() {
-            return s_proj_matrix_ui;
+        Matrix4 GetProjectionMatrix2D() {
+            return s_proj_matrix_2d;
         }
         void SetViewport(const Rectangle& rect) {
             s_viewport = rect;
+            s_proj_matrix_2d = glm::ortho(s_viewport.x, s_viewport.x + s_viewport.width, s_viewport.y + s_viewport.height, s_viewport.y);
             glViewport(static_cast<GLint>(s_viewport.x), static_cast<GLint>(s_viewport.y), static_cast<GLint>(s_viewport.width), static_cast<GLint>(s_viewport.height));
-            s_proj_matrix_ui = glm::ortho(s_viewport.x, s_viewport.x + s_viewport.width, s_viewport.y + s_viewport.height, s_viewport.y);
         }
         void SetViewport(const float x, const float y, const float width, const float height) {
             SetViewport(Rectangle { x, y, width, height });

@@ -98,7 +98,8 @@ namespace fow::Debug {
             s_message_sent_callback(level, timestamp, message, location);
         }
         if (level == LogLevel::Fatal) {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", message.as_cstr(), nullptr);
+            const auto popup_message = std::format("Fata error occurred at {}:{}\n\n{}", location.file_name(), location.line(), message);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", popup_message.c_str(), nullptr);
             CrashGame(1);
         }
     }

@@ -219,6 +219,7 @@ namespace fow {
         String m_sText = "Sample Text";
         int m_iTextWrapWidth = 0;
         MaterialPtr m_pMaterial;
+        IntRectangle m_TextRect = { 0, 0, 128, 128 };
     public:
         FOW_COMPONENT_CLASS(Text2DRendererComponent, Component)
 
@@ -240,6 +241,9 @@ namespace fow {
 
         void set_text_sprite(const TextSprite2DPtr& text);
         [[nodiscard]] FOW_CONSTEXPR const TextSprite2DPtr& get_text_sprite() const { return m_pText; }
+
+        void set_text_rect(const IntRectangle& rect);
+        [[nodiscard]] FOW_CONSTEXPR const IntRectangle& get_text_rect() const { return m_TextRect; }
 
         void set_parameter(const String& name, const String& value) override;
     };

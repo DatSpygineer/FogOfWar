@@ -22,7 +22,7 @@
       "fragment": "src/PbrGeneric.fsh"
     },
     "Generic2D": {
-      "vertex": "src/Generic2D.vsh",
+      "vertex":   "src/Generic2D.vsh",
       "fragment": "src/Generic2D.fsh"
     }
   }

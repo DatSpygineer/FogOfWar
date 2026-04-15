@@ -467,7 +467,7 @@ namespace fow {
                     Debug::LogError("Failed to create material with shader \"Generic2D\"");
                 }
             }
-            m_pText = CreateRef<TextSprite2D>(m_sText, m_pFont, m_pMaterial, static_cast<IntRectangle>(transform->get_rectangle()));
+            m_pText = CreateRef<TextSprite2D>(m_sText, m_pFont, m_pMaterial, m_TextRect);
             m_pText->set_text_wrap_width(m_iTextWrapWidth);
         }
     }
@@ -518,6 +518,12 @@ namespace fow {
         m_pMaterial = m_pText->material();
         m_iTextWrapWidth = m_pText->text_wrap_width();
         m_sText = m_pText->text();
+    }
+
+    void Text2DRendererComponent::set_text_rect(const IntRectangle& rect) {
+        m_TextRect = rect;
+        if (m_pText == nullptr) return;
+        m_pText->set_text_area(m_TextRect);
     }
 
     void Text2DRendererComponent::set_parameter(const String& name, const String& value) {

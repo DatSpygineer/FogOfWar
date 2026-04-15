@@ -112,6 +112,8 @@ macro(add_game TARGET_NAME)
     add_custom_command(
         TARGET ${TARGET_NAME}_RebuildShaders
         PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Removing ${CMAKE_CURRENT_LIST_DIR}/shaderlib/ShaderLib.cpp..."
+        COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_CURRENT_LIST_DIR}/shaderlib/ShaderLib.cpp"
         COMMAND ${CMAKE_COMMAND} -E echo "Removing ${CMAKE_SHARED_LIBRARY_PREFIX}shaderlib${CMAKE_SHARED_LIBRARY_SUFFIX}..."
         COMMAND ${CMAKE_COMMAND} -E remove ${GAME_BASE_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}shaderlib${CMAKE_SHARED_LIBRARY_SUFFIX}
     )

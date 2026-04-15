@@ -125,7 +125,7 @@ namespace fow {
         MaterialPtr m_pMaterial = nullptr;
         MeshPtr m_pMesh = nullptr;
         TextRenderer m_textRenderer;
-        IntRectangle m_textArea = { 0, 0, 16, 16 };
+        IntRectangle m_textArea = { 0, 0, 128, 128 };
     public:
         BaseTextSprite(const String& text, const FontPtr& font, const MaterialPtr& material, const IntRectangle& text_area);
         virtual ~BaseTextSprite() = default;

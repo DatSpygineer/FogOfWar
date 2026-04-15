@@ -91,14 +91,22 @@ public:
     Scene2DExample() {
         m_pScene = CreateRef<Scene>();
 
-        auto light_sprite = Assets::Load<Sprite2D>("/Sprites/Light.sprite2d.xml");
+        auto light_sprite = Assets::Load<Sprite2D>("/Sprites/Test.sprite2d.xml");
         Debug::AssertFatal(light_sprite);
 
         const auto ent_sprite = m_pScene->create_entity();
         const auto comp_sprite_transform = ent_sprite->add_component<Transform2DComponent>();
-        comp_sprite_transform->set_rectangle(Rectangle { 0.0, 0.0, 1.0, 1.0 });
+        comp_sprite_transform->set_rectangle(Rectangle { 0.0, 0.0, 128.0, 128.0 });
         const auto comp_sprite = ent_sprite->add_component<Sprite2DRendererComponent>();
         comp_sprite->set_sprite(light_sprite.value().ptr());
+
+        const auto ent_text = m_pScene->create_entity();
+        const auto comp_text_transform = ent_text->add_component<Transform2DComponent>();
+        comp_text_transform->set_rectangle(Rectangle { 128.0, 0.0, 128.0, 128.0 });
+        const auto comp_text = ent_text->add_component<Text2DRendererComponent>();
+        comp_text->set_font(CreateRef<Font>("Roboto-Regular.ttf", 24));
+        comp_text->set_text("Hello World!");
+        comp_text->set_text_rect(IntRectangle { 0, 0, 128, 128 });
 
         Engine::SetScene(m_pScene);
     }

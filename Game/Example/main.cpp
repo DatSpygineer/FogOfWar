@@ -9,7 +9,7 @@ public:
     ExampleGame() : Game() { }
 
     void on_init() override {
-        Scene2DExample();
+        Scene3DExample();
     }
     void on_update(const double dt) override {
     }

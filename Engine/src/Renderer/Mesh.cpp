@@ -224,12 +224,12 @@ namespace fow {
     static void MeshDraw2D(const GLuint vao, const GLsizei index_count, const MaterialPtr& material, const Rectangle& rect) {
         if (material != nullptr && material->is_valid()) {
             Debug::Assert(material->apply());
-            Debug::Assert(material->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetUIProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
+            Debug::Assert(material->shader()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix2D()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(material->shader()->set_uniform("AreaPosition", rect.position()), "Error while applying uniform \"AreaPosition\"");
             Debug::Assert(material->shader()->set_uniform("AreaSize", rect.size()), "Error while applying uniform \"AreaSize\"");
         } else {
             Shader::PlaceHolder()->use();
-            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetUIProjectionMatrix()), "Error while applying uniform \"MATRIX_PROJECTION\"");
+            Debug::Assert(Shader::PlaceHolder()->set_uniform("MATRIX_PROJECTION", Renderer::GetProjectionMatrix2D()), "Error while applying uniform \"MATRIX_PROJECTION\"");
             Debug::Assert(Shader::PlaceHolder()->set_uniform("AreaPosition", rect.position()), "Error while applying uniform \"AreaPosition\"");
             Debug::Assert(Shader::PlaceHolder()->set_uniform("AreaSize", rect.size()), "Error while applying uniform \"AreaSize\"");
         }

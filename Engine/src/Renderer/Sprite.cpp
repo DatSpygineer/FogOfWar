@@ -99,6 +99,7 @@ namespace fow {
 
     void Sprite2D::set_material(const MaterialPtr& material) {
         m_pMaterial = material;
+        setup_sprite();
     }
 
     void Sprite2D::draw_2d(const Rectangle& rect) const {
@@ -144,12 +145,26 @@ namespace fow {
 
     void Sprite2D::setup_sprite() {
         if (m_pMesh == nullptr) {
-            const auto result = Mesh::CreateQuad2D(m_pMaterial);
+            const auto result = Mesh::Create2D(
+                m_pMaterial,
+                {
+                    Vertex2D { Vector2 { 0.0f, 0.0f }, Vector2 { 0.0f, 0.0f } },
+                    Vertex2D { Vector2 { 0.0f, 1.0f }, Vector2 { 0.0f, 1.0f } },
+                    Vertex2D { Vector2 { 1.0f, 1.0f }, Vector2 { 1.0f, 1.0f } },
+                    Vertex2D { Vector2 { 1.0f, 0.0f }, Vector2 { 1.0f, 0.0f } },
+                },
+                {
+                    0u, 1u, 2u,
+                    2u, 3u, 0u
+                }
+            );
             if (!result.has_value()) {
                 Debug::LogError("Failed to create quad mesh for sprite");
                 return;
             }
             m_pMesh = result.value();
+        } else {
+            m_pMesh->set_material(m_pMaterial);
         }
     }
 
@@ -374,12 +389,26 @@ namespace fow {
 
     void TextSprite2D::setup_sprite() {
         if (m_pMesh == nullptr) {
-            const auto result = Mesh::CreateQuad2D(m_pMaterial);
+            const auto result = Mesh::Create2D(
+                m_pMaterial,
+                {
+                    Vertex2D { Vector2 { 0.0f, 0.0f }, Vector2 { 0.0f, 0.0f } },
+                    Vertex2D { Vector2 { 0.0f, 1.0f }, Vector2 { 0.0f, 1.0f } },
+                    Vertex2D { Vector2 { 1.0f, 1.0f }, Vector2 { 1.0f, 1.0f } },
+                    Vertex2D { Vector2 { 1.0f, 0.0f }, Vector2 { 1.0f, 0.0f } },
+                },
+                {
+                    0u, 1u, 2u,
+                    2u, 3u, 0u
+                }
+            );
             if (!result.has_value()) {
                 Debug::LogError("Failed to create quad mesh for sprite");
                 return;
             }
             m_pMesh = result.value();
+        } else {
+            m_pMesh->set_material(m_pMaterial);
         }
 
         BaseTextSprite::setup_sprite();

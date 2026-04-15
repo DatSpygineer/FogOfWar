@@ -1178,7 +1178,6 @@ namespace fow {
         }
         return Failure(std::format("Failed to load material \"{}\": Expected root node 'Material' in XML document!", source));
     }
-
     Result<MaterialPtr> Material::ParseXml(const String& source, const pugi::xml_node& root, const AssetLoaderFlags::Type flags) {
         const auto shader_attrib = root.attribute("shader");
         if (!shader_attrib) {
@@ -1489,7 +1488,26 @@ namespace fow {
     Result<MaterialPtr> Material::New(const String& shader_name, const HashMap<String, MaterialParameterValue>& params) {
         auto shader = Shader::FromCache(shader_name);
         if (shader == nullptr) {
-            return Failure(std::format("Could not get shader \"{}\"", shader_name));
+            const auto source_paths = ShaderLib::GetSourcesForShader(shader_name);
+            if (!source_paths.has_value()) {
+                return Failure(std::format("Failed to create material: Sources for shader \"{}\" not found!", shader_name));
+            }
+
+            const auto vertex_src = ShaderLib::GetSource(source_paths->vertex);
+            if (!vertex_src.has_value()) {
+                return Failure(std::format("Failed to create material: Failed to load vertex shader \"{}\"!", source_paths->vertex));
+            }
+
+            const auto fragment_src = ShaderLib::GetSource(source_paths->fragment);
+            if (!fragment_src.has_value()) {
+                return Failure(std::format("Failed to create material: Failed to load fragment shader \"{}\"!", source_paths->fragment));
+            }
+
+            if (const auto result = Shader::Compile(shader_name, vertex_src.value(), fragment_src.value()); result.has_value()) {
+                shader = result.value();
+            } else {
+                return Failure(std::format("Failed to create material with shader \"{}\": {}", shader_name, result.error().message));
+            }
         }
         return std::make_shared<Material>(shader, params);
     }
