@@ -297,8 +297,9 @@ namespace fow {
             }
 
             m_pText = CreateRef<TextSprite>(m_sText, m_pFont, m_pMaterial, m_TextRect);
-            m_pText->set_text_wrap_width(m_iTextWrapWidth);
             m_pText->set_billboard_mode(m_eBillboardMode);
+            m_pText->set_color(m_Color);
+            m_pText->set_alignment(m_eTextAlignment);
         }
     }
 
@@ -341,20 +342,21 @@ namespace fow {
         return m_pText != nullptr ? m_pText->text() : m_sText;
     }
 
-    void TextRendererComponent::set_text_wrap_width(const int width) {
-        m_iTextWrapWidth = width;
+    void TextRendererComponent::set_color(const Color& color) {
+        m_Color = color;
         if (m_pText == nullptr) return;
-        m_pText->set_text_wrap_width(m_iTextWrapWidth);
+        m_pText->set_color(m_Color);
     }
 
-    int TextRendererComponent::get_text_wrap_width() const {
-        return m_pText != nullptr ? m_pText->text_wrap_width() : m_iTextWrapWidth;
+    void TextRendererComponent::set_alignment(const TextAlignment& alignment) {
+        m_eTextAlignment = alignment;
+        if (m_pText == nullptr) return;
+        m_pText->set_alignment(m_eTextAlignment);
     }
 
     void TextRendererComponent::set_text_sprite(const TextSpritePtr& text) {
         m_pText = text;
         m_pMaterial = m_pText->material();
-        m_iTextWrapWidth = m_pText->text_wrap_width();
         m_sText = m_pText->text();
     }
 
@@ -379,9 +381,6 @@ namespace fow {
         }
         if (name.equals("text", StringCompareType::CaseInsensitive)) {
             m_sText = value;
-        }
-        if (name.equals("text_wrap_width", StringCompareType::CaseInsensitive)) {
-            m_iTextWrapWidth = StringToInt<int>(value).value_or(0);
         }
         if (name.equals("material", StringCompareType::CaseInsensitive)) {
             auto mat = Assets::Load<Material>(value);
@@ -468,7 +467,8 @@ namespace fow {
                 }
             }
             m_pText = CreateRef<TextSprite2D>(m_sText, m_pFont, m_pMaterial, m_TextRect);
-            m_pText->set_text_wrap_width(m_iTextWrapWidth);
+            m_pText->set_color(m_Color);
+            m_pText->set_alignment(m_eTextAlignment);
         }
     }
 
@@ -504,19 +504,21 @@ namespace fow {
         return m_pText != nullptr ? m_pText->text() : m_sText;
     }
 
-    void Text2DRendererComponent::set_text_wrap_width(const int width) {
-        m_iTextWrapWidth = width;
+    void Text2DRendererComponent::set_color(const Color& color) {
+        m_Color = color;
         if (m_pText == nullptr) return;
-        m_pText->set_text_wrap_width(m_iTextWrapWidth);
+        m_pText->set_color(m_Color);
     }
-    int Text2DRendererComponent::get_text_wrap_width() const {
-        return m_pText != nullptr ? m_pText->text_wrap_width() : m_iTextWrapWidth;
+
+    void Text2DRendererComponent::set_alignment(const TextAlignment& alignment) {
+        m_eTextAlignment = alignment;
+        if (m_pText == nullptr) return;
+        m_pText->set_alignment(m_eTextAlignment);
     }
 
     void Text2DRendererComponent::set_text_sprite(const TextSprite2DPtr& text) {
         m_pText = text;
         m_pMaterial = m_pText->material();
-        m_iTextWrapWidth = m_pText->text_wrap_width();
         m_sText = m_pText->text();
     }
 
@@ -542,9 +544,6 @@ namespace fow {
 
         if (name.equals("text", StringCompareType::CaseInsensitive)) {
             m_sText = value;
-        }
-        if (name.equals("text_wrap_width", StringCompareType::CaseInsensitive)) {
-            m_iTextWrapWidth = StringToInt<int>(value).value_or(0);
         }
         if (name.equals("material", StringCompareType::CaseInsensitive)) {
             auto mat = Assets::Load<Material>(value);

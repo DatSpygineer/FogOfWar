@@ -23,7 +23,7 @@ namespace fow {
     Sprite::Sprite(const Sprite& sprite) : m_pMaterial(sprite.m_pMaterial), m_pMesh(sprite.m_pMesh), m_eBillboardMode(sprite.m_eBillboardMode) {
         setup_sprite();
     }
-    Sprite::Sprite(Sprite&& sprite) noexcept: m_pMaterial(std::move(sprite.m_pMaterial)), m_pMesh(std::move(sprite.m_pMesh)), m_eBillboardMode(sprite.m_eBillboardMode) {
+    Sprite::Sprite(Sprite&& sprite) noexcept : m_pMaterial(std::move(sprite.m_pMaterial)), m_pMesh(std::move(sprite.m_pMesh)), m_eBillboardMode(sprite.m_eBillboardMode) {
         setup_sprite();
     }
 
@@ -97,6 +97,15 @@ namespace fow {
         setup_sprite();
     }
 
+    Sprite2D::Sprite2D(const Texture2DPtr& texture) : Sprite2D(Material::New("Generic2D", { { "MainTexture", texture } }).value_or(CreateRef<Material>())) { }
+
+    Sprite2D::Sprite2D(const Sprite2D& sprite) : m_pMaterial(sprite.m_pMaterial), m_pMesh(sprite.m_pMesh) {
+        setup_sprite();
+    }
+    Sprite2D::Sprite2D(Sprite2D&& sprite) noexcept : m_pMaterial(std::move(sprite.m_pMaterial)), m_pMesh(std::move(sprite.m_pMesh)) {
+        setup_sprite();
+    }
+
     void Sprite2D::set_material(const MaterialPtr& material) {
         m_pMaterial = material;
         setup_sprite();
@@ -145,19 +154,7 @@ namespace fow {
 
     void Sprite2D::setup_sprite() {
         if (m_pMesh == nullptr) {
-            const auto result = Mesh::Create2D(
-                m_pMaterial,
-                {
-                    Vertex2D { Vector2 { 0.0f, 0.0f }, Vector2 { 0.0f, 0.0f } },
-                    Vertex2D { Vector2 { 0.0f, 1.0f }, Vector2 { 0.0f, 1.0f } },
-                    Vertex2D { Vector2 { 1.0f, 1.0f }, Vector2 { 1.0f, 1.0f } },
-                    Vertex2D { Vector2 { 1.0f, 0.0f }, Vector2 { 1.0f, 0.0f } },
-                },
-                {
-                    0u, 1u, 2u,
-                    2u, 3u, 0u
-                }
-            );
+            const auto result = Mesh::CreateQuad2D(m_pMaterial);
             if (!result.has_value()) {
                 Debug::LogError("Failed to create quad mesh for sprite");
                 return;
@@ -168,136 +165,256 @@ namespace fow {
         }
     }
 
-    Font::Font(const Path& path, const float size) {
-        const auto full_path = path.is_absolute() ? path : path.as_absolute(Renderer::GetBasePath() / "res");
+    QuadSprite2D::QuadSprite2D() : Sprite2D(Material::New("Rectangle2D", { { "MainTexture", Texture2D::DefaultWhite() } }).value_or(CreateRef<Material>())) { }
 
-        m_pFont = TTF_OpenFont(full_path.as_cstr(), size);
-        Debug::Assert(m_pFont != nullptr, std::format("Failed to open font \"{}\": {}", full_path, SDL_GetError()));
+    QuadSprite2D::QuadSprite2D(const Color& color, float radius) : QuadSprite2D() {
+        m_Color = color;
+        m_fRadius = radius;
+    }
+    QuadSprite2D::QuadSprite2D(const Color& color, const Color& border_color, const float border_thickness, const float radius) : QuadSprite2D() {
+        m_Color = color;
+        m_fRadius = radius;
+        m_BorderColor = border_color;
+        m_fBorderThickness = border_thickness;
+    }
+
+    QuadSprite2D::QuadSprite2D(const Texture2DPtr& background, const Color& color, const Color& border_color, const float border_thickness, const float radius) : QuadSprite2D() {
+        m_Color = color;
+        m_fRadius = radius;
+        m_BorderColor = border_color;
+        m_fBorderThickness = border_thickness;
+        m_pBackgroundTexture = background;
+    }
+
+    void QuadSprite2D::set_color(const Color& color) {
+        m_Color = color;
+    }
+    void QuadSprite2D::set_border(const Color& color, const float thickness) {
+        m_BorderColor = color;
+        m_fBorderThickness = thickness;
+    }
+    void QuadSprite2D::set_radius(const float radius) {
+        m_fRadius = radius;
+    }
+
+    void QuadSprite2D::set_background_texture(const Texture2DPtr& texture) {
+        m_pBackgroundTexture = texture;
+        if (m_pBackgroundTexture == nullptr) {
+            m_pMaterial->set_parameter("MainTexture", Texture2D::DefaultWhite());
+        }
+    }
+
+    void QuadSprite2D::draw_2d(const Rectangle& rect) const {
+        m_pMaterial->set_parameter("ColorTint", m_Color);
+        m_pMaterial->set_parameter("BorderColor", m_BorderColor);
+        m_pMaterial->set_parameter("BorderThickness", m_fBorderThickness);
+        m_pMaterial->set_parameter("Radius", m_fRadius);
+        if (m_pBackgroundTexture != nullptr) {
+            m_pMaterial->set_parameter("MainTexture", m_pBackgroundTexture);
+        }
+        Sprite2D::draw_2d(rect);
+    }
+
+    Result<QuadSprite2DPtr> QuadSprite2D::FromXml(const pugi::xml_document& doc) {
+        const auto root = doc.child("QuadSprite2D");
+        if (!root) {
+            return Failure("Failed to load QuadSprite2D: Expected root node \"QuadSprite2D\"");
+        }
+
+        return FromXml(root);
+    }
+    Result<QuadSprite2DPtr> QuadSprite2D::FromXml(const pugi::xml_node& node) {
+        Color color = ColorConstants::White, border_color = ColorConstants::Black;
+        Texture2DPtr texture = nullptr;
+        float border_thickness = 0.0f, radius = 0.0f;
+
+        if (const auto cn = node.child("Background"); cn) {
+            if (const auto attrib = cn.attribute("color"); attrib) {
+                if (auto result = StringToColor(attrib.value()); !result.has_value()) {
+                    Debug::LogError(std::format("Failed to parse color value \"{}\" by attribute \"color\" in node \"Background\": {}, using default value!", attrib.value(), result.error().message));
+                } else {
+                    color = result.value();
+                }
+            }
+            if (const auto attrib = cn.attribute("texture"); attrib) {
+                auto texture_result = Assets::Load<Texture2D>(attrib.value());
+                if (!texture_result.has_value()) {
+                    return Failure(std::format("Failed to load QuadSprite2D texture: {}", texture_result.error().message));
+                }
+                texture = texture_result.value().ptr();
+            }
+        }
+        if (const auto cn = node.child("Border"); cn) {
+            if (const auto attrib = cn.attribute("color"); attrib) {
+                if (auto result = StringToColor(attrib.value()); !result.has_value()) {
+                    Debug::LogError(std::format("Failed to parse color value \"{}\" used by attribute \"color\" in node \"Border\": {}, using default value!", attrib.value(), result.error().message));
+                } else {
+                    border_color = result.value();
+                }
+            }
+            if (const auto attrib = cn.attribute("thickness"); attrib) {
+                if (auto result = StringToFloat<float>(attrib.value()); !result.has_value()) {
+                    Debug::LogError(std::format("Failed to parse float value \"{}\" used by attribute \"thickness\" in node \"Border\": {}, using default value!", attrib.value(), result.error().message));
+                } else {
+                    border_thickness = result.value();
+                }
+            }
+        }
+        if (const auto cn = node.child("Radius"); cn) {
+            if (auto result = StringToFloat<float>(cn.child_value()); !result.has_value()) {
+                Debug::LogError(std::format("Failed to parse float value \"{}\" used by node \"Radius\": {}, using default value!", cn.child_value(), result.error().message));
+            } else {
+                radius = result.value();
+            }
+        }
+
+        return Success<QuadSprite2DPtr>(CreateRef<QuadSprite2D>(texture, color, border_color, border_thickness, radius));
+    }
+    Result<QuadSprite2DPtr> QuadSprite2D::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {
+        const auto xml = Assets::LoadAsXml(path, flags);
+        if (!xml.has_value()) {
+            return Failure(xml.error());
+        }
+        return FromXml(xml.value());
+    }
+
+    Font::Font(const Path& path, const uint32_t size) {
+        const auto full_path = path.is_absolute() ? path : path.as_absolute(Renderer::GetBasePath() / "res");
+        FT_New_Face(Renderer::FontLibrary(), full_path.as_cstr(), 0, &m_pFace);
+        FT_Set_Pixel_Sizes(m_pFace, 0, size);
     }
     Font::~Font() {
-        if (m_pFont != nullptr) {
-            TTF_CloseFont(m_pFont);
+        if (m_pFace != nullptr) {
+            FT_Done_Face(m_pFace);
         }
     }
 
-    Result<> Font::change_font(const Path& path, const float size) {
-        const auto full_path = path.is_absolute() ? path : path.as_absolute(Renderer::GetBasePath() / "res");
-        const auto font = TTF_OpenFont(full_path.as_cstr(), size);
-        if (font == nullptr) {
-            return Failure(std::format("Failed to open font \"{}\": {}", full_path, SDL_GetError()));
-        }
-        TTF_CloseFont(m_pFont);
-        m_pFont = font;
+    Result<> Font::change_font(const Path& path, const uint32_t size) {
         return Success();
     }
 
+    const TextAlignment TextAlignment::Default = { HorizontalAlignment::Left, VerticalAlignment::Top };
+    const TextAlignment TextAlignment::Center  = { HorizontalAlignment::Center, VerticalAlignment::Centre };
+    const TextAlignment TextAlignment::Centre  = { HorizontalAlignment::Center, VerticalAlignment::Centre };
+
     TextRenderer::TextRenderer(const String& text, const Path& font_path, float size) : TextRenderer(text, CreateRef<Font>(font_path, size)) { }
 
-    TextRenderer::TextRenderer(const String& text, const FontPtr& font) : m_pFont(font), m_pText(nullptr), m_bWarpVisibleWhitespace(false) {
-        m_pText = TTF_CreateText(Renderer::TextEngine(), font->m_pFont, text.as_cstr(), text.size());
-        TTF_SetTextColor(m_pText, 0xFF, 0xFF, 0xFF, 0xFF);
-    }
-    TextRenderer::~TextRenderer() {
-        if (m_pText != nullptr) {
-            TTF_DestroyText(m_pText);
-        }
+    TextRenderer::TextRenderer(const String& text, const FontPtr& font) : m_pFont(font), m_sText(text) {
+
     }
 
     void TextRenderer::set_text(const String& text) {
-        if (m_pText != nullptr && !text.equals(m_pText->text)) {
-            if (!TTF_SetTextString(m_pText, text.as_cstr(), text.size())) {
-                Debug::LogError(std::format("Failed to set text for TTF_Text object: {}", SDL_GetError()));
-            }
-        }
+        m_sText = text;
     }
 
     void TextRenderer::set_font(const FontPtr& font) {
-        if (m_pText != nullptr) {
-            if (!TTF_SetTextFont(m_pText, font->m_pFont)) {
-                Debug::LogError(std::format("Failed to set font for TTF_Text object: {}", SDL_GetError()));
-            }
-        }
+        m_pFont = font;
     }
 
     void TextRenderer::set_color(const Color& color) {
-        if (m_pText != nullptr) {
-            if (!TTF_SetTextColorFloat(m_pText, color.r, color.g, color.b, color.a)) {
-                Debug::LogError(std::format("Failed to set color for TTF_Text object: {}", SDL_GetError()));
+        m_Color = color;
+    }
+
+    void TextRenderer::set_alignment(const TextAlignment& alignment) {
+        m_eTextAlignment = alignment;
+    }
+
+    void TextRenderer::set_alignment(const HorizontalAlignment& horizontal_alignment, const VerticalAlignment& vertical_alignment) {
+        m_eTextAlignment = TextAlignment(horizontal_alignment, vertical_alignment);
+    }
+
+    void TextRenderer::set_alignment(const HorizontalAlignment& alignment) {
+        m_eTextAlignment.horizontal = alignment;
+    }
+    void TextRenderer::set_alignment(const VerticalAlignment& vertical_alignment) {
+        m_eTextAlignment.vertical = vertical_alignment;
+    }
+
+    Result<Texture2DPtr> TextRenderer::create_texture(const Vector2i& texture_size) const {
+        return create_texture(texture_size, TextureInfo());
+    }
+    Result<Texture2DPtr> TextRenderer::create_texture(const Vector2i& texture_size, const TextureInfo& info) const {
+        return create_texture(texture_size, info, nullptr);
+    }
+    Result<Texture2DPtr> TextRenderer::create_texture(const Vector2i& texture_size, const TexturePtr& reuse) const {
+        return create_texture(texture_size, TextureInfo(), reuse);
+    }
+    Result<Texture2DPtr> TextRenderer::create_texture(const Vector2i& texture_size, const TextureInfo& info, const TexturePtr& reuse) const {
+        if (m_pFont == nullptr) {
+            return Failure(std::format("Failed to render text \"{}\": Font is not set", m_sText));
+        }
+
+        const auto face = m_pFont->m_pFace;
+        const auto target_width = texture_size.x;
+        const auto target_height = texture_size.y;
+
+        // 1. Calculate the bounding box of the actual text string
+        int text_width = 0;
+        int max_ascent = 0;
+        int max_descent = 0;
+
+        for (const char c : m_sText) {
+            if (FT_Load_Char(face, c, FT_LOAD_DEFAULT)) continue;
+            text_width += face->glyph->advance.x >> 6;
+            max_ascent = std::max(max_ascent, face->glyph->bitmap_top);
+            max_descent = std::max(max_descent, static_cast<int>(face->glyph->bitmap.rows - face->glyph->bitmap_top));
+        }
+        const int text_height = max_ascent + max_descent;
+
+        // 2. Determine starting X based on Horizontal Alignment
+        int start_x = 0;
+        switch (m_eTextAlignment.horizontal) {
+            case HorizontalAlignment::Left:   start_x = 0; break;
+            case HorizontalAlignment::Center: start_x = (target_width - text_width) / 2; break;
+            case HorizontalAlignment::Right:  start_x = (target_width - text_width); break;
+        }
+
+        // 3. Determine starting Y based on Vertical Alignment
+        // We align the "block", then adjust for the font baseline
+        int start_y_offset = 0;
+        switch (m_eTextAlignment.vertical) {
+            case VerticalAlignment::Top:    start_y_offset = 0; break;
+            case VerticalAlignment::Center: start_y_offset = (target_height - text_height) / 2; break;
+            case VerticalAlignment::Bottom: start_y_offset = (target_height - text_height); break;
+        }
+
+        // The baseline Y position
+        const int baseline_y = start_y_offset + max_ascent;
+
+        // 4. Initialize RGBA buffer
+        Vector<uint8_t> buffer(target_width * target_height * 4, 0);
+
+        int current_x = start_x;
+        for (const char c : m_sText) {
+            if (FT_Load_Char(face, c, FT_LOAD_RENDER)) continue;
+
+            const FT_GlyphSlot slot = face->glyph;
+
+            // Calculate pixel position: baseline minus the glyph's top offset
+            int glyph_y_top = baseline_y - slot->bitmap_top;
+
+            for (uint32_t row = 0; row < slot->bitmap.rows; ++row) {
+                for (uint32_t col = 0; col < slot->bitmap.width; ++col) {
+                    const int pixel_x = current_x + slot->bitmap_left + col;
+                    const int pixel_y = glyph_y_top + row;
+
+                    // Bounds check to prevent buffer overflow if text exceeds target_width/height
+                    if (pixel_x < 0 || pixel_x >= static_cast<int>(target_width) || pixel_y < 0 || pixel_y >= static_cast<int>(target_height))
+                        continue;
+
+                    const uint8_t alpha = slot->bitmap.buffer[row * slot->bitmap.width + col];
+                    const size_t idx = (pixel_y * target_width + pixel_x) * 4;
+
+                    buffer[idx + 0] = static_cast<uint8_t>(m_Color.r * 255);
+                    buffer[idx + 1] = static_cast<uint8_t>(m_Color.g * 255);
+                    buffer[idx + 2] = static_cast<uint8_t>(m_Color.b * 255);
+                    buffer[idx + 3] = static_cast<uint8_t>(alpha * m_Color.a);
+                }
             }
-        }
-    }
-
-    void TextRenderer::set_wrap_width(const int width) {
-        if (m_pText != nullptr) {
-            if (!TTF_SetTextWrapWidth(m_pText, width)) {
-                Debug::LogError(std::format("Failed to set text wrap width for TTF_Text object: {}", SDL_GetError()));
-            }
-        }
-    }
-
-    void TextRenderer::set_warp_visible_whitespace(const bool visible) {
-        if (m_pText != nullptr) {
-            if (!TTF_SetTextWrapWhitespaceVisible(m_pText, visible)) {
-                Debug::LogError(std::format("Failed to set text wrap whitespace visible for TTF_Text object: {}", SDL_GetError()));
-            }
-            m_bWarpVisibleWhitespace = visible;
-        }
-    }
-
-    Color TextRenderer::color() const {
-        Color color;
-        TTF_GetTextColorFloat(m_pText, &color.r, &color.g, &color.b, &color.a);
-        return color;
-    }
-
-    int TextRenderer::wrap_width() const {
-        int wrap_width;
-        TTF_GetTextWrapWidth(m_pText, &wrap_width);
-        return wrap_width;
-    }
-
-    bool TextRenderer::warp_visible_whitespace() const {
-        return m_bWarpVisibleWhitespace;
-    }
-
-    String TextRenderer::text() const {
-        return m_pText != nullptr ? m_pText->text : "";
-    }
-
-    const FontPtr& TextRenderer::font() const {
-        return m_pFont;
-    }
-
-    Result<Texture2DPtr> TextRenderer::create_texture(const IntRectangle& rect) const {
-        return create_texture(rect, nullptr);
-    }
-
-    Result<Texture2DPtr> TextRenderer::create_texture(const IntRectangle& rect, const TexturePtr& reuse) const {
-        if (!is_valid()) {
-            return Failure("TextRenderer is not initialized");
+            current_x += slot->advance.x >> 6;
         }
 
-        if (rect.width <= 0 || rect.height <= 0) {
-            return Failure("Invalid text area: Size (both width and height) must be non-zero, positive!");
-        }
-
-        const auto surface = SDL_CreateSurface(rect.width, rect.height, SDL_PIXELFORMAT_RGBA8888);
-        if (surface == nullptr) {
-            const char* error = SDL_GetError();
-            return Failure(std::format("Failed to create text surface: {}", error));
-        }
-
-        if (!TTF_DrawSurfaceText(m_pText, rect.x, rect.y, surface)) {
-            const char* error = SDL_GetError();
-            SDL_DestroySurface(surface);
-            return Failure(std::format("Failed to draw text: {}", error));
-        }
-
-        const auto texture_result = reuse != nullptr
-            ? Texture2D::FromSDLSurface(surface, *reuse, TextureInfo { })
-            : Texture2D::FromSDLSurface(surface, TextureInfo { });
-
-        return texture_result;
+        return Texture2D::CreateFromRawData(buffer, reuse != nullptr ? reuse->id() : 0, texture_size, info, TexturePixelFormat::RGBA, TextureInternalPixelFormat::RGBA);
     }
 
     BaseTextSprite::BaseTextSprite(const String& text, const FontPtr& font, const MaterialPtr& material, const IntRectangle& text_area) :
@@ -354,12 +471,13 @@ namespace fow {
         setup_sprite();
     }
 
-    int BaseTextSprite::text_wrap_width() const {
-        return m_textRenderer.wrap_width();
+    void BaseTextSprite::set_color(const Color& color) {
+        m_textRenderer.set_color(color);
+        setup_sprite();
     }
 
-    void BaseTextSprite::set_text_wrap_width(const int width) {
-        m_textRenderer.set_wrap_width(width);
+    void BaseTextSprite::set_alignment(const TextAlignment& alignment) {
+        m_textRenderer.set_alignment(alignment);
         setup_sprite();
     }
 
@@ -369,7 +487,7 @@ namespace fow {
     }
 
     void BaseTextSprite::setup_sprite() {
-        auto result = m_textRenderer.create_texture(m_textArea, m_pTexture);
+        auto result = m_textRenderer.create_texture(m_textArea.size());
         if (!result.has_value()) {
             Debug::LogError(result.error().message);
             return;

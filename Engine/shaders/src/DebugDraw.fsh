@@ -1,0 +1,8 @@
+#version 330 core
+
+in vec4 FRAGMENT_VERTEX_COLOR;
+out vec4 FRAGMENT_COLOR;
+
+void main() {
+    FRAGMENT_COLOR = FRAGMENT_VERTEX_COLOR;
+}

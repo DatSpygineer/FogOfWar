@@ -3,9 +3,9 @@
     "libzip",
     "glew",
     "sdl3",
-    "sdl3-ttf",
     "assimp",
     "pugixml",
+    "freetype",
     "gtest",
     "qt"
   ]

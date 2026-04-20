@@ -155,17 +155,21 @@ namespace fow {
     }
 
     Result<MeshPtr> Mesh::CreateQuad2D(const MaterialPtr& material, const MeshDrawMode draw_mode) {
-        const Vector vertices = {
-            Vertex2D { Vector2 { 1.0f, 0.0f }, Vector2 { 1.0f, 1.0f } },
-            Vertex2D { Vector2 { 1.0f, 1.0f }, Vector2 { 1.0f, 0.0f } },
-            Vertex2D { Vector2 { 0.0f, 1.0f }, Vector2 { 0.0f, 0.0f } },
-            Vertex2D { Vector2 { 0.0f, 0.0f }, Vector2 { 0.0f, 1.0f } }
-        };
-        const Vector indices = {
-            0u, 1u, 2u,
-            0u, 2u, 3u
-        };
-        return Create2D(material, vertices, indices, MeshPrimitive::Triangles, draw_mode);
+        return Create2D(
+            material,
+            {
+                Vertex2D { Vector2 { 0.0f, 0.0f }, Vector2 { 0.0f, 0.0f } },
+                Vertex2D { Vector2 { 0.0f, 1.0f }, Vector2 { 0.0f, 1.0f } },
+                Vertex2D { Vector2 { 1.0f, 1.0f }, Vector2 { 1.0f, 1.0f } },
+                Vertex2D { Vector2 { 1.0f, 0.0f }, Vector2 { 1.0f, 0.0f } },
+            },
+            {
+                0u, 1u, 2u,
+                2u, 3u, 0u
+            },
+            MeshPrimitive::Triangles,
+            draw_mode
+        );
     }
 
     const Mesh Mesh::Null = Mesh { };

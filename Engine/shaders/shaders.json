@@ -24,6 +24,14 @@
     "Generic2D": {
       "vertex":   "src/Generic2D.vsh",
       "fragment": "src/Generic2D.fsh"
+    },
+    "Rectangle2D": {
+      "vertex":   "src/Rectangle2D.vsh",
+      "fragment": "src/Rectangle2D.fsh"
+    },
+    "DebugDraw": {
+      "vertex":   "src/DebugDraw.vsh",
+      "fragment": "src/DebugDraw.fsh"
     }
   }
 }

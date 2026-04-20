@@ -183,6 +183,9 @@ namespace fow {
         static Result<Texture2DPtr> LoadFromMemory(const Vector<uint8_t>& data, const TextureInfo& info);
         static Result<Texture2DPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
 
+        static Result<Texture2DPtr> CreateFromRawData(const Vector<uint8_t>& data, const Vector2i& size, const TextureInfo& info, TexturePixelFormat format, TextureInternalPixelFormat internal_format);
+        static Result<Texture2DPtr> CreateFromRawData(const Vector<uint8_t>& data, GLuint reuse_id, const Vector2i& size, const TextureInfo& info, TexturePixelFormat format, TextureInternalPixelFormat internal_format);
+
         static Result<Texture2DPtr> FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info);
         static Result<Texture2DPtr> FromSDLSurface(const SDL_Surface* surface, const Texture& reuse, const TextureInfo& info);
 

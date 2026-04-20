@@ -13,6 +13,7 @@ find_package(OpenGL REQUIRED)
 find_package(SDL3 REQUIRED)
 find_package(SDL3_ttf REQUIRED)
 find_package(assimp REQUIRED)
+find_package(Freetype REQUIRED)
 
 if (WIN32)
     find_package(pugixml CONFIG REQUIRED) # On Linux Assimp already loads pugixml already
@@ -62,6 +63,7 @@ add_library(FogOfWarRenderer SHARED ${FOW_RENDERER_SOURCES} ${FOW_GLAD_SOURCES})
 target_include_directories(FogOfWarRenderer PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${ASSIMP_INCLUDE_DIRS})
 target_link_libraries(FogOfWarRenderer PUBLIC
     FogOfWar::Shared
+    Freetype::Freetype
     SDL3_ttf::SDL3_ttf
     soil2
     ${ASSIMP_LIBRARIES}

@@ -97,6 +97,7 @@ public:
         comp_text_2d->set_font(CreateRef<Font>("Roboto-Regular.ttf", 24));
         comp_text_2d->set_text("Hello World!");
         comp_text_2d->set_text_rect(IntRectangle { 0, 0, 128, 128 });
+        comp_text_2d->set_alignment(TextAlignment { HorizontalAlignment::Center, VerticalAlignment::Center });
 
         Engine::SetScene(m_pScene);
     }

@@ -7,6 +7,8 @@
 #include "fow/Renderer/Mesh.hpp"
 #include "fow/Renderer/Model.hpp"
 #include "fow/Renderer/Skybox.hpp"
+#include "fow/Renderer/Sprite.hpp"
+#include "fow/Renderer/Debug.hpp"
 #include "fow/Renderer/RenderQueue.hpp"
 
 namespace fow {
@@ -53,6 +55,7 @@ namespace fow {
         FOW_RENDER_API Vector3 GetCameraForward();
         FOW_RENDER_API Vector3 GetCameraUp();
 
+        FOW_RENDER_API FT_Library FontLibrary();
         FOW_RENDER_API TTF_TextEngine* TextEngine();
     }
 }

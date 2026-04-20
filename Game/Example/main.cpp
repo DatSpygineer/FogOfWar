@@ -14,6 +14,7 @@ public:
     void on_update(const double dt) override {
     }
     void on_render(const double dt) override {
+        Debug::DrawAxis(Vector3Constants::Zero);
     }
     void on_close() override {
     }

@@ -85,7 +85,7 @@ namespace fow {
             MouseMotion,
             MouseWheel
         };
-        enum class State {
+        enum class KeyState {
             Pressed,
             Down,
             Released,

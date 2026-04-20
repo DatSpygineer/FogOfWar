@@ -15,6 +15,7 @@ namespace fow {
         static auto s_camera_up       = Vector3 { 0.0f, 1.0f, 0.0f };
         static auto s_camera_forward  = Vector3 { 0.0f, 0.0f, 1.0f };
         static TTF_TextEngine* s_pTextEngine = nullptr;
+        static FT_Library s_pFontLibrary = nullptr;
         static FontPtr s_pDefaultFont = nullptr;
 
         static Result<> InitializeShared(const Path& app_base_path, const int msaa, const Function<Result<>()>& loader) {
@@ -34,6 +35,10 @@ namespace fow {
             if (s_pTextEngine == nullptr) {
                 ShaderLib::Unload();
                 return Failure(std::format("Failed to initialize TextEngine: {}", SDL_GetError()));
+            }
+
+            if (const auto error = FT_Init_FreeType(&s_pFontLibrary); error != FT_Err_Ok) {
+                return Failure(std::format("Failed to initialize FreeType: {}", FT_Error_String(error)));
             }
 
             Debug::LogInfo(std::format("Initialized OpenGL v{}", reinterpret_cast<const char*>(glGetString(GL_VERSION))));
@@ -90,6 +95,11 @@ namespace fow {
                 TTF_DestroySurfaceTextEngine(s_pTextEngine);
                 s_pTextEngine = nullptr;
             }
+            if (s_pFontLibrary != nullptr) {
+                FT_Done_FreeType(s_pFontLibrary);
+                s_pFontLibrary = nullptr;
+            }
+            Debug::FreeDebugMesh();
             ShaderLib::Unload();
         }
 
@@ -199,6 +209,10 @@ namespace fow {
         }
         Vector3 GetCameraUp() {
             return s_camera_up;
+        }
+
+        FT_Library FontLibrary() {
+            return s_pFontLibrary;
         }
 
         TTF_TextEngine* TextEngine() {

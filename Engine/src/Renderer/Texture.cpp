@@ -581,6 +581,43 @@ namespace fow {
         return Failure(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
     }
 
+    Result<Texture2DPtr> Texture2D::CreateFromRawData(const Vector<uint8_t>& data, const Vector2i& size, const TextureInfo& info, const TexturePixelFormat format, const TextureInternalPixelFormat internal_format) {
+        return CreateFromRawData(data, 0u, size, info, format, internal_format);
+    }
+
+    Result<Texture2DPtr> Texture2D::CreateFromRawData(const Vector<uint8_t>& data, const GLuint reuse_id, const Vector2i& size, const TextureInfo& info, const TexturePixelFormat format, const TextureInternalPixelFormat internal_format) {
+        auto id = reuse_id;
+        GLuint flags = 0;
+
+        const auto mag_filter = info.MagFilter.value_or(TextureMagFilterMode::Linear);
+        const auto min_filter = info.MinFilter.value_or(TextureMinFilterMode::Linear);
+        const auto wrap_s = info.WrapS.value_or(TextureWrapMode::Repeat);
+        const auto wrap_t = info.WrapT.value_or(TextureWrapMode::Repeat);
+
+        if (id == 0) {
+            glGenTextures(1, &id);
+        }
+
+        if (id == 0) {
+            return Failure(std::format("Failed to generate OpenGL texture handle: GL error \"{}\"", glGetError()));
+        }
+
+        glBindTexture(GL_TEXTURE_2D, id);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(internal_format), static_cast<GLsizei>(size.x), static_cast<GLsizei>(size.y), 0, static_cast<GLenum>(format), GL_UNSIGNED_BYTE, data.data());
+        glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, static_cast<GLenum>(mag_filter));
+        glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, static_cast<GLenum>(min_filter));
+        glTextureParameteri(id, GL_TEXTURE_WRAP_S, static_cast<GLenum>(wrap_s));
+        glTextureParameteri(id, GL_TEXTURE_WRAP_T, static_cast<GLenum>(wrap_t));
+
+        if (info.GenerateMipMaps) {
+            glGenerateTextureMipmap(id);
+        }
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return Success<Texture2DPtr>(std::make_shared<Texture2D>(std::move(Texture2D { id })));
+    }
+
     Result<Texture2DPtr> Texture2D::FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info) {
         const auto id_result = CreateOpenGLTexture(surface->pixels, surface->w, surface->h, SDL_GetPixelFormatDetails(surface->format)->bytes_per_pixel, 0u, info);
         if (id_result.has_value()) {
