@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Mapping>
-    <ClassName>Texture</ClassName>
-    <Params>
-        <Param name="Source"    type="Asset:Mesh"           category="Mesh Info" optional="false"/>
-        <Param name="Materials" type="Array:Asset:Material" category="Mesh Info" optional="true" arrayItemName="Material"/>
-    </Params>
-</Mapping>

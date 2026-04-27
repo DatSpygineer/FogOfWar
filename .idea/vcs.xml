@@ -2,6 +2,9 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/ImGuiColorTextEdit" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/ImGuizmo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ThirdParty/ImNodeFlow" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ThirdParty/SOIL2" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ThirdParty/glm" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ThirdParty/imgui" vcs="Git" />

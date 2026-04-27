@@ -9,6 +9,9 @@
 #include "fow/Renderer/Mesh.hpp"
 
 #include <ft2build.h>
+
+#include "Sprite.hpp"
+
 #include FT_FREETYPE_H
 
 namespace fow {
@@ -23,6 +26,8 @@ namespace fow {
 
     class Sprite2D;
     using Sprite2DPtr = Ref<Sprite2D>;
+    class ArraySprite2D;
+    using ArraySprite2DPtr = Ref<ArraySprite2D>;
     class QuadSprite2D;
     using QuadSprite2DPtr = Ref<QuadSprite2D>;
 
@@ -86,6 +91,52 @@ namespace fow {
         void setup_sprite();
     };
 
+    class FOW_RENDER_API ArraySprite2D : public IDrawable2D {
+        MaterialPtr m_pMaterial;
+        MeshPtr m_pMesh;
+        std::variant<Texture2DPtr, Texture2DArrayPtr> m_pTexture;
+        int m_iColumns, m_iRows;
+        size_t m_uIndex = 0;
+    public:
+        ArraySprite2D(const Texture2DPtr& texture, int columns, int rows, size_t index = 0);
+        explicit ArraySprite2D(const Texture2DArrayPtr& texture, size_t index = 0);
+
+        void set_index(size_t index);
+        [[nodiscard]] FOW_CONSTEXPR size_t index() const { return m_uIndex; }
+        [[nodiscard]] size_t max_index() const;
+
+        void set_texture(const Texture2DPtr& texture, int columns, int rows, size_t index = 0);
+        void set_texture(const Texture2DArrayPtr& texture, size_t index = 0);
+
+        void draw_2d(const Rectangle& rect) const override;
+
+        static Result<ArraySprite2DPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
+    private:
+        void setup_sprite();
+    };
+
+    enum class SpriteAnimationLoopingType {
+        PlayOnce,
+        Loop,
+        PingPong
+    };
+
+    class FOW_RENDER_API AnimatedSprite2D : public ArraySprite2D, public IDrawable2DAnimated {
+        float m_fIndexProgress = 0.0f;
+        float m_fPlaybackSpeed = 1.0f;
+        bool m_bBackwards = false;
+        SpriteAnimationLoopingType m_eLoopingType = SpriteAnimationLoopingType::PlayOnce;
+    public:
+        AnimatedSprite2D(const Texture2DPtr& texture, const int columns, const int rows) : ArraySprite2D(texture, columns, rows) { }
+        explicit AnimatedSprite2D(const Texture2DArrayPtr& texture) : ArraySprite2D(texture) { }
+
+        void set_playback_speed(const float speed) { m_fPlaybackSpeed = speed; }
+        void set_looping_type(const SpriteAnimationLoopingType looping_type) { m_eLoopingType = looping_type; }
+
+        void draw_2d(const Rectangle& rect) const override;
+        void draw_2d_and_progress_frame(const Rectangle& rect) override;
+    };
+
     class FOW_RENDER_API QuadSprite2D : public Sprite2D {
         Color m_Color = ColorConstants::White;
         Color m_BorderColor;
@@ -114,6 +165,7 @@ namespace fow {
 
         static Result<QuadSprite2DPtr> FromXml(const pugi::xml_document& doc);
         static Result<QuadSprite2DPtr> FromXml(const pugi::xml_node& node);
+        static Result<QuadSprite2DPtr> FromXmlWithConstants(const pugi::xml_node& node, const HashMap<String, String>& constants);
         static Result<QuadSprite2DPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
     };
 

@@ -762,6 +762,14 @@ namespace fow {
         return *this;
     }
 
+    Path& Path::to_absolute(const Path& root) {
+        const auto p = m_sPath;
+        m_sPath = root.as_string();
+        append(p);
+
+        return *this;
+    }
+
     Path& Path::to_relative() {
         m_sPath = std::filesystem::relative(m_sPath.as_std_str()).string();
         return *this;
@@ -773,6 +781,19 @@ namespace fow {
 
     Path& Path::go_back() {
         m_sPath = parent().m_sPath;
+        return *this;
+    }
+
+    Path& Path::append(const Path& other) {
+        if (!m_sPath.ends_with(FOW_PATH_SEPARATOR_CHAR) && !other.m_sPath.starts_with(FOW_PATH_SEPARATOR_CHAR)) {
+            m_sPath.append(FOW_PATH_SEPARATOR_CHAR);
+        }
+        m_sPath.append(other.m_sPath);
+
+        return *this;
+    }
+    Path& Path::append_no_separator(const String& str) {
+        m_sPath += str;
         return *this;
     }
 
@@ -896,11 +917,7 @@ namespace fow {
     }
 
     Path& Path::operator/=(const Path& other) {
-        if (!m_sPath.ends_with(FOW_PATH_SEPARATOR_CHAR) && !other.m_sPath.starts_with(FOW_PATH_SEPARATOR_CHAR)) {
-            m_sPath.append(FOW_PATH_SEPARATOR_CHAR);
-        }
-        m_sPath.append(other.m_sPath);
-        return *this;
+        return append(other);
     }
 
     Result<bool> StringToBool(const String& str) {
@@ -1191,7 +1208,7 @@ namespace fow {
     Result<Color> StringToColor(const String& str) {
         const auto trimmed = str.clone_begin_trimmed();
         if (trimmed.starts_with('#')) {
-            const auto result = StringToInt<uint32_t>(trimmed.substr(1));
+            const auto result = StringToInt<uint32_t>(trimmed);
             if (result.has_value()) {
                 return Success<Color>(Color::FromInt(result.value()));
             }

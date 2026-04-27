@@ -1,6 +1,7 @@
 #ifndef FOW_ENGINE_COMPONENTS_HPP
 #define FOW_ENGINE_COMPONENTS_HPP
 
+#include "fow/Engine/UI.hpp"
 #include "fow/Engine/Entity.hpp"
 
 namespace fow {

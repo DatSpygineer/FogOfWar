@@ -9,6 +9,9 @@ namespace fow {
 
         FOW_ABSTRACT(void draw_2d(const Rectangle& rect) const);
     };
+    struct FOW_RENDER_API IDrawable2DAnimated : public IDrawable2D {
+        FOW_ABSTRACT(void draw_2d_and_progress_frame(const Rectangle& rect));
+    };
     struct FOW_RENDER_API IDrawable3D {
         virtual ~IDrawable3D() = default;
 

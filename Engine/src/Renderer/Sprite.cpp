@@ -153,6 +153,8 @@ namespace fow {
     }
 
     void Sprite2D::setup_sprite() {
+        m_pMaterial->set_parameter("UVOffset", Vector2(0.0));
+        m_pMaterial->set_parameter("UVScale",  Vector2(1.0));
         if (m_pMesh == nullptr) {
             const auto result = Mesh::CreateQuad2D(m_pMaterial);
             if (!result.has_value()) {
@@ -163,6 +165,202 @@ namespace fow {
         } else {
             m_pMesh->set_material(m_pMaterial);
         }
+    }
+
+    ArraySprite2D::ArraySprite2D(const Texture2DPtr& texture, const int columns, const int rows, const size_t index)
+        : m_pMaterial(ResultValueOrThrow(Material::New("Generic2D"))), m_pTexture(texture), m_iColumns(columns), m_iRows(rows) {
+        set_texture(texture, m_iColumns, m_iRows, index);
+    }
+    ArraySprite2D::ArraySprite2D(const Texture2DArrayPtr& texture, const size_t index)
+        : m_pMaterial(ResultValueOrThrow(Material::New("Array2D"))), m_pTexture(texture), m_iColumns(1), m_iRows(texture->depth()) {
+        set_texture(texture, index);
+    }
+
+    void ArraySprite2D::set_index(const size_t index) {
+        m_uIndex = index;
+        if (m_pTexture.index() == 0) {
+            const auto tex = std::get<0>(m_pTexture);
+            const auto tex_width = tex->width();
+            const auto tex_height = tex->height();
+
+            if (tex_width <= 0 || tex_height <= 0) {
+                Debug::LogError("Failed to set ArraySprite2D texture index: Texture width or height must be positive!");
+                return;
+            }
+
+            const auto frame_width  = tex_width / m_iColumns;
+            const auto frame_height = tex_height / m_iRows;
+            const auto uv_offset = Vector2 {
+                static_cast<float>(frame_width * (m_uIndex % m_iColumns)) / static_cast<float>(tex_width),
+                static_cast<float>(frame_height * (m_uIndex / m_iColumns)) / static_cast<float>(tex_height)
+            };
+            const auto uv_scale = Vector2 {
+                static_cast<float>(frame_width) / static_cast<float>(tex_width),
+                static_cast<float>(frame_height) / static_cast<float>(tex_height)
+            };
+
+            Debug::LogInfo(std::format("Setting index to {}, offset ({}, {}), scale ({}, {})", m_uIndex, uv_offset.x, uv_offset.y, uv_scale.x, uv_scale.y));
+
+            m_pMaterial->set_parameter("UVOffset", uv_offset);
+            m_pMaterial->set_parameter("UVScale", uv_scale);
+        } else {
+            m_pMaterial->set_parameter("FrameIndex", static_cast<GLint>(m_uIndex));
+        }
+        setup_sprite();
+    }
+
+    size_t ArraySprite2D::max_index() const {
+        switch (m_pTexture.index()) {
+            case 0: {
+                return m_iColumns * m_iRows;
+            }
+            case 1: {
+                const auto texture = std::get<1>(m_pTexture);
+                return texture != nullptr ? texture->depth() : 0;
+            }
+            default: return 0;
+        }
+    }
+
+    void ArraySprite2D::set_texture(const Texture2DPtr& texture, const int columns, const int rows, const size_t index) {
+        m_pTexture = texture;
+        m_iColumns = columns;
+        m_iRows = rows;
+        m_pMaterial->set_parameter("MainTexture", texture);
+        set_index(index);
+    }
+    void ArraySprite2D::set_texture(const Texture2DArrayPtr& texture, const size_t index) {
+        m_pTexture = texture;
+        m_iColumns = 1;
+        m_iRows = texture->depth();
+        m_pMaterial->set_parameter("MainTexture", texture);
+        set_index(index);
+    }
+
+    void ArraySprite2D::draw_2d(const Rectangle& rect) const {
+        m_pMesh->draw_2d(rect);
+    }
+
+    Result<ArraySprite2DPtr> ArraySprite2D::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {
+        const auto xml = Assets::LoadAsXml(path, flags);
+        if (!xml.has_value()) {
+            return Failure(xml.error());
+        }
+
+        const auto root = xml->child("ArraySprite");
+        if (!root) {
+            return Failure(std::format("Failed to load ArraySprite2D \"{}\": Expected root node \"ArraySprite\"", path));
+        }
+
+        const auto texture_node = root.child("Texture");
+        if (!texture_node) {
+            return Failure(std::format("Failed to load ArraySprite2D \"{}\": Missing required child node \"Texture\"", path));
+        }
+
+        const auto texture_path_attrib = texture_node.attribute("src");
+        if (!texture_path_attrib) {
+            return Failure(std::format("Failed to load ArraySprite2D \"{}\": Missing required attribute \"src\" in child node \"Texture\"", path));
+        }
+
+        if (const auto texture_columns_attrib = texture_node.attribute("columns")) {
+            if (const auto texture_rows_attrib = texture_node.attribute("rows")) {
+                const auto columns = StringToInt<int>(texture_columns_attrib.value());
+                const auto rows = StringToInt<int>(texture_rows_attrib.value());
+                if (!columns.has_value()) {
+                    return Failure(std::format("Failed to load ArraySprite2D \"{}\": Invalid attribute format \"columns\" in child node \"Texture\", \"{}\" is not a valid integer!", path, texture_columns_attrib.value()));
+                }
+                if (!rows.has_value()) {
+                    return Failure(std::format("Failed to load ArraySprite2D \"{}\": Invalid attribute format \"rows\" in child node \"Texture\", \"{}\" is not a valid integer!", path, texture_rows_attrib.value()));
+                }
+
+                if (columns.value() <= 0 || rows.value() <= 0) {
+                    return Failure(std::format("Failed to load ArraySprite2D \"{}\": Invalid attribute value \"columns\" or \"rows\" in child node \"Texture\", values must be positive, non-zero integers!", path));
+                }
+
+                const auto texture = Assets::Load<Texture2D>(texture_path_attrib.value(), flags);
+                if (!texture.has_value()) {
+                    return Failure(std::format("Failed to load ArraySprite2D \"{}\": Failed to load texture \"{}\": {}", path, texture_path_attrib.value(), texture.error().message));
+                }
+
+                return Success<ArraySprite2DPtr>(CreateRef<ArraySprite2D>(
+                    texture.value().ptr(), columns.value(), rows.value()
+                ));
+            }
+            return Failure(std::format("Failed to load ArraySprite2D \"{}\": Missing required attribute \"rows\" in child node \"Texture\"", path));
+        }
+        const auto texture = Assets::Load<Texture2DArray>(texture_path_attrib.value(), flags);
+        if (!texture.has_value()) {
+            return Failure(std::format("Failed to load ArraySprite2D \"{}\": Failed to load texture array \"{}\"", path, texture_path_attrib.value()));
+        }
+        return Success<ArraySprite2DPtr>(CreateRef<ArraySprite2D>(texture.value().ptr()));
+    }
+
+    void ArraySprite2D::setup_sprite() {
+        m_pMaterial->set_opaque(false);
+        if (m_pMesh == nullptr) {
+            const auto result = Mesh::CreateQuad2D(m_pMaterial);
+            if (!result.has_value()) {
+                Debug::LogError("Failed to create quad mesh for sprite");
+                return;
+            }
+            m_pMesh = result.value();
+        } else {
+            m_pMesh->set_material(m_pMaterial);
+        }
+    }
+
+    void AnimatedSprite2D::draw_2d(const Rectangle& rect) const {
+        ArraySprite2D::draw_2d(rect);
+    }
+
+    void AnimatedSprite2D::draw_2d_and_progress_frame(const Rectangle& rect) {
+        draw_2d(rect);
+
+        const auto idx = index();
+        const float incr = m_fPlaybackSpeed * (m_bBackwards ? -1.0f : 1.0f);
+
+        if (incr == 0.0f) {
+            return;
+        }
+
+        switch (m_eLoopingType) {
+            case SpriteAnimationLoopingType::Loop: {
+                if (incr > 0.0f) {
+                    if (idx >= max_index()) {
+                        set_index(0);
+                    }
+                } else if (incr < 0.0f) {
+                    if (idx <= 0) {
+                        set_index(static_cast<int>(max_index() - 1));
+                    }
+                }
+            } break;
+            case SpriteAnimationLoopingType::PingPong: {
+                if (incr > 0.0f) {
+                    if (idx >= max_index()) {
+                        m_bBackwards = !m_bBackwards;
+                    }
+                } else if (incr < 0.0f) {
+                    if (idx <= 0) {
+                        m_bBackwards = !m_bBackwards;
+                    }
+                }
+            } break;
+            case SpriteAnimationLoopingType::PlayOnce: {
+                if (incr > 0.0f) {
+                    if (idx >= max_index()) {
+                        set_playback_speed(0.0f);
+                    }
+                } else if (incr < 0.0f) {
+                    if (idx <= 0) {
+                        set_playback_speed(0.0f);
+                    }
+                }
+            } break;
+        }
+
+        m_fIndexProgress += incr;
+        set_index(static_cast<int>(m_fIndexProgress));
     }
 
     QuadSprite2D::QuadSprite2D() : Sprite2D(Material::New("Rectangle2D", { { "MainTexture", Texture2D::DefaultWhite() } }).value_or(CreateRef<Material>())) { }
@@ -270,6 +468,98 @@ namespace fow {
 
         return Success<QuadSprite2DPtr>(CreateRef<QuadSprite2D>(texture, color, border_color, border_thickness, radius));
     }
+
+    class ThemeResolutionException : public std::runtime_error {
+    public:
+        explicit ThemeResolutionException(const std::string& message) : std::runtime_error(message) {}
+    };
+
+    static String ResolveValue(const String& input, const HashMap<String, String>& constants) {
+        if (input.starts_with('$')) {
+            const auto key = input.substr(1);
+            if (key.starts_with('$')) { // Escape $
+                return key;
+            }
+            if (constants.contains(key)) {
+                return constants.at(key);
+            }
+            throw ThemeResolutionException(std::format("Failed to resolve theme constant \"{}\"", key));
+        }
+        return input;
+    }
+
+    Result<QuadSprite2DPtr> QuadSprite2D::FromXmlWithConstants(const pugi::xml_node& node, const HashMap<String, String>& constants) {
+        Color color = ColorConstants::White, border_color = ColorConstants::Black;
+        Texture2DPtr texture = nullptr;
+        float border_thickness = 0.0f, radius = 0.0f;
+
+        if (const auto cn = node.child("Background"); cn) {
+            if (const auto attrib = cn.attribute("color"); attrib) {
+                try {
+                    const auto value = ResolveValue(attrib.value(), constants);
+                    if (auto result = StringToColor(value); !result.has_value()) {
+                        Debug::LogError(std::format("Failed to parse color value \"{}\" by attribute \"color\" in node \"Background\": {}, using default value!", value, result.error().message));
+                    } else {
+                        color = result.value();
+                    }
+                } catch (const ThemeResolutionException& e) {
+                    Debug::LogError(std::format("Failed to resolve theme constant \"{}\" in node \"Background\": {}", e.what(), node.name()));
+                }
+            }
+            if (const auto attrib = cn.attribute("texture"); attrib) {
+                try {
+                    auto texture_result = Assets::Load<Texture2D>(ResolveValue(attrib.value(), constants));
+                    if (!texture_result.has_value()) {
+                        return Failure(std::format("Failed to load QuadSprite2D texture: {}", texture_result.error().message));
+                    }
+                    texture = texture_result.value().ptr();
+                } catch (const ThemeResolutionException& e) {
+                    Debug::LogError(std::format("Failed to resolve theme constant \"{}\" in node \"Background\": {}", e.what(), node.name()));
+                }
+            }
+        }
+        if (const auto cn = node.child("Border"); cn) {
+            if (const auto attrib = cn.attribute("color"); attrib) {
+                try {
+                    const auto value = ResolveValue(attrib.value(), constants);
+                    if (auto result = StringToColor(value); !result.has_value()) {
+                        Debug::LogError(std::format("Failed to parse color value \"{}\" used by attribute \"color\" in node \"Border\": {}, using default value!", value, result.error().message));
+                    } else {
+                        border_color = result.value();
+                    }
+                } catch (const ThemeResolutionException& e) {
+                    Debug::LogError(std::format("Failed to resolve theme constant \"{}\" in node \"Border\": {}", e.what(), node.name()));
+                }
+            }
+            if (const auto attrib = cn.attribute("thickness"); attrib) {
+                try {
+                    const auto value = ResolveValue(attrib.value(), constants);
+                    if (auto result = StringToFloat<float>(value); !result.has_value()) {
+                        Debug::LogError(std::format("Failed to parse float value \"{}\" used by attribute \"thickness\" in node \"Border\": {}, using default value!", value, result.error().message));
+                    } else {
+                        border_thickness = result.value();
+                    }
+                } catch (const ThemeResolutionException& e) {
+                    Debug::LogError(std::format("Failed to resolve theme constant \"{}\" in node \"Border\": {}", e.what(), node.name()));
+                }
+            }
+        }
+        if (const auto cn = node.child("Radius"); cn) {
+            try {
+                const auto value = ResolveValue(cn.child_value(), constants);
+                if (auto result = StringToFloat<float>(value); !result.has_value()) {
+                    Debug::LogError(std::format("Failed to parse float value \"{}\" used by node \"Radius\": {}, using default value!", value, result.error().message));
+                } else {
+                    radius = result.value();
+                }
+            } catch (const ThemeResolutionException& e) {
+                Debug::LogError(std::format("Failed to resolve theme constant \"{}\" in node \"Radius\": {}", e.what(), node.name()));
+            }
+        }
+
+        return Success<QuadSprite2DPtr>(CreateRef<QuadSprite2D>(texture, color, border_color, border_thickness, radius));
+    }
+
     Result<QuadSprite2DPtr> QuadSprite2D::LoadAsset(const Path& path, const AssetLoaderFlags::Type flags) {
         const auto xml = Assets::LoadAsXml(path, flags);
         if (!xml.has_value()) {
@@ -278,9 +568,18 @@ namespace fow {
         return FromXml(xml.value());
     }
 
-    Font::Font(const Path& path, const uint32_t size) {
+    Font::Font(const Path& path, const uint32_t size) : m_pFace(nullptr) {
         const auto full_path = path.is_absolute() ? path : path.as_absolute(Renderer::GetBasePath() / "res");
-        FT_New_Face(Renderer::FontLibrary(), full_path.as_cstr(), 0, &m_pFace);
+        if (!full_path.exists()) {
+            Debug::LogError(std::format("Font file \"{}\" does not exist!", path));
+            return;
+        }
+
+        if (const auto error = FT_New_Face(Renderer::FontLibrary(), full_path.as_cstr(), 0, &m_pFace); error != FT_Err_Ok) {
+            const char* error_message = FT_Error_String(error);
+            Debug::LogError(std::format("Failed to load font \"{}\": {} ({})", path, error_message != nullptr ? error_message : "Unknown error", static_cast<uint32_t>(error)));
+            return;
+        }
         FT_Set_Pixel_Sizes(m_pFace, 0, size);
     }
     Font::~Font() {
@@ -506,20 +805,10 @@ namespace fow {
     }
 
     void TextSprite2D::setup_sprite() {
+        m_pMaterial->set_parameter("UVOffset", Vector2(0.0));
+        m_pMaterial->set_parameter("UVScale",  Vector2(1.0));
         if (m_pMesh == nullptr) {
-            const auto result = Mesh::Create2D(
-                m_pMaterial,
-                {
-                    Vertex2D { Vector2 { 0.0f, 0.0f }, Vector2 { 0.0f, 0.0f } },
-                    Vertex2D { Vector2 { 0.0f, 1.0f }, Vector2 { 0.0f, 1.0f } },
-                    Vertex2D { Vector2 { 1.0f, 1.0f }, Vector2 { 1.0f, 1.0f } },
-                    Vertex2D { Vector2 { 1.0f, 0.0f }, Vector2 { 1.0f, 0.0f } },
-                },
-                {
-                    0u, 1u, 2u,
-                    2u, 3u, 0u
-                }
-            );
+            const auto result = Mesh::CreateQuad2D(m_pMaterial);
             if (!result.has_value()) {
                 Debug::LogError("Failed to create quad mesh for sprite");
                 return;

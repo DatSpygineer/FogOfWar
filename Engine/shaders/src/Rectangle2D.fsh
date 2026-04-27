@@ -6,7 +6,7 @@ uniform float BorderThickness;
 uniform vec4 BorderColor;
 uniform float Radius;
 
-uniform bool AlphaScissor = false;
+uniform bool AlphaScissor = true;
 uniform float AlphaScissorThreshold = 0.5;
 
 in vec2 FRAGMENT_TEXTURE_COORDS;
@@ -35,7 +35,7 @@ void main() {
     vec4 res_color = mix(BorderColor, bg, inner_alpha);
     res_color.a *= outer_alpha;
 
-    if ((AlphaScissor && res_color.a < AlphaScissorThreshold) || res_color.a < 0.01) {
+    if (AlphaScissor && res_color.a < AlphaScissorThreshold) {
         discard;
     }
 

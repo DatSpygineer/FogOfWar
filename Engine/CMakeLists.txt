@@ -1,6 +1,11 @@
 file(GLOB FOW_SHARED_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Shared/*.cpp)
 file(GLOB FOW_RENDERER_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Renderer/*.cpp)
+file(GLOB FOW_EDITOR_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Editor/*.cpp)
 file(GLOB FOW_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Engine/*.cpp)
+
+if (FOW_DISABLE_OPENGL_DEBUG_INFO)
+    add_compile_definitions(-DFOW_DISABLE_OPENGL_DEBUG_INFO)
+endif()
 
 if (WIN32)
     set(FOW_SHARED_OS_SPEC_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Shared/OsSpecific/Windows.cpp)
@@ -52,7 +57,7 @@ set(FOW_IMGUI_SOURCES
 )
 
 add_library(imgui SHARED ${FOW_IMGUI_SOURCES})
-target_compile_definitions(imgui PUBLIC "-DIMGUI_USER_CONFIG=\"fow/Engine/ImGuiCfg.hpp\"")
+target_compile_definitions(imgui PUBLIC "-DIMGUI_USER_CONFIG=\"fow/Editor/ImGuiCfg.hpp\"")
 target_compile_definitions(imgui PUBLIC "-DIMGUI_DEFINE_MATH_OPERATORS")
 target_include_directories(imgui PUBLIC
     ${FOW_IMGUI_INCLUDES}
@@ -91,8 +96,12 @@ if (WIN32)
     target_link_libraries(FogOfWarRenderer PUBLIC GLEW::GLEW)
 endif()
 
+add_library(FogOfWarEditor SHARED ${FOW_EDITOR_SOURCES})
+target_include_directories(FogOfWarEditor PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(FogOfWarEditor PUBLIC FogOfWar::Shared imgui)
+add_library(FogOfWar::Editor ALIAS FogOfWarEditor)
+
 add_library(FogOfWarEngine SHARED ${FOW_SOURCES})
 target_include_directories(FogOfWarEngine PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(FogOfWarEngine PUBLIC FogOfWar::Shared FogOfWar::Renderer imgui)
-target_compile_definitions(FogOfWarEngine PUBLIC -DGLFW_INCLUDE_NONE)
+target_link_libraries(FogOfWarEngine PUBLIC FogOfWar::Shared FogOfWar::Renderer FogOfWar::Editor)
 add_library(FogOfWar::Engine ALIAS FogOfWarEngine)

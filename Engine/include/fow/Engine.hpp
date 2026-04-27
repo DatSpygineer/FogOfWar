@@ -11,12 +11,12 @@
 #include "fow/Engine/Components.hpp"
 
 #ifdef FOW_INCLUDE_IMGUI
-    #include "fow/Engine/ImGui.hpp"
-    #undef FOW_INCLUDE_IMGUI
+    #include "Editor/ImGui.hpp"
+#undef FOW_INCLUDE_IMGUI
 #endif
 
 #define __FOW_SHARED_ENTRY_POINT(__game_class) \
-    ::fow::Debug::AssertFatal(::fow::Engine::Initialize(argc, argv, []() -> std::shared_ptr<::fow::Game> { \
+    ::fow::Debug::AssertFatal(::fow::Engine::Initialize(argc, argv, []() -> ::fow::Ref<::fow::Game> { \
         return CreateRef<__game_class>(); \
     })); \
     ::fow::Engine::Run(); \
@@ -55,6 +55,8 @@ namespace fow {
         FOW_ABSTRACT(String title() const);
         FOW_ABSTRACT(Vector<String> game_data_archives() const);
         FOW_ABSTRACT(bool allow_mods() const);
+        FOW_ABSTRACT(bool editor_enabled() const);
+        FOW_ABSTRACT(Version version() const);
         virtual void on_window_resized(const Vector2i& new_size) { }
         virtual void on_update_imgui(double dt) { }
     };
@@ -65,7 +67,7 @@ namespace fow {
         FOW_ENGINE_API void SetBackgroundColor(const Color& color);
         FOW_ENGINE_API void SetBackgroundColor(Color&& color) noexcept;
         FOW_ENGINE_API Color GetBackgroundColor();
-        FOW_ENGINE_API Result<> Initialize(int argc, os_char_t** argv, const Function<std::shared_ptr<Game>()>& game_class_ctor);
+        FOW_ENGINE_API Result<> Initialize(int argc, os_char_t** argv, const Function<Ref<Game>()>& game_class_ctor);
         FOW_ENGINE_API void Run();
         FOW_ENGINE_API void SetWindowTitle(const String& title);
         FOW_ENGINE_API void SetWindowPosition(const Vector2i& value);
@@ -151,6 +153,7 @@ namespace fow {
         FOW_ENGINE_API bool MouseIsReleased(MouseButton button);
         FOW_ENGINE_API bool MouseIsUp(MouseButton button);
 
+        FOW_ENGINE_API Vector2 PreviousMousePosition();
         FOW_ENGINE_API Vector2 MousePosition();
         FOW_ENGINE_API Vector2 MouseMovement();
     }

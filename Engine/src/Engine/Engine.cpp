@@ -1,6 +1,10 @@
 #define FOW_INCLUDE_IMGUI
 #include "fow/Engine.hpp"
+
+#include <gtest/internal/gtest-string.h>
+
 #include "fow/Engine/Convar.hpp"
+#include "fow/Editor/EditorInstance.hpp"
 
 #include "fow/Renderer/GL.hpp"
 #include "fow/Renderer.hpp"
@@ -11,6 +15,7 @@
 #include "SOIL2.h"
 
 #include "rfl/json/write.hpp"
+
 
 namespace fow {
     static void UpdateResolution(const CVarPtr& self);
@@ -24,9 +29,12 @@ namespace fow {
     static Result<> RemoveActionCommand(const Vector<String>& args);
     static Result<> ToggleConsoleCommand(const Vector<String>& args);
     static Result<> SetSceneCommand(const Vector<String>& args);
+    static Result<> OpenEditorCommand(const Vector<String>& args);
+    static Result<> VersionCommand(const Vector<String>& args);
+    static Result<> EngineVersionCommand(const Vector<String>& args);
 
-#ifndef NDEBUG
-    static void GLDebugMessageCallback(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
+#if !defined(NDEBUG) && !defined(FOW_DISABLE_OPENGL_DEBUG_INFO)
+    static void GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 #endif
 
     const auto vid_resolution      = CVar::Create("vid_resolution",      Vector2(1280, 720),    CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
@@ -40,6 +48,9 @@ namespace fow {
     const auto input_remove_action = CVar::Create("input_remove_action", &RemoveActionCommand,  CVarFlags::Default);
     const auto toggle_console      = CVar::Create("toggle_console",      &ToggleConsoleCommand, CVarFlags::Default);
     const auto set_scene           = CVar::Create("set_scene",           &SetSceneCommand,      CVarFlags::Default);
+    const auto open_editor         = CVar::Create("open_editor",         &OpenEditorCommand,    CVarFlags::Default);
+    const auto version_cmd         = CVar::Create("version",             &VersionCommand,       CVarFlags::Default);
+    const auto engine_version_cmd  = CVar::Create("engine_version",      &EngineVersionCommand, CVarFlags::Default);
 
     namespace Input {
         static void UpdateMouseWheel(float x, float y);
@@ -74,7 +85,7 @@ namespace fow {
             return s_background_color;
         }
 
-        Result<> Initialize(int argc, os_char_t** argv, const Function<std::shared_ptr<Game>()>& game_class_ctor) {
+        Result<> Initialize(int argc, os_char_t** argv, const Function<Ref<Game>()>& game_class_ctor) {
             if (s_initialized) {
                 return Failure("Engine is already initialized!");
             }
@@ -243,7 +254,9 @@ namespace fow {
             const auto debug_title = std::format("{} | FogOfWar Engine - {}", s_window_title, GetVersion().to_string());
             SDL_SetWindowTitle(s_window, debug_title.c_str());
 
+    #ifndef FOW_DISABLE_OPENGL_DEBUG_INFO
             glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
+    #endif
 #endif
 
             if (const auto lang = cl_lang->as_string(); lang.has_value()) {
@@ -269,6 +282,7 @@ namespace fow {
             SDL_Event e;
             while (GetGameState() == GameState::Running) {
                 while (SDL_PollEvent(&e)) {
+                    ImGui_ImplSDL3_ProcessEvent(&e);
                     switch (e.type) {
                         case SDL_EVENT_QUIT: SetGameStateClosing(); break;
                         case SDL_EVENT_WINDOW_RESIZED:
@@ -304,6 +318,10 @@ namespace fow {
                     s_game_class->on_update_imgui(time - last_time);
                 }
 
+                if (s_game_class != nullptr && s_game_class->editor_enabled()) {
+                    EditorTick();
+                }
+
                 Console::UpdateConsole();
 
                 ImGui::Render();
@@ -318,6 +336,9 @@ namespace fow {
                 }
 
                 RenderQueue2D::Render();
+                if (s_scene != nullptr && s_scene->ui_frame() != nullptr) {
+                    s_scene->ui_frame()->render();
+                }
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
                 SDL_GL_SwapWindow(s_window);
@@ -987,6 +1008,9 @@ namespace fow {
             return s_mouse_btn_state.at(static_cast<int>(button)) == KeyState::Released || s_mouse_btn_state.at(static_cast<int>(button)) == KeyState::Up;
         }
 
+        Vector2 PreviousMousePosition() {
+            return s_mouse_position - s_mouse_position_delta;
+        }
         Vector2 MousePosition() {
             return s_mouse_position;
         }
@@ -1029,7 +1053,7 @@ namespace fow {
         return Success();
     }
 
-    Result<> SetSceneCommand(const Vector<String>& args) {
+    static Result<> SetSceneCommand(const Vector<String>& args) {
         if (args.size() < 1) {
             return Failure("Usage: set_scene <scene asset path>");
         }
@@ -1044,7 +1068,34 @@ namespace fow {
         return Success();
     }
 
-#ifndef NDEBUG
+    static Result<> OpenEditorCommand(const Vector<String>& args) {
+        FOW_DISCARD(args);
+
+        if (Engine::s_game_class != nullptr && !Engine::s_game_class->editor_enabled()) {
+            return Failure("Editor is not enabled for this game!");
+        }
+
+        if (!EditorIsRunning()) {
+            EditorInit();
+        }
+        return Success();
+    }
+
+    static Result<> VersionCommand(const Vector<String>& args) {
+        FOW_DISCARD(args);
+        if (Engine::s_game_class != nullptr) {
+            Debug::LogInfo(std::format("{} {}", Engine::s_game_class->title(), Engine::s_game_class->version().to_string()));
+            return Success();
+        }
+        return Failure("Cannot get game version, game instance is not initialized!");
+    }
+    static Result<> EngineVersionCommand(const Vector<String>& args) {
+        FOW_DISCARD(args);
+        Debug::LogInfo(std::format("FogOfWar Engine {}", Engine::GetVersion().to_string()));
+        return Success();
+    }
+
+#if !defined(NDEBUG) && !defined(FOW_DISABLE_OPENGL_DEBUG_INFO)
     static void GLDebugMessageCallback(const GLenum source, const GLenum type, GLuint id, const GLenum severity, const GLsizei length, const GLchar* message, const void* userParam) {
         FOW_DISCARD(length);
         FOW_DISCARD(userParam);

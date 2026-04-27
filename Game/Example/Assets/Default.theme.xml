@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Theme>
+    <Constants>
+        <BgColor>#FFFFFFFF</BgColor>
+        <FgColor>#000000FF</FgColor>
+        <BorderColor>#000000FF</BorderColor>
+
+        <BgColorDisabled>#808080FF</BgColorDisabled>
+        <FgColorDisabled>#404040FF</FgColorDisabled>
+        <BorderColorDisabled>#404040FF</BorderColorDisabled>
+
+        <BgColorSelected>#80A0FFFF</BgColorSelected>
+        <FgColorSelected>#1020FFFF</FgColorSelected>
+        <BorderColorSelected>#2040FFFF</BorderColorSelected>
+
+        <BgColorPressed>#000080FF</BgColorPressed>
+        <FgColorPressed>#0A0AFFFF</FgColorPressed>
+        <BorderColorPressed>#1020FFFF</BorderColorPressed>
+
+        <BgColorPressedSelected>#2040FFFF</BgColorPressedSelected>
+        <FgColorPressedSelected>#80A0FFFF</FgColorPressedSelected>
+        <BorderColorPressedSelected>#80A0FFFF</BorderColorPressedSelected>
+
+        <BgColorPressedDisabled>#404040FF</BgColorPressedDisabled>
+        <FgColorPressedDisabled>#101010FF</FgColorPressedDisabled>
+        <BorderColorPressedDisabled>#101010FF</BorderColorPressedDisabled>
+
+        <BorderThickness>2</BorderThickness>
+        <Radius>15</Radius>
+        <Font>Roboto-Regular.ttf</Font>
+        <FontSize>24</FontSize>
+    </Constants>
+    <Panel>
+        <Background color="$BgColor"/>
+        <Border     color="$BorderColor" thickness="$BorderThickness"/>
+        <Radius>$Radius</Radius>
+    </Panel>
+    <Label>
+        <Font src="$Font" size="$FontSize"/>
+        <Color>$FgColor</Color>
+        <DisabledColor>$FgColorDisabled</DisabledColor>
+    </Label>
+    <TextBox>
+        <Background>
+            <Background color="$BgColor"/>
+            <Border     color="$BorderColor" thickness="$BorderThickness"/>
+            <Radius>$Radius</Radius>
+        </Background>
+        <Foreground>
+            <Font src="$Font" size="$FontSize"/>
+            <Color>$FgColor</Color>
+            <DisabledColor>$FgColorDisabled</DisabledColor>
+        </Foreground>
+    </TextBox>
+    <Image>
+        <Background>
+            <Background color="$BgColor"/>
+            <Border     color="$BorderColor" thickness="$BorderThickness"/>
+            <Radius>$Radius</Radius>
+        </Background>
+        <BackgroundDisabled>
+            <Background color="$BgColorDisabled"/>
+            <Border     color="$BorderColorDisabled" thickness="$BorderThickness"/>
+            <Radius>$Radius</Radius>
+        </BackgroundDisabled>
+    </Image>
+    <Button>
+        <Normal>
+            <Background>
+                <Background color="$BgColor"/>
+                <Border     color="$BorderColor" thickness="$BorderThickness"/>
+                <Radius>$Radius</Radius>
+            </Background>
+            <Foreground>
+                <Font src="$Font" size="$FontSize"/>
+                <Color>$FgColor</Color>
+                <Alignment horizontal="center" vertical="center"/>
+            </Foreground>
+        </Normal>
+        <Selected>
+            <Background>
+                <Background color="$BgColorSelected"/>
+                <Border     color="$BorderColorSelected" thickness="$BorderThickness"/>
+                <Radius>$Radius</Radius>
+            </Background>
+            <Foreground>
+                <Font src="$Font" size="$FontSize"/>
+                <Color>$FgColorSelected</Color>
+                <Alignment horizontal="center" vertical="center"/>
+            </Foreground>
+        </Selected>
+        <Disabled>
+            <Background>
+                <Background color="$BgColorDisabled"/>
+                <Border     color="$BorderColorDisabled" thickness="$BorderThickness"/>
+                <Radius>$Radius</Radius>
+            </Background>
+            <Foreground>
+                <Font src="$Font" size="$FontSize"/>
+                <Color>$FgColorDisabled</Color>
+                <Alignment horizontal="center" vertical="center"/>
+            </Foreground>
+        </Disabled>
+        <Pressed>
+            <Background>
+                <Background color="$BgColorPressed"/>
+                <Border     color="$BorderColorPressed" thickness="$BorderThickness"/>
+                <Radius>$Radius</Radius>
+            </Background>
+            <Foreground>
+                <Font src="$Font" size="$FontSize"/>
+                <Color>$FgColorPressed</Color>
+                <Alignment horizontal="center" vertical="center"/>
+            </Foreground>
+        </Pressed>
+        <PressedSelected>
+            <Background>
+                <Background color="$BgColorPressedSelected"/>
+                <Border     color="$BorderColorPressedSelected" thickness="$BorderThickness"/>
+                <Radius>$Radius</Radius>
+            </Background>
+            <Foreground>
+                <Font src="$Font" size="$FontSize"/>
+                <Color>$FgColorPressedSelected</Color>
+                <Alignment horizontal="center" vertical="center"/>
+            </Foreground>
+        </PressedSelected>
+        <PressedDisabled>
+            <Background>
+                <Background color="$BgColorPressedDisabled"/>
+                <Border     color="$BorderColorPressedDisabled" thickness="$BorderThickness"/>
+                <Radius>$Radius</Radius>
+            </Background>
+            <Foreground>
+                <Font src="$Font" size="$FontSize"/>
+                <Color>$FgColorPressedDisabled</Color>
+                <Alignment horizontal="center" vertical="center"/>
+            </Foreground>
+        </PressedDisabled>
+    </Button>
+    <CheckBox>
+        <Sprite>/Sprites/UI/CheckBox.sprite.xml</Sprite>
+        <Foreground>
+            <Font src="$Font" size="$FontSize"/>
+            <Color>$FgColor</Color>
+        </Foreground>
+    </CheckBox>
+</Theme>

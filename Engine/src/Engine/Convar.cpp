@@ -6,7 +6,7 @@
 #include <imgui.h>
 #include <ranges>
 
-#include <fow/Engine/ImGui.hpp>
+#include "fow/Editor/ImGui.hpp"
 
 namespace fow {
     namespace Console {
@@ -313,5 +313,24 @@ namespace fow {
             result.emplace_back(key);
         }
         return result;
+    }
+
+    static Result<> ExecuteConfigCommand(const Vector<String>& args);
+    static auto exec_command = CVar::Create("exec", &ExecuteConfigCommand, CVarFlags::Default);
+
+    static Result<> ExecuteConfigCommand(const Vector<String>& args) {
+        if (args.size() < 1) {
+            return Failure("Usage: exec <cfg path>");
+        }
+
+        Path path = args.at(0);
+        if (path.extension().is_empty()) {
+            path += ".cfg";
+        }
+        if (!path.is_absolute()) {
+            path.to_absolute(Engine::GetGameBasePath() / "cfg");
+        }
+
+        return Console::ExecuteConfig(path);
     }
 }

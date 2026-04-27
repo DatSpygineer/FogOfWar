@@ -191,20 +191,58 @@ namespace fow {
     }
 
     GLsizei Texture::width() const {
-        GLsizei value;
-        glGetTextureParameteriv(m_uId, GL_TEXTURE_WIDTH, &value);
+        GLsizei value = -1;
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTexLevelParameteriv(gl_target, 0, GL_TEXTURE_WIDTH, &value);
+        if (value < 0) {
+            Debug::LogError("Failed to get texture width");
+        }
         return value;
     }
     GLsizei Texture::height() const {
-        GLsizei value;
-        glGetTextureParameteriv(m_uId, GL_TEXTURE_HEIGHT, &value);
+        GLsizei value = -1;
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTexLevelParameteriv(gl_target, 0, GL_TEXTURE_HEIGHT, &value);
+        if (value < 0) {
+            Debug::LogError("Failed to get texture height");
+        }
         return value;
     }
+
+    Vector2i Texture::size() const {
+        Vector2i value = Vector2i { -1 };
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTexLevelParameteriv(gl_target, 0, GL_TEXTURE_WIDTH, &value.x);
+        glGetTexLevelParameteriv(gl_target, 0, GL_TEXTURE_HEIGHT, &value.y);
+        if (value.x < 0) {
+            Debug::LogError("Failed to get texture width");
+        }
+        if (value.y < 0) {
+            Debug::LogError("Failed to get texture height");
+        }
+        return value;
+    }
+
     GLsizei Texture::depth() const {
         GLsizei value;
-        glGetTextureParameteriv(m_uId, GL_TEXTURE_DEPTH, &value);
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTextureLevelParameteriv(gl_target, 0, GL_TEXTURE_DEPTH, &value);
         return value;
     }
+    Vector3i Texture::size_3d() const {
+        Vector3i value;
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTextureLevelParameteriv(gl_target, 0, GL_TEXTURE_WIDTH, &value.x);
+        glGetTextureLevelParameteriv(gl_target, 0, GL_TEXTURE_HEIGHT, &value.y);
+        glGetTextureLevelParameteriv(gl_target, 0, GL_TEXTURE_DEPTH, &value.z);
+        return value;
+    }
+
     GLsizei Texture::base_level() const {
         GLsizei value;
         glGetTextureParameteriv(m_uId, GL_TEXTURE_BASE_LEVEL, &value);
@@ -214,6 +252,14 @@ namespace fow {
         GLsizei value;
         glGetTextureParameteriv(m_uId, GL_TEXTURE_MAX_LEVEL, &value);
         return value;
+    }
+
+    TextureInternalPixelFormat Texture::format() const {
+        GLsizei value;
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTextureLevelParameteriv(gl_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &value);
+        return static_cast<TextureInternalPixelFormat>(value);
     }
 
     TextureWrapMode Texture::wrap_r() const {
@@ -258,6 +304,11 @@ namespace fow {
     }
     void Texture::generate_mipmaps() const {
         glGenerateTextureMipmap(m_uId);
+    }
+
+    void Texture::bind(const uint8_t unit) const {
+        glActiveTexture(GL_TEXTURE0 + (unit % 32));
+        glBindTexture(static_cast<GLenum>(target()), m_uId);
     }
 
     static TexturePtr s_placeholder_texture = nullptr;
@@ -458,6 +509,11 @@ namespace fow {
             id = SOIL_load_OGL_single_cubemap_from_memory(data.data(), data.size(), SOIL_DDS_CUBEMAP_FACE_ORDER, SOIL_LOAD_AUTO, id, flags);
         } else {
             result = Failure("Failed to load OpenGL texture data: Unsupported texture target");
+            goto LOAD_GL_TEXTURE_END;
+        }
+
+        if (id == 0) {
+            result = Failure(std::format("Failed to load OpenGL texture data: {}", SOIL_last_result()));
             goto LOAD_GL_TEXTURE_END;
         }
 
