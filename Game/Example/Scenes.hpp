@@ -91,6 +91,10 @@ public:
         button->set_area({ 128 + 5, 64, 128, 64 });
         ui->add_widget(button);
 
+        auto panel = CreateRef<UI::Panel>(ui);
+        panel->set_area({ 512, 512, 64, 64 });
+        ui->add_widget(panel);
+
         Engine::SetScene(m_pScene);
     }
 };

@@ -29,7 +29,7 @@ namespace fow::UI {
         static Result<TextTheme> FromXml(const pugi::xml_node& node);
     };
     struct FOW_ENGINE_API RectangleTheme {
-        QuadSprite2DPtr sprite;
+        std::variant<QuadSprite2DPtr, NineSliceSprite2DPtr> sprite;
 
         static Result<RectangleTheme> FromXml(const pugi::xml_node& node);
     };
@@ -40,8 +40,8 @@ namespace fow::UI {
         static Result<TextboxTheme> FromXml(const pugi::xml_node& node);
     };
     struct FOW_ENGINE_API ImageTheme {
-        RectangleTheme background;
-        RectangleTheme background_disabled;
+        QuadSprite2DPtr background;
+        QuadSprite2DPtr background_disabled;
 
         static Result<ImageTheme> FromXml(const pugi::xml_node& node);
     };

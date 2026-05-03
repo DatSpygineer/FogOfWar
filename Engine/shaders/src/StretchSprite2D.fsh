@@ -1,6 +1,6 @@
 #version 460 core
 
-uniform sampler2DArray MainTexture;
+uniform sampler2D MainTexture;
 uniform vec2 UVStart = vec2(0.0);
 uniform vec2 UVEnd   = vec2(1.0);
 

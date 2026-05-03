@@ -112,6 +112,30 @@ namespace fow::UI {
     }
 
     Result<RectangleTheme> RectangleTheme::FromXml(const pugi::xml_node& node) {
+        if (const auto attrib = node.attribute("type"); attrib) {
+            if (String(attrib.value()).equals_any({ "nineslice", "9slice" })) {
+                auto bg_node = node.child("Background");
+                if (!bg_node) {
+                    return Failure(std::format("Expected child node 'Background'"));
+                }
+
+                auto bg_texture_attrib = bg_node.attribute("texture");
+                if (!bg_texture_attrib) {
+                    return Failure(std::format("Expected attribute 'texture' in child node 'Background'"));
+                }
+                auto bg_texture_path = bg_texture_attrib.value();
+                auto bg_texture_result = Assets::Load<Texture2D>(bg_texture_path);
+                if (!bg_texture_result.has_value()) {
+                    return Failure(std::format("Failed to load texture \"{}\": {}", bg_texture_path, bg_texture_result.error().message));
+                }
+                auto bg_texture = bg_texture_result.value().ptr();
+
+                return Success<RectangleTheme>(RectangleTheme {
+                    CreateRef<NineSliceSprite2D>(bg_texture)
+                });
+            }
+        }
+
         const auto result = QuadSprite2D::FromXmlWithConstants(node, s_theme_constants);
         if (result.has_value()) {
             return Success<RectangleTheme>(RectangleTheme {
@@ -429,8 +453,15 @@ namespace fow::UI {
     }
 
     void Panel::on_draw() {
-        if (m_Theme.sprite != nullptr && is_visible() && is_enabled()) {
-            m_Theme.sprite->draw_2d(area());
+        Ref<IDrawable2D> sprite;
+        if (m_Theme.sprite.index() == 0) {
+            sprite = std::get<0>(m_Theme.sprite);
+        } else {
+            sprite = std::get<1>(m_Theme.sprite);
+        }
+
+        if (sprite != nullptr && is_visible() && is_enabled()) {
+            sprite->draw_2d(area());
         }
     }
 
@@ -509,16 +540,16 @@ namespace fow::UI {
     }
 
     void ImageSprite::set_image(const Texture2DPtr& normal, const Texture2DPtr& disabled) const {
-        m_Theme.background.sprite->set_background_texture(normal);
-        m_Theme.background_disabled.sprite->set_background_texture(disabled);
+        m_Theme.background->set_background_texture(normal);
+        m_Theme.background_disabled->set_background_texture(disabled);
     }
 
     void ImageSprite::on_draw() {
         if (is_visible()) {
             if (is_enabled()) {
-                m_Theme.background.sprite->draw_2d(area());
+                m_Theme.background->draw_2d(area());
             } else {
-                m_Theme.background_disabled.sprite->draw_2d(area());
+                m_Theme.background_disabled->draw_2d(area());
             }
         }
     }
@@ -617,29 +648,59 @@ namespace fow::UI {
             return;
         }
 
+        Ref<IDrawable2D> sprite = nullptr;
         if (m_bPressed) {
             if (is_enabled()) {
                 if (m_bSelected) {
-                    m_Theme.pressed_selected.background.sprite->draw_2d(area());
+                    if (m_Theme.pressed_selected.background.sprite.index() == 0) {
+                        sprite = std::get<0>(m_Theme.pressed_selected.background.sprite);
+                    } else {
+                        sprite = std::get<1>(m_Theme.pressed_selected.background.sprite);
+                    }
                 } else {
-                    m_Theme.pressed.background.sprite->draw_2d(area());
+                    if (m_Theme.pressed.background.sprite.index() == 0) {
+                        sprite = std::get<0>(m_Theme.pressed.background.sprite);
+                    } else {
+                        sprite = std::get<1>(m_Theme.pressed.background.sprite);
+                    }
                 }
             } else {
-                m_Theme.pressed_disabled.background.sprite->draw_2d(area());
+                if (m_Theme.pressed_disabled.background.sprite.index() == 0) {
+                    sprite = std::get<0>(m_Theme.pressed_disabled.background.sprite);
+                } else {
+                    sprite = std::get<1>(m_Theme.pressed_disabled.background.sprite);
+                }
             }
         } else {
             if (is_enabled()) {
                 if (m_bSelected) {
-                    m_Theme.selected.background.sprite->draw_2d(area());
+                    if (m_Theme.selected.background.sprite.index() == 0) {
+                        sprite = std::get<0>(m_Theme.selected.background.sprite);
+                    } else {
+                        sprite = std::get<1>(m_Theme.selected.background.sprite);
+                    }
                 } else {
-                    m_Theme.normal.background.sprite->draw_2d(area());
+                    if (m_Theme.normal.background.sprite.index() == 0) {
+                        sprite = std::get<0>(m_Theme.normal.background.sprite);
+                    } else {
+                        sprite = std::get<1>(m_Theme.normal.background.sprite);
+                    }
                 }
             } else {
-                m_Theme.disabled.background.sprite->draw_2d(area());
+                if (m_Theme.disabled.background.sprite.index() == 0) {
+                    sprite = std::get<0>(m_Theme.disabled.background.sprite);
+                } else {
+                    sprite = std::get<1>(m_Theme.disabled.background.sprite);
+                }
             }
         }
 
-        m_pText->draw_2d(area());
+        if (sprite != nullptr) {
+            sprite->draw_2d(area());
+        }
+        if (m_pText != nullptr) {
+            m_pText->draw_2d(area());
+        }
     }
 
     void Button::on_clicked() {

@@ -28,8 +28,14 @@ namespace fow {
     using Sprite2DPtr = Ref<Sprite2D>;
     class ArraySprite2D;
     using ArraySprite2DPtr = Ref<ArraySprite2D>;
+    class AnimatedSprite2D;
+    using AnimatedSprite2DPtr = Ref<AnimatedSprite2D>;
     class QuadSprite2D;
     using QuadSprite2DPtr = Ref<QuadSprite2D>;
+    class LineSprite2D;
+    using LineSprite2DPtr = Ref<LineSprite2D>;
+    class NineSliceSprite2D;
+    using NineSliceSprite2DPtr = Ref<NineSliceSprite2D>;
 
     class Font;
     using FontPtr = Ref<Font>;
