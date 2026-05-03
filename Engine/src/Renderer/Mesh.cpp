@@ -41,6 +41,13 @@ namespace fow {
         }
     }
 
+    void Mesh::update_data(const Vector<Vertex>& vertices, const Vector<GLuint>& indices) {
+
+    }
+    void Mesh::update_data_2d(const Vector<Vertex2D>& vertices, const Vector<GLuint>& indices) {
+
+    }
+
     void Mesh::set_material(const MaterialPtr& material) {
         m_pMaterial = material;
     }

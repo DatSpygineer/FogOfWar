@@ -127,6 +127,9 @@ namespace fow {
             return *this;
         }
 
+        void update_data(const Vector<Vertex>& vertices, const Vector<GLuint>& indices);
+        void update_data_2d(const Vector<Vertex2D>& vertices, const Vector<GLuint>& indices);
+
         [[nodiscard]] FOW_CONSTEXPR GLuint vao() const { return m_uVao; }
         [[nodiscard]] FOW_CONSTEXPR GLuint vbo() const { return m_uVbo; }
         [[nodiscard]] FOW_CONSTEXPR GLuint ebo() const { return m_uEbo; }

@@ -193,6 +193,9 @@ namespace fow::UI {
         virtual void set_pressed(const bool value) { m_bPressed = value; }
 
         virtual void on_clicked();
+        virtual void on_pressed() { }
+        virtual void on_released() { }
+
         void set_clicked_callback(const std::function<void()>& callback) { m_fnClickedCallback = callback; }
     };
 
@@ -222,6 +225,8 @@ namespace fow::UI {
         void on_update(double dt) override;
         void on_draw() override;
         void on_clicked() override;
+        void on_pressed() override;
+        void on_released() override;
 
         void on_mouse_entered() override;
         void on_mouse_left() override;
@@ -257,6 +262,36 @@ namespace fow::UI {
         void on_mouse_left() override;
     private:
         void update_sprite() const;
+    };
+
+    class Slider;
+
+    class FOW_ENGINE_API SliderHandle : public BaseButton {
+        Slider& m_parent;
+    public:
+        explicit SliderHandle(const FramePtr& frame, Slider& parent) : BaseButton(frame), m_parent(parent) { }
+
+        FOW_CONSTEXPR bool is_toggle() const override { return false; }
+
+        friend class Slider;
+    };
+
+    class FOW_ENGINE_API Slider : public Widget {
+        float m_fSliderPercentage = 0.0f, m_fMinValue, m_fMaxValue, m_fStep;
+        SliderHandle m_Handle;
+    public:
+        Slider(const FramePtr& frame, const float min_value, const float max_value, const float step = 0.1f) :
+            Widget(frame), m_fMinValue(min_value), m_fMaxValue(max_value), m_fStep(step), m_Handle(frame, *this) { }
+
+        [[nodiscard]] FOW_CONSTEXPR float value() const { return Lerp(m_fMinValue, m_fMaxValue, m_fSliderPercentage); }
+        [[nodiscard]] FOW_CONSTEXPR float min_value() const { return m_fMinValue; }
+        [[nodiscard]] FOW_CONSTEXPR float max_value() const { return m_fMaxValue; }
+        [[nodiscard]] FOW_CONSTEXPR float step() const { return m_fStep; }
+
+        void set_value(float value);
+        void set_min_value(float value);
+        void set_max_value(float value);
+        void set_step(float value);
     };
 }
 

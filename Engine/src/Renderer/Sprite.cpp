@@ -568,6 +568,176 @@ namespace fow {
         return FromXml(xml.value());
     }
 
+    LineSprite2D::LineSprite2D(const Texture2DPtr& texture, const Orientation orientation) : m_pTexture(texture), m_eOrientation(orientation) { }
+    LineSprite2D::LineSprite2D(Texture2DPtr&& texture, const Orientation orientation) noexcept : m_pTexture(std::move(texture)), m_eOrientation(orientation) { }
+
+    void LineSprite2D::set_texture(const Texture2DPtr& texture) {
+        m_pTexture = texture;
+        setup_sprite();
+    }
+    void LineSprite2D::set_texture(Texture2DPtr&& texture) noexcept {
+        m_pTexture = std::move(texture);
+        setup_sprite();
+    }
+
+    void LineSprite2D::set_orientation(Orientation orientation) {
+        m_eOrientation = orientation;
+        setup_sprite();
+    }
+
+    void LineSprite2D::draw_2d(const Rectangle& rect) const {
+        if (!is_valid()) {
+            return;
+        }
+
+        constexpr auto one_third = 1.0f / 3.0f;
+        const auto offset = (m_eOrientation == Orientation::Horizontal ? Vector2Constants::UnitX : Vector2Constants::UnitY) * one_third;
+        const auto size = rect.size() * offset;
+
+        m_pMeshStart->draw_2d(Rectangle { rect.position(), size });
+        if (rect.size().x > m_pTexture->size().x * 2.0f) {
+            m_pMeshMiddle->draw_2d(Rectangle { rect.position() + offset, size });
+        }
+        m_pMeshEnd->draw_2d(Rectangle { rect.width * (2.0f * one_third), 0, rect.width * one_third, rect.height });
+    }
+
+    void LineSprite2D::setup_sprite() {
+        const auto orientation_vector = m_eOrientation == Orientation::Horizontal ? Vector2Constants::UnitX : Vector2Constants::UnitY;
+
+        if (m_pMeshStart == nullptr) {
+            const auto mat = Material::New("StretchSprite2D");
+            Debug::Assert(mat);
+            if (mat.has_value()) {
+                Debug::Assert(mat.value()->set_parameter("MainTexture", m_pTexture));
+                Debug::Assert(mat.value()->set_parameter("ImageSize", m_pTexture->size()));
+                Debug::Assert(mat.value()->set_parameter("UVStart", Vector2(0.0)));
+                Debug::Assert(mat.value()->set_parameter("UVEnd", orientation_vector * 0.25f));
+                const auto mesh = Mesh::CreateQuad2D(mat.value());
+                Debug::Assert(mesh);
+                if (mesh.has_value()) {
+                    m_pMeshStart = mesh.value();
+                }
+            }
+        } else {
+            Debug::Assert(m_pMeshStart->material()->set_parameter("MainTexture", m_pTexture));
+            Debug::Assert(m_pMeshStart->material()->set_parameter("ImageSize", m_pTexture->size()));
+            Debug::Assert(m_pMeshStart->material()->set_parameter("UVStart", Vector2(0.0)));
+            Debug::Assert(m_pMeshStart->material()->set_parameter("UVEnd", orientation_vector * 0.25f));
+        }
+
+        if (m_pMeshMiddle == nullptr) {
+            const auto mat = Material::New("StretchSprite2D");
+            Debug::Assert(mat);
+            if (mat.has_value()) {
+                Debug::Assert(mat.value()->set_parameter("MainTexture", m_pTexture));
+                Debug::Assert(mat.value()->set_parameter("ImageSize", m_pTexture->size()));
+                Debug::Assert(mat.value()->set_parameter("UVStart", orientation_vector * 0.25f));
+                Debug::Assert(mat.value()->set_parameter("UVEnd", orientation_vector * 0.5f));
+                const auto mesh = Mesh::CreateQuad2D(mat.value(), MeshDrawMode::DynamicDraw);
+                Debug::Assert(mesh);
+                if (mesh.has_value()) {
+                    m_pMeshMiddle = mesh.value();
+                }
+            }
+        } else {
+            Debug::Assert(m_pMeshMiddle->material()->set_parameter("MainTexture", m_pTexture));
+            Debug::Assert(m_pMeshMiddle->material()->set_parameter("ImageSize", m_pTexture->size()));
+            Debug::Assert(m_pMeshMiddle->material()->set_parameter("UVStart", orientation_vector * 0.25f));
+            Debug::Assert(m_pMeshMiddle->material()->set_parameter("UVEnd", orientation_vector * 0.5f));
+        }
+
+        if (m_pMeshEnd == nullptr) {
+            const auto mat = Material::New("StretchSprite2D");
+            Debug::Assert(mat);
+            if (mat.has_value()) {
+                Debug::Assert(mat.value()->set_parameter("MainTexture", m_pTexture));
+                Debug::Assert(mat.value()->set_parameter("ImageSize", m_pTexture->size()));
+                Debug::Assert(mat.value()->set_parameter("UVStart", orientation_vector * 0.5f));
+                Debug::Assert(mat.value()->set_parameter("UVEnd",  orientation_vector * 0.75f));
+                const auto mesh = Mesh::CreateQuad2D(mat.value());
+                Debug::Assert(mesh);
+                if (mesh.has_value()) {
+                    m_pMeshEnd = mesh.value();
+                }
+            }
+        } else {
+            Debug::Assert(m_pMeshEnd->material()->set_parameter("MainTexture", m_pTexture));
+            Debug::Assert(m_pMeshEnd->material()->set_parameter("ImageSize", m_pTexture->size()));
+            Debug::Assert(m_pMeshEnd->material()->set_parameter("UVStart", orientation_vector * 0.5f));
+            Debug::Assert(m_pMeshEnd->material()->set_parameter("UVEnd",  orientation_vector * 0.75f));
+        }
+    }
+
+    NineSliceSprite2D::NineSliceSprite2D(const Texture2DPtr& texture) : m_pTexture(texture) {
+        setup_sprite();
+    }
+    NineSliceSprite2D::NineSliceSprite2D(Texture2DPtr&& texture) noexcept : m_pTexture(std::move(texture)) {
+        setup_sprite();
+    }
+
+    void NineSliceSprite2D::set_texture(const Texture2DPtr& texture) {
+        m_pTexture = texture;
+        setup_sprite();
+    }
+    void NineSliceSprite2D::set_texture(Texture2DPtr&& texture) noexcept {
+        m_pTexture = std::move(texture);
+        setup_sprite();
+    }
+
+    void NineSliceSprite2D::draw_2d(const Rectangle& rect) const {
+        if (!is_valid()) {
+            return;
+        }
+
+        constexpr auto one_third = 1.0f / 3.0f;
+        Vector2 position = rect.position();
+
+        for (auto i = 0; i < 9; ++i) {
+            if (i % 3 == 1 && rect.size().x <= m_pTexture->size().x * 2.0f) {
+                continue;
+            }
+
+            m_pMeshes[i]->draw_2d(Rectangle { position, rect.size() * one_third });
+
+            position += Vector2(one_third, 0.0) * rect.size();
+            if (i % 3 == 2) {
+                position.x = 0.0f;
+                position.y += one_third * rect.height;
+            }
+        }
+    }
+
+    void NineSliceSprite2D::setup_sprite() {
+        auto origin = Vector2(0.0);
+        auto end    = Vector2(0.25);
+
+        for (auto i = 0; i < 9; ++i) {
+            const auto mat = Material::New("StretchSprite2D");
+            Debug::Assert(mat);
+            if (mat.has_value()) {
+                Debug::Assert(mat.value()->set_parameter("MainTexture", m_pTexture));
+                Debug::Assert(mat.value()->set_parameter("ImageSize", m_pTexture->size()));
+                Debug::Assert(mat.value()->set_parameter("UVStart", origin));
+                Debug::Assert(mat.value()->set_parameter("UVEnd", end));
+                const auto mesh = Mesh::CreateQuad2D(mat.value());
+                Debug::Assert(mesh);
+                if (mesh.has_value()) {
+                    m_pMeshes[i] = mesh.value();
+                    origin += Vector2(0.25, 0.0);
+                    end    += Vector2(0.25, 0.0);
+                }
+            }
+
+            if (i % 3 == 2) {
+                origin.x = 0.0f;
+                end.x    = 0.25f;
+
+                origin.y += 0.25f;
+                end.y    += 0.25f;
+            }
+        }
+    }
+
     Font::Font(const Path& path, const uint32_t size) : m_pFace(nullptr) {
         const auto full_path = path.is_absolute() ? path : path.as_absolute(Renderer::GetBasePath() / "res");
         if (!full_path.exists()) {

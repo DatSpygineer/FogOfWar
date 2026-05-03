@@ -169,6 +169,59 @@ namespace fow {
         static Result<QuadSprite2DPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
     };
 
+    enum class Orientation {
+        Horizontal,
+        Vertical
+    };
+
+    class FOW_RENDER_API LineSprite2D : public IDrawable2D {
+        MeshPtr m_pMeshStart;
+        MeshPtr m_pMeshMiddle;
+        MeshPtr m_pMeshEnd;
+        Texture2DPtr m_pTexture;
+        Orientation m_eOrientation;
+    public:
+        explicit LineSprite2D(const Texture2DPtr& texture, Orientation orientation = Orientation::Horizontal);
+        explicit LineSprite2D(Texture2DPtr&& texture, Orientation orientation = Orientation::Horizontal) noexcept;
+
+        void set_texture(const Texture2DPtr& texture);
+        void set_texture(Texture2DPtr&& texture) noexcept;
+        void set_orientation(Orientation orientation);
+
+        [[nodiscard]] FOW_CONSTEXPR const Texture2DPtr& texture() const { return m_pTexture; }
+        [[nodiscard]] FOW_CONSTEXPR Orientation orientation() const { return m_eOrientation; }
+        [[nodiscard]] FOW_CONSTEXPR bool is_valid() const {
+            return m_pMeshStart != nullptr && m_pMeshMiddle != nullptr && m_pMeshEnd != nullptr && m_pTexture != nullptr;
+        }
+
+        void draw_2d(const Rectangle& rect) const override;
+    private:
+        void setup_sprite();
+    };
+
+    class FOW_RENDER_API NineSliceSprite2D : public IDrawable2D {
+        MeshPtr m_pMeshes[9];
+        Texture2DPtr m_pTexture;
+    public:
+        explicit NineSliceSprite2D(const Texture2DPtr& texture);
+        explicit NineSliceSprite2D(Texture2DPtr&& texture) noexcept;
+
+        void set_texture(const Texture2DPtr& texture);
+        void set_texture(Texture2DPtr&& texture) noexcept;
+
+        [[nodiscard]] FOW_CONSTEXPR const Texture2DPtr& texture() const { return m_pTexture; }
+        [[nodiscard]] FOW_CONSTEXPR bool is_valid() const {
+            return m_pMeshes[0] != nullptr && m_pMeshes[1] != nullptr && m_pMeshes[2] != nullptr &&
+                   m_pMeshes[3] != nullptr && m_pMeshes[4] != nullptr && m_pMeshes[5] != nullptr &&
+                   m_pMeshes[6] != nullptr && m_pMeshes[7] != nullptr && m_pMeshes[8] != nullptr &&
+                   m_pTexture != nullptr;
+        }
+
+        void draw_2d(const Rectangle& rect) const override;
+    private:
+        void setup_sprite();
+    };
+
     class FOW_RENDER_API Font final {
         FT_Face m_pFace;
     public:

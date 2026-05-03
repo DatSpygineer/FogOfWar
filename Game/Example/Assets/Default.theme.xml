@@ -145,4 +145,24 @@
             <Color>$FgColor</Color>
         </Foreground>
     </CheckBox>
+    <Slider>
+        <Handle>
+            <Sprite>/Sprites/UI/SliderHandle.sprite.xml</Sprite>
+            <Size width="16" height="16"/>
+        </Handle>
+        <Rail>
+            <Sprite>/Sprites/UI/SliderRail.sprite.xml</Sprite>
+        </Rail>
+        <Marker>
+            <Sprite>/Sprites/UI/SliderMarker.sprite.xml</Sprite>
+        </Marker>
+    </Slider>
+    <ProgressBar>
+        <Background>
+            <Sprite>/Sprites/UI/ProgressBarBackground.sprite.xml</Sprite>
+        </Background>
+        <Fill>
+            <Sprite>/Sprites/UI/ProgressBarFill.sprite.xml</Sprite>
+        </Fill>
+    </ProgressBar>
 </Theme>

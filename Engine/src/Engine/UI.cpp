@@ -531,10 +531,12 @@ namespace fow::UI {
                 if (!m_bPressed) {
                     if (is_mouse_over() && Input::MouseIsPressed(Input::MouseButton::Left)) {
                         m_bPressed = true;
+                        on_pressed();
                     }
                 } else if (Input::MouseIsUp(Input::MouseButton::Left)) {
                     on_clicked();
                     m_bPressed = false;
+                    on_released();
                 }
             } else {
                 if (is_mouse_over() && Input::MouseIsPressed(Input::MouseButton::Left)) {
@@ -642,6 +644,13 @@ namespace fow::UI {
 
     void Button::on_clicked() {
         BaseButton::on_clicked();
+        update_text_theme();
+    }
+
+    void Button::on_pressed() {
+        update_text_theme();
+    }
+    void Button::on_released() {
         update_text_theme();
     }
 

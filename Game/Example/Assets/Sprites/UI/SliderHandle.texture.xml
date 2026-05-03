@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Texture src="/Sprites/UI/SliderHandle.png">
+    <PointFilter>true</PointFilter>
+    <GenerateMipMaps>false</GenerateMipMaps>
+</Texture>

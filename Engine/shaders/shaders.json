@@ -33,6 +33,10 @@
       "vertex":   "src/Generic2D.vsh",
       "fragment": "src/Array2D.fsh"
     },
+    "StretchSprite2D": {
+      "vertex":   "src/StretchSprite2D.vsh",
+      "fragment": "src/StretchSprite2D.fsh"
+    },
     "Rectangle2D": {
       "vertex":   "src/Rectangle2D.vsh",
       "fragment": "src/Rectangle2D.fsh"
