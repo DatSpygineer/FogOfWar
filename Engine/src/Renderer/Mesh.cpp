@@ -42,10 +42,22 @@ namespace fow {
     }
 
     void Mesh::update_data(const Vector<Vertex>& vertices, const Vector<GLuint>& indices) {
-
+        glBindVertexArray(m_uVao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_uVbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertices.size() * sizeof(Vertex)), vertices.data());
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uEbo);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)), indices.data());
+        glBindVertexArray(0);
+        m_iIndexCount = indices.size();
     }
     void Mesh::update_data_2d(const Vector<Vertex2D>& vertices, const Vector<GLuint>& indices) {
-
+        glBindVertexArray(m_uVao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_uVbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertices.size() * sizeof(Vertex2D)), vertices.data());
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uEbo);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)), indices.data());
+        glBindVertexArray(0);
+        m_iIndexCount = indices.size();
     }
 
     void Mesh::set_material(const MaterialPtr& material) {
