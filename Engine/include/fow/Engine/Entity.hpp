@@ -4,6 +4,7 @@
 #include <typeindex>
 #include <fow/Shared.hpp>
 
+#include "UI.hpp"
 #include "fow/Renderer/Model.hpp"
 #include "fow/Renderer/RenderQueue.hpp"
 
@@ -135,8 +136,9 @@ namespace fow {
 
     class FOW_ENGINE_API Scene final {
         Vector<EntityPtr> m_Entities;
+        UI::FramePtr m_pFrame;
     public:
-        explicit Scene(const size_t entity_capacity = 128) : m_Entities() { m_Entities.reserve(entity_capacity); }
+        explicit Scene(size_t entity_capacity = 128, const UI::ThemePtr& ui_theme = nullptr);
         Scene(const Scene&) = delete;
         Scene(Scene&&) noexcept = default;
         ~Scene() = default;
@@ -160,6 +162,9 @@ namespace fow {
         void update(double dt) const;
         void render(double dt) const;
         void destroy_all();
+
+        [[nodiscard]] FOW_CONSTEXPR UI::FramePtr& ui_frame() { return m_pFrame; }
+        [[nodiscard]] FOW_CONSTEXPR const UI::FramePtr& ui_frame() const { return m_pFrame; }
 
         static Result<ScenePtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
     };

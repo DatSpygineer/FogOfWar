@@ -1,6 +1,7 @@
 #ifndef FOW_ENGINE_COMPONENTS_HPP
 #define FOW_ENGINE_COMPONENTS_HPP
 
+#include "fow/Engine/UI.hpp"
 #include "fow/Engine/Entity.hpp"
 
 namespace fow {
@@ -149,7 +150,8 @@ namespace fow {
         TextSpritePtr m_pText;
         FontPtr m_pFont;
         String m_sText = "Sample Text";
-        int m_iTextWrapWidth = 0;
+        Color m_Color = ColorConstants::White;
+        TextAlignment m_eTextAlignment = TextAlignment::Default;
         MaterialPtr m_pMaterial;
         IntRectangle m_TextRect = { 0, 0, 128, 128 };
         BillboardMode m_eBillboardMode = BillboardMode::None;
@@ -172,8 +174,11 @@ namespace fow {
         void set_text(const String& text);
         [[nodiscard]] String get_text() const;
 
-        void set_text_wrap_width(int width);
-        [[nodiscard]] int get_text_wrap_width() const;
+        void set_color(const Color& color);
+        [[nodiscard]] FOW_CONSTEXPR const Color& get_color() const { return m_Color; }
+
+        void set_alignment(const TextAlignment& alignment);
+        [[nodiscard]] FOW_CONSTEXPR const TextAlignment& get_alignment() const { return m_eTextAlignment; }
 
         void set_text_sprite(const TextSpritePtr& text);
         [[nodiscard]] FOW_CONSTEXPR const TextSpritePtr& get_text_sprite() const { return m_pText; }
@@ -217,9 +222,10 @@ namespace fow {
         TextSprite2DPtr m_pText;
         FontPtr m_pFont;
         String m_sText = "Sample Text";
-        int m_iTextWrapWidth = 0;
         MaterialPtr m_pMaterial;
+        Color m_Color = ColorConstants::White;
         IntRectangle m_TextRect = { 0, 0, 128, 128 };
+        TextAlignment m_eTextAlignment = TextAlignment::Default;
     public:
         FOW_COMPONENT_CLASS(Text2DRendererComponent, Component)
 
@@ -236,8 +242,11 @@ namespace fow {
         void set_text(const String& text);
         [[nodiscard]] String get_text() const;
 
-        void set_text_wrap_width(int width);
-        [[nodiscard]] int get_text_wrap_width() const;
+        void set_color(const Color& color);
+        [[nodiscard]] FOW_CONSTEXPR const Color& get_color() const { return m_Color; }
+
+        void set_alignment(const TextAlignment& alignment);
+        [[nodiscard]] FOW_CONSTEXPR const TextAlignment& get_alignment() const { return m_eTextAlignment; }
 
         void set_text_sprite(const TextSprite2DPtr& text);
         [[nodiscard]] FOW_CONSTEXPR const TextSprite2DPtr& get_text_sprite() const { return m_pText; }

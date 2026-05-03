@@ -24,6 +24,21 @@ namespace fow {
             std::copy(in.begin() + start, in.end(), result.begin());
             return result;
         }
+        template<typename T>
+        inline Vector<T> JoinVectors(const InitList<Vector<T>>& vectors) {
+            Vector<T> result;
+            size_t size = 0;
+            for (const auto& vec : vectors) {
+                size += vec.size();
+            }
+            result.reserve(size);
+
+            for (const auto& vec : vectors) {
+                result.insert(result.end(), vec.begin(), vec.end());
+            }
+
+            return result;
+        }
     }
 }
 

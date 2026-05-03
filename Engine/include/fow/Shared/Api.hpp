@@ -47,6 +47,20 @@
     #endif
 #endif
 
+#ifdef FogOfWarEditor_EXPORTS
+    #ifdef _WIN32
+        #define FOW_EDITOR_API __declspec(dllexport)
+    #else
+        #define FOW_EDITOR_API __attribute__((visibility("default")))
+    #endif
+#else
+    #ifdef _WIN32
+        #define FOW_EDITOR_API __declspec(dllimport)
+    #else
+        #define FOW_EDITOR_API
+    #endif
+#endif
+
 #ifdef FogOfWarEngine_EXPORTS
     #ifdef _WIN32
         #define FOW_ENGINE_API __declspec(dllexport)

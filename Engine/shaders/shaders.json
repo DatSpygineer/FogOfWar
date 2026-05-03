@@ -17,6 +17,10 @@
       "vertex":   "src/Sprite.vsh",
       "fragment": "src/Sprite.fsh"
     },
+    "ArraySprite": {
+      "vertex":   "src/Sprite.vsh",
+      "fragment": "src/ArraySprite.fsh"
+    },
     "PbrSprite": {
       "vertex":   "src/PbrSprite.vsh",
       "fragment": "src/PbrGeneric.fsh"
@@ -24,6 +28,22 @@
     "Generic2D": {
       "vertex":   "src/Generic2D.vsh",
       "fragment": "src/Generic2D.fsh"
+    },
+    "Array2D": {
+      "vertex":   "src/Generic2D.vsh",
+      "fragment": "src/Array2D.fsh"
+    },
+    "StretchSprite2D": {
+      "vertex":   "src/StretchSprite2D.vsh",
+      "fragment": "src/StretchSprite2D.fsh"
+    },
+    "Rectangle2D": {
+      "vertex":   "src/Rectangle2D.vsh",
+      "fragment": "src/Rectangle2D.fsh"
+    },
+    "DebugDraw": {
+      "vertex":   "src/DebugDraw.vsh",
+      "fragment": "src/DebugDraw.fsh"
     }
   }
 }

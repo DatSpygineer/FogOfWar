@@ -24,6 +24,25 @@ namespace fow {
         return Failure(std::format("Component registry does not contain component with type index \"{}\"!", type_index.name()));
     }
 
+    Scene::Scene(const size_t entity_capacity, const UI::ThemePtr& ui_theme) : m_pFrame(nullptr) {
+        UI::ThemePtr theme = ui_theme;
+        if (theme == nullptr) {
+            auto theme_result = Assets::Load<UI::Theme>("Default.theme.xml");
+            if (!theme_result.has_value()) {
+                Debug::LogError(std::format("Failed to load default UI theme: \"{}\"", theme_result.error().message));
+            } else {
+                theme = theme_result.value().ptr();
+            }
+        }
+
+        if (theme != nullptr) {
+            m_pFrame = CreateRef<UI::Frame>(theme);
+        } else {
+            Debug::LogFatal("Failed to create UI frame, theme is null!");
+        }
+        m_Entities.reserve(entity_capacity);
+    }
+
     ComponentPtr<Component> Entity::add_component(const String& class_name, const HashMap<String, String>& parameters) {
         if (const auto reg = ComponentRegistryObject::GetComponentRegistry(class_name); reg.has_value()) {
             if (m_components.contains(reg->type_index())) {
@@ -179,6 +198,9 @@ namespace fow {
                     component->on_update(dt);
                 }
             }
+        }
+        if (m_pFrame != nullptr) {
+            m_pFrame->update(dt);
         }
     }
 

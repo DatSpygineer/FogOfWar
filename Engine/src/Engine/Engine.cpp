@@ -1,17 +1,21 @@
 #define FOW_INCLUDE_IMGUI
 #include "fow/Engine.hpp"
+
+#include <gtest/internal/gtest-string.h>
+
 #include "fow/Engine/Convar.hpp"
+#include "fow/Editor/EditorInstance.hpp"
 
 #include "fow/Renderer/GL.hpp"
 #include "fow/Renderer.hpp"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
-#include <SDL3_ttf/SDL_ttf.h>
 
 #include "SOIL2.h"
 
 #include "rfl/json/write.hpp"
+
 
 namespace fow {
     static void UpdateResolution(const CVarPtr& self);
@@ -25,9 +29,12 @@ namespace fow {
     static Result<> RemoveActionCommand(const Vector<String>& args);
     static Result<> ToggleConsoleCommand(const Vector<String>& args);
     static Result<> SetSceneCommand(const Vector<String>& args);
+    static Result<> OpenEditorCommand(const Vector<String>& args);
+    static Result<> VersionCommand(const Vector<String>& args);
+    static Result<> EngineVersionCommand(const Vector<String>& args);
 
-#ifndef NDEBUG
-    static void GLDebugMessageCallback(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
+#if !defined(NDEBUG) && !defined(FOW_DISABLE_OPENGL_DEBUG_INFO)
+    static void GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 #endif
 
     const auto vid_resolution      = CVar::Create("vid_resolution",      Vector2(1280, 720),    CVarFlags::UserSettings | CVarFlags::SaveToConfig, &UpdateResolution);
@@ -41,6 +48,9 @@ namespace fow {
     const auto input_remove_action = CVar::Create("input_remove_action", &RemoveActionCommand,  CVarFlags::Default);
     const auto toggle_console      = CVar::Create("toggle_console",      &ToggleConsoleCommand, CVarFlags::Default);
     const auto set_scene           = CVar::Create("set_scene",           &SetSceneCommand,      CVarFlags::Default);
+    const auto open_editor         = CVar::Create("open_editor",         &OpenEditorCommand,    CVarFlags::Default);
+    const auto version_cmd         = CVar::Create("version",             &VersionCommand,       CVarFlags::Default);
+    const auto engine_version_cmd  = CVar::Create("engine_version",      &EngineVersionCommand, CVarFlags::Default);
 
     namespace Input {
         static void UpdateMouseWheel(float x, float y);
@@ -75,7 +85,7 @@ namespace fow {
             return s_background_color;
         }
 
-        Result<> Initialize(int argc, os_char_t** argv, const Function<std::shared_ptr<Game>()>& game_class_ctor) {
+        Result<> Initialize(int argc, os_char_t** argv, const Function<Ref<Game>()>& game_class_ctor) {
             if (s_initialized) {
                 return Failure("Engine is already initialized!");
             }
@@ -97,11 +107,6 @@ namespace fow {
 
             if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS)) {
                 return Failure(std::format("Failed to initialize SDL: {}", SDL_GetError()));
-            }
-
-            if (!TTF_Init()) {
-                SDL_Quit();
-                return Failure(std::format("Failed to initialize SDL_ttf: {}", SDL_GetError()));
             }
 
             Vector2 resolution   = vid_resolution->as_vec2().value_or(Vector2 { 1280, 720 });
@@ -196,7 +201,6 @@ namespace fow {
 
             if (s_window == nullptr) {
                 String error = SDL_GetError();
-                TTF_Quit();
                 SDL_Quit();
                 return Failure(std::format("Failed to create window: \"{}\"", error));
             }
@@ -214,7 +218,6 @@ namespace fow {
             if (s_glContext == nullptr) {
                 String error = SDL_GetError();
                 SDL_DestroyWindow(s_window);
-                TTF_Quit();
                 SDL_Quit();
                 return Failure(std::format("Failed to create OpenGL context: \"{}\"", error));
             }
@@ -223,7 +226,6 @@ namespace fow {
             if (const auto result = Renderer::Initialize(s_base_path, msaa, reinterpret_cast<void*(*)(const char*)>(SDL_GL_GetProcAddress)); !result.has_value()) {
                 SDL_GL_DestroyContext(s_glContext);
                 SDL_DestroyWindow(s_window);
-                TTF_Quit();
                 SDL_Quit();
                 return Failure(result.error());
             }
@@ -252,7 +254,9 @@ namespace fow {
             const auto debug_title = std::format("{} | FogOfWar Engine - {}", s_window_title, GetVersion().to_string());
             SDL_SetWindowTitle(s_window, debug_title.c_str());
 
+    #ifndef FOW_DISABLE_OPENGL_DEBUG_INFO
             glDebugMessageCallback(&GLDebugMessageCallback, nullptr);
+    #endif
 #endif
 
             if (const auto lang = cl_lang->as_string(); lang.has_value()) {
@@ -278,6 +282,7 @@ namespace fow {
             SDL_Event e;
             while (GetGameState() == GameState::Running) {
                 while (SDL_PollEvent(&e)) {
+                    ImGui_ImplSDL3_ProcessEvent(&e);
                     switch (e.type) {
                         case SDL_EVENT_QUIT: SetGameStateClosing(); break;
                         case SDL_EVENT_WINDOW_RESIZED:
@@ -313,6 +318,10 @@ namespace fow {
                     s_game_class->on_update_imgui(time - last_time);
                 }
 
+                if (s_game_class != nullptr && s_game_class->editor_enabled()) {
+                    EditorTick();
+                }
+
                 Console::UpdateConsole();
 
                 ImGui::Render();
@@ -320,13 +329,16 @@ namespace fow {
                 SDL_GetWindowSize(s_window, &display_w, &display_h);
                 Renderer::Clear(s_background_color);
 
+                RenderQueue::Render();
+
                 if (s_game_class != nullptr) {
                     s_game_class->on_render(time - last_time);
                 }
 
-                RenderQueue::Render();
                 RenderQueue2D::Render();
-
+                if (s_scene != nullptr && s_scene->ui_frame() != nullptr) {
+                    s_scene->ui_frame()->render();
+                }
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
                 SDL_GL_SwapWindow(s_window);
@@ -368,7 +380,6 @@ namespace fow {
                 s_window = nullptr;
             }
 
-            TTF_Quit();
             SDL_Quit();
 
             if (GetGameState() == GameState::Crashed) {
@@ -489,8 +500,8 @@ namespace fow {
     }
 
     namespace Input {
-        static Vector<State> s_keyboard_state;
-        static Vector<State> s_mouse_btn_state;
+        static Vector<KeyState> s_keyboard_state;
+        static Vector<KeyState> s_mouse_btn_state;
         static HashMap<String, Action> s_actions;
 
         static Vector2 s_mouse_position;
@@ -507,11 +518,11 @@ namespace fow {
 
             s_keyboard_state.reserve(SDL_SCANCODE_COUNT + 1);
             for (int i = 0; i < s_keyboard_state.capacity(); ++i) {
-                s_keyboard_state.emplace_back(State::Up);
+                s_keyboard_state.emplace_back(KeyState::Up);
             }
             s_mouse_btn_state.reserve(8);
             for (int i = 0; i < s_mouse_btn_state.capacity(); ++i) {
-                s_mouse_btn_state.emplace_back(State::Up);
+                s_mouse_btn_state.emplace_back(KeyState::Up);
             }
             SDL_GetMouseState(&s_mouse_position.x, &s_mouse_position.y);
 
@@ -529,17 +540,22 @@ namespace fow {
             for (int i = 0; i < key_count + 1; ++i) {
                 const auto state = key_states[i];
                 auto& kb_state = s_keyboard_state.at(i);
+                auto state_changed = false;
                 if (state) {
-                    if (kb_state == State::Pressed) {
-                        kb_state = State::Down;
-                    } else if (kb_state > State::Down) {
-                        kb_state = State::Pressed;
+                    if (kb_state == KeyState::Pressed) {
+                        kb_state = KeyState::Down;
+                        state_changed = true;
+                    } else if (kb_state > KeyState::Down) {
+                        kb_state = KeyState::Pressed;
+                        state_changed = true;
                     }
                 } else {
-                    if (kb_state < State::Released) {
-                        kb_state = State::Released;
-                    } else if (kb_state == State::Released) {
-                        kb_state = State::Up;
+                    if (kb_state < KeyState::Released) {
+                        kb_state = KeyState::Released;
+                        state_changed = true;
+                    } else if (kb_state == KeyState::Released) {
+                        kb_state = KeyState::Up;
+                        state_changed = true;
                     }
                 }
             }
@@ -547,17 +563,22 @@ namespace fow {
             for (int i = 0; i < 8; ++i) {
                 const auto state = (mouse_state >> i) & 1;
                 auto& mb_state = s_mouse_btn_state.at(i);
+                auto state_changed = false;
                 if (state) {
-                    if (mb_state == State::Pressed) {
-                        mb_state = State::Down;
-                    } else if (mb_state > State::Down) {
-                        mb_state = State::Pressed;
+                    if (mb_state == KeyState::Pressed) {
+                        mb_state = KeyState::Down;
+                        state_changed = true;
+                    } else if (mb_state > KeyState::Down) {
+                        mb_state = KeyState::Pressed;
+                        state_changed = true;
                     }
                 } else {
-                    if (mb_state < State::Released) {
-                        mb_state = State::Released;
-                    } else if (mb_state == State::Released) {
-                        mb_state = State::Up;
+                    if (mb_state < KeyState::Released) {
+                        mb_state = KeyState::Released;
+                        state_changed = true;
+                    } else if (mb_state == KeyState::Released) {
+                        mb_state = KeyState::Up;
+                        state_changed = true;
                     }
                 }
             }
@@ -858,10 +879,10 @@ namespace fow {
             }
             switch (const auto [ type, keycode ] = s_actions.at(action); type) {
                 case Type::KeyboardKey: {
-                    return s_keyboard_state.at(keycode) == State::Pressed;
+                    return s_keyboard_state.at(keycode) == KeyState::Pressed;
                 }
                 case Type::MouseButton: {
-                    return s_mouse_btn_state.at(keycode) == State::Pressed;
+                    return s_mouse_btn_state.at(keycode) == KeyState::Pressed;
                 }
                 case Type::MouseMotion: {
                     return (keycode == 0 ? s_mouse_position_delta.x : s_mouse_position_delta.y) != 0.0f;
@@ -879,10 +900,10 @@ namespace fow {
             }
             switch (const auto [ type, keycode ] = s_actions.at(action); type) {
                 case Type::KeyboardKey: {
-                    return s_keyboard_state.at(keycode) == State::Pressed || s_keyboard_state.at(keycode) == State::Down;
+                    return s_keyboard_state.at(keycode) == KeyState::Pressed || s_keyboard_state.at(keycode) == KeyState::Down;
                 }
                 case Type::MouseButton: {
-                    return s_mouse_btn_state.at(keycode) == State::Pressed || s_mouse_btn_state.at(keycode) == State::Down;
+                    return s_mouse_btn_state.at(keycode) == KeyState::Pressed || s_mouse_btn_state.at(keycode) == KeyState::Down;
                 }
                 case Type::MouseMotion: {
                     return (keycode == 0 ? s_mouse_position_delta.x : s_mouse_position_delta.y) != 0.0f;
@@ -900,10 +921,10 @@ namespace fow {
             }
             switch (const auto [ type, keycode ] = s_actions.at(action); type) {
                 case Type::KeyboardKey: {
-                    return s_keyboard_state.at(keycode) == State::Released;
+                    return s_keyboard_state.at(keycode) == KeyState::Released;
                 }
                 case Type::MouseButton: {
-                    return s_mouse_btn_state.at(keycode) == State::Released;
+                    return s_mouse_btn_state.at(keycode) == KeyState::Released;
                 }
                 case Type::MouseMotion: {
                     return (keycode == 0 ? s_mouse_position_delta.x : s_mouse_position_delta.y) == 0.0f;
@@ -921,10 +942,10 @@ namespace fow {
             }
             switch (const auto [ type, keycode ] = s_actions.at(action); type) {
                 case Type::KeyboardKey: {
-                    return s_keyboard_state.at(keycode) == State::Released || s_keyboard_state.at(keycode) == State::Up;
+                    return s_keyboard_state.at(keycode) == KeyState::Released || s_keyboard_state.at(keycode) == KeyState::Up;
                 }
                 case Type::MouseButton: {
-                    return s_mouse_btn_state.at(keycode) == State::Released || s_mouse_btn_state.at(keycode) == State::Up;
+                    return s_mouse_btn_state.at(keycode) == KeyState::Released || s_mouse_btn_state.at(keycode) == KeyState::Up;
                 }
                 case Type::MouseMotion: {
                     return (keycode == 0 ? s_mouse_position_delta.x : s_mouse_position_delta.y) == 0.0f;
@@ -946,10 +967,10 @@ namespace fow {
 
             switch (const auto [ type, keycode ] = s_actions.at(action); type) {
                 case Type::KeyboardKey: {
-                     return s_keyboard_state.at(keycode) < State::Released ? multiplier : 0.0f;
+                     return s_keyboard_state.at(keycode) < KeyState::Released ? multiplier : 0.0f;
                 }
                 case Type::MouseButton: {
-                     return s_mouse_btn_state.at(keycode) < State::Released ? multiplier : 0.0f;
+                     return s_mouse_btn_state.at(keycode) < KeyState::Released ? multiplier : 0.0f;
                 }
                 case Type::MouseMotion: {
                     return (keycode == 0 ? s_mouse_position_delta.x : s_mouse_position_delta.y) * multiplier;
@@ -962,31 +983,34 @@ namespace fow {
         }
 
         bool KeyIsPressed(const KeyCode key) {
-            return s_keyboard_state.at(static_cast<int>(key)) == State::Pressed;
+            return s_keyboard_state.at(static_cast<int>(key)) == KeyState::Pressed;
         }
         bool KeyIsDown(const KeyCode key) {
-            return s_keyboard_state.at(static_cast<int>(key)) == State::Pressed || s_keyboard_state.at(static_cast<int>(key)) == State::Down;
+            return s_keyboard_state.at(static_cast<int>(key)) == KeyState::Pressed || s_keyboard_state.at(static_cast<int>(key)) == KeyState::Down;
         }
         bool KeyIsReleased(const KeyCode key) {
-            return s_keyboard_state.at(static_cast<int>(key)) == State::Released;
+            return s_keyboard_state.at(static_cast<int>(key)) == KeyState::Released;
         }
         bool KeyIsUp(const KeyCode key) {
-            return s_keyboard_state.at(static_cast<int>(key)) == State::Released || s_keyboard_state.at(static_cast<int>(key)) == State::Up;
+            return s_keyboard_state.at(static_cast<int>(key)) == KeyState::Released || s_keyboard_state.at(static_cast<int>(key)) == KeyState::Up;
         }
 
         bool MouseIsPressed(const MouseButton button) {
-            return s_mouse_btn_state.at(static_cast<int>(button)) == State::Pressed;
+            return s_mouse_btn_state.at(static_cast<int>(button)) == KeyState::Pressed;
         }
         bool MouseIsDown(const MouseButton button) {
-            return s_mouse_btn_state.at(static_cast<int>(button)) == State::Pressed || s_mouse_btn_state.at(static_cast<int>(button)) == State::Down;
+            return s_mouse_btn_state.at(static_cast<int>(button)) == KeyState::Pressed || s_mouse_btn_state.at(static_cast<int>(button)) == KeyState::Down;
         }
         bool MouseIsReleased(const MouseButton button) {
-            return s_mouse_btn_state.at(static_cast<int>(button)) == State::Released;
+            return s_mouse_btn_state.at(static_cast<int>(button)) == KeyState::Released;
         }
         bool MouseIsUp(const MouseButton button) {
-            return s_mouse_btn_state.at(static_cast<int>(button)) == State::Released || s_mouse_btn_state.at(static_cast<int>(button)) == State::Up;
+            return s_mouse_btn_state.at(static_cast<int>(button)) == KeyState::Released || s_mouse_btn_state.at(static_cast<int>(button)) == KeyState::Up;
         }
 
+        Vector2 PreviousMousePosition() {
+            return s_mouse_position - s_mouse_position_delta;
+        }
         Vector2 MousePosition() {
             return s_mouse_position;
         }
@@ -1029,7 +1053,7 @@ namespace fow {
         return Success();
     }
 
-    Result<> SetSceneCommand(const Vector<String>& args) {
+    static Result<> SetSceneCommand(const Vector<String>& args) {
         if (args.size() < 1) {
             return Failure("Usage: set_scene <scene asset path>");
         }
@@ -1044,7 +1068,34 @@ namespace fow {
         return Success();
     }
 
-#ifndef NDEBUG
+    static Result<> OpenEditorCommand(const Vector<String>& args) {
+        FOW_DISCARD(args);
+
+        if (Engine::s_game_class != nullptr && !Engine::s_game_class->editor_enabled()) {
+            return Failure("Editor is not enabled for this game!");
+        }
+
+        if (!EditorIsRunning()) {
+            EditorInit();
+        }
+        return Success();
+    }
+
+    static Result<> VersionCommand(const Vector<String>& args) {
+        FOW_DISCARD(args);
+        if (Engine::s_game_class != nullptr) {
+            Debug::LogInfo(std::format("{} {}", Engine::s_game_class->title(), Engine::s_game_class->version().to_string()));
+            return Success();
+        }
+        return Failure("Cannot get game version, game instance is not initialized!");
+    }
+    static Result<> EngineVersionCommand(const Vector<String>& args) {
+        FOW_DISCARD(args);
+        Debug::LogInfo(std::format("FogOfWar Engine {}", Engine::GetVersion().to_string()));
+        return Success();
+    }
+
+#if !defined(NDEBUG) && !defined(FOW_DISABLE_OPENGL_DEBUG_INFO)
     static void GLDebugMessageCallback(const GLenum source, const GLenum type, GLuint id, const GLenum severity, const GLsizei length, const GLchar* message, const void* userParam) {
         FOW_DISCARD(length);
         FOW_DISCARD(userParam);

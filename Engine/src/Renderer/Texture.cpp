@@ -191,20 +191,58 @@ namespace fow {
     }
 
     GLsizei Texture::width() const {
-        GLsizei value;
-        glGetTextureParameteriv(m_uId, GL_TEXTURE_WIDTH, &value);
+        GLsizei value = -1;
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTexLevelParameteriv(gl_target, 0, GL_TEXTURE_WIDTH, &value);
+        if (value < 0) {
+            Debug::LogError("Failed to get texture width");
+        }
         return value;
     }
     GLsizei Texture::height() const {
-        GLsizei value;
-        glGetTextureParameteriv(m_uId, GL_TEXTURE_HEIGHT, &value);
+        GLsizei value = -1;
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTexLevelParameteriv(gl_target, 0, GL_TEXTURE_HEIGHT, &value);
+        if (value < 0) {
+            Debug::LogError("Failed to get texture height");
+        }
         return value;
     }
+
+    Vector2i Texture::size() const {
+        Vector2i value = Vector2i { -1 };
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTexLevelParameteriv(gl_target, 0, GL_TEXTURE_WIDTH, &value.x);
+        glGetTexLevelParameteriv(gl_target, 0, GL_TEXTURE_HEIGHT, &value.y);
+        if (value.x < 0) {
+            Debug::LogError("Failed to get texture width");
+        }
+        if (value.y < 0) {
+            Debug::LogError("Failed to get texture height");
+        }
+        return value;
+    }
+
     GLsizei Texture::depth() const {
         GLsizei value;
-        glGetTextureParameteriv(m_uId, GL_TEXTURE_DEPTH, &value);
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTextureLevelParameteriv(gl_target, 0, GL_TEXTURE_DEPTH, &value);
         return value;
     }
+    Vector3i Texture::size_3d() const {
+        Vector3i value;
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTextureLevelParameteriv(gl_target, 0, GL_TEXTURE_WIDTH, &value.x);
+        glGetTextureLevelParameteriv(gl_target, 0, GL_TEXTURE_HEIGHT, &value.y);
+        glGetTextureLevelParameteriv(gl_target, 0, GL_TEXTURE_DEPTH, &value.z);
+        return value;
+    }
+
     GLsizei Texture::base_level() const {
         GLsizei value;
         glGetTextureParameteriv(m_uId, GL_TEXTURE_BASE_LEVEL, &value);
@@ -214,6 +252,14 @@ namespace fow {
         GLsizei value;
         glGetTextureParameteriv(m_uId, GL_TEXTURE_MAX_LEVEL, &value);
         return value;
+    }
+
+    TextureInternalPixelFormat Texture::format() const {
+        GLsizei value;
+        const auto gl_target = static_cast<GLenum>(target());
+        glBindTexture(gl_target, m_uId);
+        glGetTextureLevelParameteriv(gl_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &value);
+        return static_cast<TextureInternalPixelFormat>(value);
     }
 
     TextureWrapMode Texture::wrap_r() const {
@@ -258,6 +304,11 @@ namespace fow {
     }
     void Texture::generate_mipmaps() const {
         glGenerateTextureMipmap(m_uId);
+    }
+
+    void Texture::bind(const uint8_t unit) const {
+        glActiveTexture(GL_TEXTURE0 + (unit % 32));
+        glBindTexture(static_cast<GLenum>(target()), m_uId);
     }
 
     static TexturePtr s_placeholder_texture = nullptr;
@@ -461,6 +512,11 @@ namespace fow {
             goto LOAD_GL_TEXTURE_END;
         }
 
+        if (id == 0) {
+            result = Failure(std::format("Failed to load OpenGL texture data: {}", SOIL_last_result()));
+            goto LOAD_GL_TEXTURE_END;
+        }
+
         glBindTexture(gl_target, id);
         glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(mag_filter));
         glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(min_filter));
@@ -579,6 +635,43 @@ namespace fow {
             return LoadFromMemory(image_data.value(), info_value.value());
         }
         return Failure(std::format("Failed to load texture \"{}\": Image data \"{}\" cannot be found!", path, info_value->Source));
+    }
+
+    Result<Texture2DPtr> Texture2D::CreateFromRawData(const Vector<uint8_t>& data, const Vector2i& size, const TextureInfo& info, const TexturePixelFormat format, const TextureInternalPixelFormat internal_format) {
+        return CreateFromRawData(data, 0u, size, info, format, internal_format);
+    }
+
+    Result<Texture2DPtr> Texture2D::CreateFromRawData(const Vector<uint8_t>& data, const GLuint reuse_id, const Vector2i& size, const TextureInfo& info, const TexturePixelFormat format, const TextureInternalPixelFormat internal_format) {
+        auto id = reuse_id;
+        GLuint flags = 0;
+
+        const auto mag_filter = info.MagFilter.value_or(TextureMagFilterMode::Linear);
+        const auto min_filter = info.MinFilter.value_or(TextureMinFilterMode::Linear);
+        const auto wrap_s = info.WrapS.value_or(TextureWrapMode::Repeat);
+        const auto wrap_t = info.WrapT.value_or(TextureWrapMode::Repeat);
+
+        if (id == 0) {
+            glGenTextures(1, &id);
+        }
+
+        if (id == 0) {
+            return Failure(std::format("Failed to generate OpenGL texture handle: GL error \"{}\"", glGetError()));
+        }
+
+        glBindTexture(GL_TEXTURE_2D, id);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(internal_format), static_cast<GLsizei>(size.x), static_cast<GLsizei>(size.y), 0, static_cast<GLenum>(format), GL_UNSIGNED_BYTE, data.data());
+        glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, static_cast<GLenum>(mag_filter));
+        glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, static_cast<GLenum>(min_filter));
+        glTextureParameteri(id, GL_TEXTURE_WRAP_S, static_cast<GLenum>(wrap_s));
+        glTextureParameteri(id, GL_TEXTURE_WRAP_T, static_cast<GLenum>(wrap_t));
+
+        if (info.GenerateMipMaps) {
+            glGenerateTextureMipmap(id);
+        }
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return Success<Texture2DPtr>(std::make_shared<Texture2D>(std::move(Texture2D { id })));
     }
 
     Result<Texture2DPtr> Texture2D::FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info) {

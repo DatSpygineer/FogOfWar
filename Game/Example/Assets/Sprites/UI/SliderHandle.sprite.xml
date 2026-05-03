@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ArraySprite>
+    <Texture src="/Sprites/UI/SliderHandle.texture.xml" columns="2" rows="4"/>
+</ArraySprite>

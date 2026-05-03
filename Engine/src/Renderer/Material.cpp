@@ -1509,7 +1509,7 @@ namespace fow {
                 return Failure(std::format("Failed to create material with shader \"{}\": {}", shader_name, result.error().message));
             }
         }
-        return std::make_shared<Material>(shader, params);
+        return Success<MaterialPtr>(std::make_shared<Material>(shader, params));
     }
 
     Material Material::make_unique() const {

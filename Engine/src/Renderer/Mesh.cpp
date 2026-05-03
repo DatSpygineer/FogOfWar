@@ -41,6 +41,25 @@ namespace fow {
         }
     }
 
+    void Mesh::update_data(const Vector<Vertex>& vertices, const Vector<GLuint>& indices) {
+        glBindVertexArray(m_uVao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_uVbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertices.size() * sizeof(Vertex)), vertices.data());
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uEbo);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)), indices.data());
+        glBindVertexArray(0);
+        m_iIndexCount = indices.size();
+    }
+    void Mesh::update_data_2d(const Vector<Vertex2D>& vertices, const Vector<GLuint>& indices) {
+        glBindVertexArray(m_uVao);
+        glBindBuffer(GL_ARRAY_BUFFER, m_uVbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertices.size() * sizeof(Vertex2D)), vertices.data());
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uEbo);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)), indices.data());
+        glBindVertexArray(0);
+        m_iIndexCount = indices.size();
+    }
+
     void Mesh::set_material(const MaterialPtr& material) {
         m_pMaterial = material;
     }
@@ -155,17 +174,21 @@ namespace fow {
     }
 
     Result<MeshPtr> Mesh::CreateQuad2D(const MaterialPtr& material, const MeshDrawMode draw_mode) {
-        const Vector vertices = {
-            Vertex2D { Vector2 { 1.0f, 0.0f }, Vector2 { 1.0f, 1.0f } },
-            Vertex2D { Vector2 { 1.0f, 1.0f }, Vector2 { 1.0f, 0.0f } },
-            Vertex2D { Vector2 { 0.0f, 1.0f }, Vector2 { 0.0f, 0.0f } },
-            Vertex2D { Vector2 { 0.0f, 0.0f }, Vector2 { 0.0f, 1.0f } }
-        };
-        const Vector indices = {
-            0u, 1u, 2u,
-            0u, 2u, 3u
-        };
-        return Create2D(material, vertices, indices, MeshPrimitive::Triangles, draw_mode);
+        return Create2D(
+            material,
+            {
+                Vertex2D { Vector2 { 0.0f, 0.0f }, Vector2 { 0.0f, 0.0f } },
+                Vertex2D { Vector2 { 0.0f, 1.0f }, Vector2 { 0.0f, 1.0f } },
+                Vertex2D { Vector2 { 1.0f, 1.0f }, Vector2 { 1.0f, 1.0f } },
+                Vertex2D { Vector2 { 1.0f, 0.0f }, Vector2 { 1.0f, 0.0f } },
+            },
+            {
+                0u, 1u, 2u,
+                2u, 3u, 0u
+            },
+            MeshPrimitive::Triangles,
+            draw_mode
+        );
     }
 
     const Mesh Mesh::Null = Mesh { };

@@ -1,6 +1,11 @@
 file(GLOB FOW_SHARED_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Shared/*.cpp)
 file(GLOB FOW_RENDERER_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Renderer/*.cpp)
+file(GLOB FOW_EDITOR_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Editor/*.cpp)
 file(GLOB FOW_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Engine/*.cpp)
+
+if (FOW_DISABLE_OPENGL_DEBUG_INFO)
+    add_compile_definitions(-DFOW_DISABLE_OPENGL_DEBUG_INFO)
+endif()
 
 if (WIN32)
     set(FOW_SHARED_OS_SPEC_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Shared/OsSpecific/Windows.cpp)
@@ -13,6 +18,7 @@ find_package(OpenGL REQUIRED)
 find_package(SDL3 REQUIRED)
 find_package(SDL3_ttf REQUIRED)
 find_package(assimp REQUIRED)
+find_package(Freetype REQUIRED)
 
 if (WIN32)
     find_package(pugixml CONFIG REQUIRED) # On Linux Assimp already loads pugixml already
@@ -22,6 +28,15 @@ else()
     file(GLOB FOW_GLAD_SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/Renderer/glad/*.c)
 endif()
 
+set(FOW_IMGUI_INCLUDES
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/backends
+# Extensions
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImGuiColorTextEdit
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImGuizmo
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImNodeFlow/include
+)
+
 set(FOW_IMGUI_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/imgui.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/imgui_demo.cpp
@@ -30,14 +45,23 @@ set(FOW_IMGUI_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/imgui_widgets.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/backends/imgui_impl_sdl3.cpp
     ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/backends/imgui_impl_opengl3.cpp
+# Extensions
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImGuiColorTextEdit/TextDiff.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImGuiColorTextEdit/TextEditor.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImGuizmo/GraphEditor.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImGuizmo/ImCurveEdit.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImGuizmo/ImGradient.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImGuizmo/ImGuizmo.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImGuizmo/ImSequencer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/ImNodeFlow/src/ImNodeFlow.cpp
 )
 
 add_library(imgui SHARED ${FOW_IMGUI_SOURCES})
-target_compile_definitions(imgui PUBLIC "-DIMGUI_USER_CONFIG=\"fow/Engine/ImGuiCfg.hpp\"")
+target_compile_definitions(imgui PUBLIC "-DIMGUI_USER_CONFIG=\"fow/Editor/ImGuiCfg.hpp\"")
+target_compile_definitions(imgui PUBLIC "-DIMGUI_DEFINE_MATH_OPERATORS")
 target_include_directories(imgui PUBLIC
+    ${FOW_IMGUI_INCLUDES}
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui
-    ${CMAKE_CURRENT_LIST_DIR}/../ThirdParty/imgui/backends
 )
 target_link_libraries(imgui PUBLIC OpenGL::GL glfw)
 
@@ -62,6 +86,7 @@ add_library(FogOfWarRenderer SHARED ${FOW_RENDERER_SOURCES} ${FOW_GLAD_SOURCES})
 target_include_directories(FogOfWarRenderer PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${ASSIMP_INCLUDE_DIRS})
 target_link_libraries(FogOfWarRenderer PUBLIC
     FogOfWar::Shared
+    Freetype::Freetype
     SDL3_ttf::SDL3_ttf
     soil2
     ${ASSIMP_LIBRARIES}
@@ -71,8 +96,12 @@ if (WIN32)
     target_link_libraries(FogOfWarRenderer PUBLIC GLEW::GLEW)
 endif()
 
+add_library(FogOfWarEditor SHARED ${FOW_EDITOR_SOURCES})
+target_include_directories(FogOfWarEditor PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(FogOfWarEditor PUBLIC FogOfWar::Shared imgui)
+add_library(FogOfWar::Editor ALIAS FogOfWarEditor)
+
 add_library(FogOfWarEngine SHARED ${FOW_SOURCES})
 target_include_directories(FogOfWarEngine PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(FogOfWarEngine PUBLIC FogOfWar::Shared FogOfWar::Renderer imgui)
-target_compile_definitions(FogOfWarEngine PUBLIC -DGLFW_INCLUDE_NONE)
+target_link_libraries(FogOfWarEngine PUBLIC FogOfWar::Shared FogOfWar::Renderer FogOfWar::Editor)
 add_library(FogOfWar::Engine ALIAS FogOfWarEngine)

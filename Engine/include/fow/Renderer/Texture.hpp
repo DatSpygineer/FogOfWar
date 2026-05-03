@@ -135,9 +135,12 @@ namespace fow {
 
         [[nodiscard]] GLsizei width() const;
         [[nodiscard]] GLsizei height() const;
+        [[nodiscard]] Vector2i size() const;
         [[nodiscard]] GLsizei depth() const;
+        [[nodiscard]] Vector3i size_3d() const;
         [[nodiscard]] GLsizei base_level() const;
         [[nodiscard]] GLsizei max_level() const;
+        [[nodiscard]] TextureInternalPixelFormat format() const;
 
         [[nodiscard]] TextureWrapMode wrap_r() const;
         [[nodiscard]] TextureWrapMode wrap_s() const;
@@ -153,10 +156,7 @@ namespace fow {
 
         void generate_mipmaps() const;
 
-        virtual void bind(const uint8_t unit) {
-            glActiveTexture(GL_TEXTURE0 + (unit % 32));
-            glBindTexture(static_cast<GLenum>(target()), m_uId);
-        }
+        virtual void bind(uint8_t unit) const;
 
         static TexturePtr PlaceHolder();
         static TexturePtr DefaultWhite();
@@ -182,6 +182,9 @@ namespace fow {
         static Result<Texture2DPtr> Load(const TextureInfo& info);
         static Result<Texture2DPtr> LoadFromMemory(const Vector<uint8_t>& data, const TextureInfo& info);
         static Result<Texture2DPtr> LoadAsset(const Path& path, AssetLoaderFlags::Type flags);
+
+        static Result<Texture2DPtr> CreateFromRawData(const Vector<uint8_t>& data, const Vector2i& size, const TextureInfo& info, TexturePixelFormat format, TextureInternalPixelFormat internal_format);
+        static Result<Texture2DPtr> CreateFromRawData(const Vector<uint8_t>& data, GLuint reuse_id, const Vector2i& size, const TextureInfo& info, TexturePixelFormat format, TextureInternalPixelFormat internal_format);
 
         static Result<Texture2DPtr> FromSDLSurface(const SDL_Surface* surface, const TextureInfo& info);
         static Result<Texture2DPtr> FromSDLSurface(const SDL_Surface* surface, const Texture& reuse, const TextureInfo& info);

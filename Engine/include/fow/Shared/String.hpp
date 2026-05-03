@@ -392,9 +392,12 @@ namespace fow {
         Path& replace_root(const Path& new_root);
         Path& replace_root(const Path& old_root, const Path& new_root);
         Path& to_absolute();
+        Path& to_absolute(const Path& root);
         Path& to_relative();
         Path& to_relative(const Path& root);
         Path& go_back();
+        Path& append(const Path& other);
+        Path& append_no_separator(const String& str);
 
         static Path CurrentDir();
         static void CurrentDir(const Path& path);
@@ -558,6 +561,25 @@ struct std::formatter<fow::Color> : std::formatter<std::string> {
             } break;
         }
         return std::formatter<std::string>::format(result, ctx);
+    }
+};
+
+template<>
+struct FOW_SHARED_API std::formatter<fow::Rectangle> {
+    FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
+        return ctx.end();
+    }
+    inline auto format(const fow::Rectangle& value, std::format_context& ctx) const {
+        return std::format_to(ctx.out(), "{}, {}, {}, {}", value.x, value.y, value.width, value.height);
+    }
+};
+template<>
+struct FOW_SHARED_API std::formatter<fow::IntRectangle> {
+    FOW_CONSTEXPR auto parse(std::format_parse_context& ctx) {
+        return ctx.end();
+    }
+    inline auto format(const fow::IntRectangle& value, std::format_context& ctx) const {
+        return std::format_to(ctx.out(), "{}, {}, {}, {}", value.x, value.y, value.width, value.height);
     }
 };
 

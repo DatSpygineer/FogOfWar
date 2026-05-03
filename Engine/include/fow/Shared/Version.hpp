@@ -11,12 +11,12 @@ namespace fow {
         uint8_t major, minor, patch;
         uint32_t build;
 
-        Version(const uint8_t major, const uint8_t minor, const uint8_t patch) : major(major), minor(minor), patch(patch), build() {
+        FOW_CONSTEXPR Version(const uint8_t major, const uint8_t minor, const uint8_t patch) : major(major), minor(minor), patch(patch), build() {
             const auto t = time(nullptr);
             const auto tm = localtime(&t);
             build = (tm->tm_year + 1900) * 10000 + (tm->tm_mon + 1) * 100 + (tm->tm_mday);
         }
-        Version(const uint8_t major, const uint8_t minor, const uint8_t patch, const uint32_t build) : major(major), minor(minor), patch(patch), build(build) { }
+        FOW_CONSTEXPR Version(const uint8_t major, const uint8_t minor, const uint8_t patch, const uint32_t build) : major(major), minor(minor), patch(patch), build(build) { }
 
     private:
         FOW_CONSTEXPR uint64_t as_u64() const {

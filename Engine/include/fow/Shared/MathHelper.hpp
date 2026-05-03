@@ -128,6 +128,8 @@ namespace fow {
 
         [[nodiscard]] FOW_CONSTEXPR Vector2 position() const { return { x, y }; }
         [[nodiscard]] FOW_CONSTEXPR Vector2 size() const { return { width, height }; }
+
+        [[nodiscard]] FOW_CONSTEXPR Rectangle without_offset() const { return { 0, 0, width, height }; }
     };
 
     struct FOW_SHARED_API IntRectangle {
@@ -154,6 +156,8 @@ namespace fow {
 
         [[nodiscard]] FOW_CONSTEXPR Vector2i position() const { return { x, y }; }
         [[nodiscard]] FOW_CONSTEXPR Vector2i size() const { return { width, height }; }
+
+        [[nodiscard]] FOW_CONSTEXPR IntRectangle without_offset() const { return { 0, 0, width, height }; }
 
         [[nodiscard]] FOW_CONSTEXPR operator Rectangle() const { return Rectangle {
                 static_cast<float>(x), static_cast<float>(y),

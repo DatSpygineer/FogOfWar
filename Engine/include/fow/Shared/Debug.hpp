@@ -71,6 +71,15 @@ namespace fow {
             return true;
         }
     }
+
+    template<typename T>
+    inline T ResultValueOrThrow(const Result<T>& result) {
+        if (result.has_value()) {
+            return result.value();
+        }
+        Debug::LogFatal(result.error().message, result.error().location);
+        throw std::runtime_error(result.error().message.as_std_str());
+    }
 }
 
 template<>

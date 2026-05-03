@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Sprite2D>
+    <Texture src="/Sprites/UI/SliderMarker.texture.xml"/>
+</Sprite2D>

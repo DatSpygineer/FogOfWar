@@ -2,6 +2,7 @@
 
 #include "fow/Core.hpp"
 #include "Components.hpp"
+#include "imgui.h"
 
 using namespace fow;
 
@@ -81,22 +82,18 @@ public:
         comp_env->set_sunlight_intensity(300.0f);
         comp_env->set_skybox(m_pSkybox);
 
-        auto sprite_2d = Assets::Load<Sprite2D>("/Sprites/Test.sprite2d.xml");
-        Debug::AssertFatal(sprite_2d);
+        auto ui = m_pScene->ui_frame();
+        auto checkbox = CreateRef<UI::CheckBox>(ui);
+        checkbox->set_area({ 64, 64, 64, 64 });
+        ui->add_widget(checkbox);
 
-        const auto ent_sprite_2d = m_pScene->create_entity();
-        const auto comp_sprite_transform = ent_sprite_2d->add_component<Transform2DComponent>();
-        comp_sprite_transform->set_rectangle(Rectangle { 0.0, 0.0, 128.0, 128.0 });
-        const auto comp_sprite_2d = ent_sprite_2d->add_component<Sprite2DRendererComponent>();
-        comp_sprite_2d->set_sprite(sprite_2d.value().ptr());
+        auto button = CreateRef<UI::Button>(ui, "Example");
+        button->set_area({ 128 + 5, 64, 128, 64 });
+        ui->add_widget(button);
 
-        const auto ent_text_2d = m_pScene->create_entity();
-        const auto comp_text_transform_2d = ent_text_2d->add_component<Transform2DComponent>();
-        comp_text_transform_2d->set_rectangle(Rectangle { 128.0, 0.0, 128.0, 128.0 });
-        const auto comp_text_2d = ent_text_2d->add_component<Text2DRendererComponent>();
-        comp_text_2d->set_font(CreateRef<Font>("Roboto-Regular.ttf", 24));
-        comp_text_2d->set_text("Hello World!");
-        comp_text_2d->set_text_rect(IntRectangle { 0, 0, 128, 128 });
+        auto panel = CreateRef<UI::Panel>(ui);
+        panel->set_area({ 512, 512, 64, 64 });
+        ui->add_widget(panel);
 
         Engine::SetScene(m_pScene);
     }
